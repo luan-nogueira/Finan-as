@@ -68,9 +68,9 @@
 
       <header class="hero">
         <div class="hero-text">
-          <span class="badge">💙 Site financeiro do casal</span>
-          <h1>Controle Financeiro</h1>
-          <p>Veja todas as contas em um só lugar e marque o que já foi pago sem ficar procurando na tela.</p>
+          <span class="badge">💙 Financeiro do casal</span>
+          <h1>Checklist de pagamentos</h1>
+          <p>Marque manualmente o que já foi pago e o site atualiza sozinho.</p>
         </div>
 
         <div class="hero-total">
@@ -113,7 +113,7 @@
         </div>
 
         <div class="summary-card">
-          <p>Itens pendentes</p>
+          <p>Pendentes</p>
           <h3 class="red" id="total-pendentes">0</h3>
         </div>
       </section>
@@ -121,13 +121,13 @@
       <section class="panel">
         <div class="panel-header">
           <h2>Nova despesa</h2>
-          <p>Adicione uma nova conta</p>
+          <p>Cadastre uma nova conta para aparecer automaticamente na lista</p>
         </div>
 
         <form id="expense-form" class="form-grid">
           <div class="field">
             <label for="descricao">Descrição</label>
-            <input type="text" id="descricao" placeholder="Ex: Cartão Nubank" required />
+            <input type="text" id="descricao" placeholder="Ex: Condomínio" required />
           </div>
 
           <div class="field">
@@ -152,7 +152,7 @@
 
           <div class="field full">
             <label for="observacao">Observação</label>
-            <input type="text" id="observacao" placeholder="Ex: Parcela 12/48" />
+            <input type="text" id="observacao" placeholder="Ex: Parcela 3/12" />
           </div>
 
           <div class="full">
@@ -164,8 +164,8 @@
       <section class="panel panel-main-list">
         <div class="panel-header filters">
           <div>
-            <h2>Lista principal de contas</h2>
-            <p>Tudo em um só lugar para marcar, filtrar, editar e visualizar</p>
+            <h2>Lista principal</h2>
+            <p>No celular, ela ocupa a área principal da tela para você marcar rápido</p>
           </div>
 
           <div class="filter-buttons">
@@ -178,21 +178,21 @@
 
         <div class="tools-grid tools-grid-main">
           <div class="field">
-            <label for="search-input">Buscar despesa</label>
+            <label for="search-input">Buscar</label>
             <input
               type="text"
               id="search-input"
-              placeholder="Buscar por descrição, observação ou criador"
+              placeholder="Ex: condomínio"
             />
           </div>
 
           <div class="field">
-            <label for="month-filter">Filtrar por mês</label>
+            <label for="month-filter">Mês</label>
             <input type="month" id="month-filter" />
           </div>
 
           <div class="field">
-            <label for="status-filter-main">Filtrar por status</label>
+            <label for="status-filter-main">Status</label>
             <select id="status-filter-main">
               <option value="Todos">Todos</option>
               <option value="Pago">Pago</option>
@@ -233,7 +233,7 @@
           <table>
             <thead>
               <tr>
-                <th>Pagar</th>
+                <th>Check</th>
                 <th>Status</th>
                 <th>Categoria</th>
                 <th>Descrição</th>
@@ -248,7 +248,13 @@
           </table>
         </div>
 
-        <div id="main-mobile-cards" class="mobile-cards main-mobile-cards"></div>
+        <div class="mobile-list-wrap">
+          <div class="mobile-list-head">
+            <strong>Checklist</strong>
+            <span>Toque no quadrado para marcar como pago</span>
+          </div>
+          <div id="main-mobile-cards" class="mobile-cards main-mobile-cards"></div>
+        </div>
       </section>
 
       <section class="bottom-grid">
@@ -299,7 +305,7 @@
       <section class="panel">
         <div class="panel-header">
           <h2>Gráfico mensal</h2>
-          <p>Total gasto por mês, no estilo visão de fatura</p>
+          <p>Total gasto por mês</p>
         </div>
 
         <div class="chart-box">
@@ -308,7 +314,7 @@
       </section>
 
       <footer class="footer">
-        <p>Os dados podem ser cadastrados e editados diretamente no site.</p>
+        <p>Marque as contas direto na lista principal. O check aparece automaticamente quando o item é pago.</p>
       </footer>
     </div>
   </div>
@@ -696,31 +702,36 @@
           mainTableBody.appendChild(tr);
 
           const card = document.createElement("div");
-          card.className = `checklist-card main-card ${item.pago ? "is-paid" : ""} ${vencida ? "is-overdue" : ""}`;
+          card.className = `main-card ${item.pago ? "is-paid" : ""} ${vencida ? "is-overdue" : ""}`;
           card.setAttribute("data-item-id", item.id);
           card.innerHTML = `
-            <div class="expense-card-top">
-              <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
-              <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">${status}</span>
-            </div>
-
-            <h3>${escapeHtml(item.descricao)}</h3>
-            <p><strong>Valor:</strong> ${formatarMoeda(item.valor)}</p>
-            <p><strong>Vencimento:</strong> ${escapeHtml(formatarDataBR(item.vencimento || "-"))}</p>
-            <p><strong>Obs:</strong> ${escapeHtml(item.observacao || "-")}</p>
-            <p><strong>Criado por:</strong> ${escapeHtml(item.criadoPor || "-")}</p>
-
-            <label class="mobile-check-label">
+            <label class="mobile-compact-row">
               <input
                 type="checkbox"
                 class="mobile-real-check"
                 data-id="${item.id}"
                 ${item.pago ? "checked" : ""}
               />
-              <span>${item.pago ? "Já foi pago" : "Marcar como pago"}</span>
+
+              <div class="mobile-compact-content">
+                <div class="mobile-line-1">
+                  <strong class="mobile-desc">${escapeHtml(item.descricao)}</strong>
+                  <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">${status}</span>
+                </div>
+
+                <div class="mobile-line-2">
+                  <span>${formatarMoeda(item.valor)}</span>
+                  <span>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</span>
+                </div>
+
+                <div class="mobile-line-3">
+                  <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
+                  <span class="mobile-obs">${escapeHtml(item.observacao || "-")}</span>
+                </div>
+              </div>
             </label>
 
-            <div class="actions-cell">
+            <div class="mobile-card-actions">
               <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">Editar</button>
               <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">Excluir</button>
             </div>
