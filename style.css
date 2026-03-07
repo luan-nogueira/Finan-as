@@ -272,7 +272,7 @@ button {
 
 .calendar-controls {
   display: grid;
-  grid-template-columns: 52px 1fr 52px;
+  grid-template-columns: 48px 1fr 48px;
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -296,7 +296,7 @@ button {
 .calendar-box {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
 .calendar-weekday {
@@ -335,9 +335,23 @@ button {
   background: var(--row-overdue);
 }
 
+.calendar-day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .calendar-day-number {
   font-weight: bold;
   font-size: 14px;
+}
+
+.calendar-mobile-total {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
 .calendar-badges {
@@ -411,6 +425,57 @@ button {
 .calendar-more {
   font-size: 12px;
   color: var(--muted);
+}
+
+.calendar-mobile-bank .calendar-day {
+  min-height: 58px;
+  padding: 8px 9px;
+  border-radius: 12px;
+  gap: 5px;
+}
+
+.calendar-mobile-bank .calendar-day-number {
+  font-size: 12px;
+}
+
+.calendar-mobile-bank .calendar-badges {
+  gap: 4px;
+}
+
+.calendar-mobile-bank .mini-badge {
+  font-size: 9px;
+  padding: 3px 6px;
+}
+
+.calendar-mobile-bank .calendar-items {
+  gap: 4px;
+}
+
+.calendar-mobile-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.calendar-mobile-desc {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-mobile-line strong {
+  white-space: nowrap;
+  font-size: 10px;
+}
+
+.calendar-mobile-more {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: bold;
 }
 
 .form-grid,
@@ -1010,7 +1075,7 @@ tr.edited-highlight td {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .calendar-box {
+  .calendar-box:not(.calendar-mobile-bank) {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -1055,6 +1120,7 @@ tr.edited-highlight td {
 
   .calendar-box {
     grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
   }
 
   .calendar-weekday {
@@ -1070,6 +1136,22 @@ tr.edited-highlight td {
 
   .calendar-day {
     min-height: 125px;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .calendar-day-number {
+    font-size: 14px;
+  }
+
+  .calendar-mobile-total,
+  .calendar-mobile-line,
+  .calendar-mobile-more {
+    display: none;
+  }
+
+  .calendar-items {
+    display: grid;
   }
 
   .desktop-table {
