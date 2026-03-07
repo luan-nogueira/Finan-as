@@ -173,7 +173,8 @@ body {
 }
 
 .filters,
-.ipva-header {
+.ipva-header,
+.checklist-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -311,7 +312,8 @@ tbody tr:hover {
   text-align: right;
 }
 
-.status {
+.status,
+.status-row {
   display: inline-block;
   margin-top: 6px;
   padding: 6px 10px;
@@ -601,8 +603,186 @@ tbody tr:hover {
   border-radius: 12px;
 }
 
+.chart-box {
+  height: 320px;
+  position: relative;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.checklist-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.legend-pending {
+  background: #f59e0b;
+}
+
+.legend-paid {
+  background: #22c55e;
+}
+
+.checklist-list {
+  display: grid;
+  gap: 12px;
+}
+
+.checklist-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  background: var(--card-2);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.checklist-item.is-paid {
+  opacity: 0.88;
+}
+
+.checklist-item.is-overdue {
+  border-color: rgba(220, 38, 38, 0.32);
+  background: var(--row-overdue);
+}
+
+.checklist-main {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 14px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.checklist-checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.checkmark-box {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  margin-top: 2px;
+  background: var(--card);
+  position: relative;
+}
+
+.checklist-checkbox:checked + .checkmark-box {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.checklist-checkbox:checked + .checkmark-box::after {
+  content: "✓";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.checklist-content {
+  min-width: 0;
+}
+
+.checklist-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.checklist-title-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.checklist-title {
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.checklist-value {
+  white-space: nowrap;
+}
+
+.checklist-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.checklist-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .desktop-table {
   display: block;
+}
+
+@keyframes flashEdited {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(29, 78, 216, 0.35);
+  }
+  30% {
+    transform: scale(1.01);
+    box-shadow: 0 0 0 8px rgba(29, 78, 216, 0.12);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(29, 78, 216, 0);
+  }
+}
+
+.edited-highlight {
+  position: relative;
+  animation: flashEdited 1.6s ease;
+  border-radius: 14px;
+}
+
+tr.edited-highlight td {
+  background: rgba(29, 78, 216, 0.08);
+}
+
+.checklist-item.edited-highlight,
+.expense-card.edited-highlight {
+  border-color: rgba(29, 78, 216, 0.45);
 }
 
 @media (max-width: 980px) {
@@ -616,6 +796,14 @@ tbody tr:hover {
 
   .ipva-row {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .checklist-item {
+    grid-template-columns: 1fr;
+  }
+
+  .checklist-actions {
+    justify-content: flex-start;
   }
 }
 
@@ -631,7 +819,8 @@ tbody tr:hover {
   .hero-actions,
   .auth-switch,
   .modal-actions,
-  .actions-cell {
+  .actions-cell,
+  .checklist-actions {
     flex-direction: column;
     align-items: stretch;
   }
@@ -639,8 +828,22 @@ tbody tr:hover {
   .action-btn,
   .modal-actions button,
   .auth-switch-btn,
-  .hero-actions button {
+  .hero-actions button,
+  .checklist-actions button {
     width: 100%;
+  }
+
+  .checklist-main {
+    grid-template-columns: auto auto 1fr;
+  }
+
+  .checklist-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chart-box {
+    height: 280px;
   }
 }
 
@@ -684,5 +887,15 @@ tbody tr:hover {
 
   .ipva-row {
     grid-template-columns: 1fr;
+  }
+
+  .checklist-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .chart-box {
+    height: 240px;
+    padding: 12px;
   }
 }
