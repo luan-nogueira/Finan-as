@@ -83,29 +83,29 @@ button {
 }
 
 .container {
-  width: min(1180px, calc(100% - 24px));
-  margin: 12px auto 28px;
+  width: min(1180px, calc(100% - 16px));
+  margin: 8px auto 20px;
 }
 
 .hero {
   background: var(--hero-bg);
   color: white;
-  border-radius: 22px;
-  padding: 18px;
+  border-radius: 18px;
+  padding: 12px;
   box-shadow: var(--shadow);
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 10px;
   align-items: center;
 }
 
 .badge {
   display: inline-block;
   background: rgba(255, 255, 255, 0.14);
-  padding: 7px 12px;
+  padding: 5px 9px;
   border-radius: 999px;
-  margin-bottom: 12px;
-  font-size: 12px;
+  margin-bottom: 8px;
+  font-size: 10px;
 }
 
 .badge-login {
@@ -114,34 +114,34 @@ button {
 }
 
 .hero h1 {
-  font-size: 1.45rem;
-  margin-bottom: 8px;
-  line-height: 1.2;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+  line-height: 1.15;
 }
 
 .hero p {
   color: rgba(255, 255, 255, 0.92);
-  line-height: 1.5;
-  font-size: 14px;
+  line-height: 1.35;
+  font-size: 12px;
 }
 
 .hero-total {
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 18px;
-  padding: 16px;
+  border-radius: 14px;
+  padding: 10px;
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .hero-total h2 {
-  font-size: 1.45rem;
+  font-size: 1.12rem;
   line-height: 1.1;
   word-break: break-word;
 }
 
 .hero-total span {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.85);
   word-break: break-word;
 }
@@ -149,20 +149,20 @@ button {
 .hero-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .alert-panel {
-  margin-top: 16px;
-  margin-bottom: 18px;
+  margin-top: 10px;
+  margin-bottom: 12px;
   background: var(--alert-bg);
   border: 1px solid var(--alert-border);
-  border-radius: 16px;
-  padding: 14px;
+  border-radius: 12px;
+  padding: 10px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 14px;
+  gap: 10px;
   flex-direction: column;
 }
 
@@ -173,30 +173,30 @@ button {
 .alert-panel-left {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
 }
 
 .alert-icon {
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1;
 }
 
 .alert-panel h3 {
-  margin-bottom: 4px;
-  font-size: 1rem;
+  margin-bottom: 3px;
+  font-size: 0.92rem;
 }
 
 .alert-panel p {
   color: var(--text);
-  line-height: 1.45;
-  font-size: 14px;
+  line-height: 1.3;
+  font-size: 12px;
 }
 
 .summary-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-  margin: 18px 0;
+  gap: 8px;
+  margin: 12px 0;
 }
 
 .summary-card,
@@ -204,24 +204,24 @@ button {
 .auth-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 14px;
   box-shadow: var(--shadow);
   transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 .summary-card {
-  padding: 16px;
+  padding: 12px;
   min-width: 0;
 }
 
 .summary-card p {
   color: var(--muted);
-  margin-bottom: 8px;
-  font-size: 13px;
+  margin-bottom: 6px;
+  font-size: 11px;
 }
 
 .summary-card h3 {
-  font-size: 1.25rem;
+  font-size: 1rem;
   line-height: 1.1;
   word-break: break-word;
 }
@@ -231,24 +231,24 @@ button {
 .red { color: var(--red); }
 
 .panel {
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 12px;
+  margin-bottom: 10px;
 }
 
 .panel-header {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .panel-header h2 {
-  font-size: 1.08rem;
-  margin-bottom: 4px;
-  line-height: 1.25;
+  font-size: 0.98rem;
+  margin-bottom: 3px;
+  line-height: 1.2;
 }
 
 .panel-header p {
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.3;
 }
 
 .filters,
@@ -258,7 +258,7 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: stretch;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   flex-direction: column;
 }
@@ -267,14 +267,14 @@ button {
 .bottom-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 10px;
 }
 
 .calendar-controls {
   display: grid;
-  grid-template-columns: 48px 1fr 48px;
+  grid-template-columns: 40px 1fr 40px;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -282,21 +282,21 @@ button {
   min-width: 0;
   text-align: center;
   text-transform: capitalize;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .calendar-legend,
 .checklist-legend {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .calendar-box {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 6px;
 }
 
 .calendar-weekday {
@@ -306,12 +306,12 @@ button {
 .calendar-day {
   min-height: auto;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--card-2);
-  padding: 12px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 
 .calendar-day.empty {
@@ -339,16 +339,16 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .calendar-day-number {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .calendar-mobile-total {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: bold;
   color: var(--muted);
   white-space: nowrap;
@@ -357,14 +357,14 @@ button {
 .calendar-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .mini-badge {
   display: inline-block;
-  font-size: 11px;
+  font-size: 8px;
   font-weight: bold;
-  padding: 5px 8px;
+  padding: 2px 5px;
   border-radius: 999px;
 }
 
@@ -385,17 +385,17 @@ button {
 
 .calendar-items {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
 .calendar-item-line {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  font-size: 12px;
-  line-height: 1.3;
-  padding: 7px 8px;
-  border-radius: 10px;
+  gap: 8px;
+  font-size: 10px;
+  line-height: 1.2;
+  padding: 5px 6px;
+  border-radius: 8px;
 }
 
 .calendar-item-line span {
@@ -423,40 +423,40 @@ button {
 }
 
 .calendar-more {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--muted);
 }
 
 .calendar-mobile-bank .calendar-day {
-  min-height: 58px;
-  padding: 8px 9px;
-  border-radius: 12px;
-  gap: 5px;
+  min-height: 48px;
+  padding: 6px 7px;
+  border-radius: 10px;
+  gap: 4px;
 }
 
 .calendar-mobile-bank .calendar-day-number {
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .calendar-mobile-bank .calendar-badges {
-  gap: 4px;
+  gap: 3px;
 }
 
 .calendar-mobile-bank .mini-badge {
-  font-size: 9px;
-  padding: 3px 6px;
+  font-size: 8px;
+  padding: 2px 4px;
 }
 
 .calendar-mobile-bank .calendar-items {
-  gap: 4px;
+  gap: 3px;
 }
 
 .calendar-mobile-line {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
-  font-size: 10px;
-  line-height: 1.2;
+  gap: 6px;
+  font-size: 9px;
+  line-height: 1.15;
   color: var(--text);
 }
 
@@ -469,11 +469,11 @@ button {
 
 .calendar-mobile-line strong {
   white-space: nowrap;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .calendar-mobile-more {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--muted);
   font-weight: bold;
 }
@@ -482,17 +482,17 @@ button {
 .tools-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 8px;
 }
 
 .field {
   display: grid;
-  gap: 7px;
+  gap: 5px;
   min-width: 0;
 }
 
 .field label {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--muted);
 }
 
@@ -505,11 +505,11 @@ select,
 button,
 textarea {
   width: 100%;
-  min-height: 46px;
-  padding: 12px 14px;
-  border-radius: 12px;
+  min-height: 40px;
+  padding: 9px 10px;
+  border-radius: 10px;
   border: 1px solid var(--border);
-  font-size: 14px;
+  font-size: 12px;
   background: var(--card);
   color: var(--text);
 }
@@ -523,7 +523,7 @@ textarea:focus {
 
 .table-box {
   overflow-x: auto;
-  border-radius: 16px;
+  border-radius: 12px;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -536,14 +536,14 @@ table {
 th,
 td {
   text-align: left;
-  padding: 13px 10px;
+  padding: 10px 8px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
 
 th {
   background: var(--card-2);
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -562,9 +562,9 @@ tbody tr:hover {
 
 .tag {
   display: inline-block;
-  padding: 5px 8px;
+  padding: 4px 7px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: bold;
   white-space: nowrap;
 }
@@ -588,8 +588,8 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
-  padding: 14px 0;
+  gap: 7px;
+  padding: 10px 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -600,9 +600,9 @@ tbody tr:hover {
 .resume-item span {
   display: block;
   color: var(--muted);
-  font-size: 13px;
-  margin-top: 4px;
-  line-height: 1.4;
+  font-size: 11px;
+  margin-top: 3px;
+  line-height: 1.25;
 }
 
 .status-box {
@@ -612,10 +612,10 @@ tbody tr:hover {
 .status,
 .status-row {
   display: inline-block;
-  margin-top: 4px;
-  padding: 5px 8px;
+  margin-top: 2px;
+  padding: 4px 7px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: bold;
 }
 
@@ -645,7 +645,7 @@ tbody tr:hover {
 .status-filters {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -653,12 +653,13 @@ tbody tr:hover {
 .status-filter-btn {
   border: 1px solid var(--border);
   background: var(--card);
-  padding: 10px 14px;
+  padding: 8px 10px;
   border-radius: 999px;
   cursor: pointer;
   font-weight: bold;
   width: 100%;
-  min-height: 42px;
+  min-height: 34px;
+  font-size: 11px;
 }
 
 .filter-btn.active,
@@ -669,11 +670,14 @@ tbody tr:hover {
 }
 
 .actions-cell {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
   align-items: stretch;
+}
+
+.actions-cell .btn-toggle {
+  grid-column: 1 / -1;
 }
 
 .action-btn,
@@ -685,11 +689,11 @@ tbody tr:hover {
 }
 
 .action-btn {
-  padding: 8px 10px;
-  border-radius: 10px;
+  padding: 7px 8px;
+  border-radius: 9px;
   width: 100%;
-  min-height: 36px;
-  font-size: 12px;
+  min-height: 32px;
+  font-size: 10px;
 }
 
 .btn-primary {
@@ -731,23 +735,23 @@ tbody tr:hover {
 .footer {
   text-align: center;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 11px;
   margin-top: 4px;
-  padding-bottom: 16px;
-  line-height: 1.5;
+  padding-bottom: 12px;
+  line-height: 1.35;
 }
 
 .auth-page {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 14px;
+  padding: 12px;
 }
 
 .auth-card {
   width: 100%;
   max-width: 460px;
-  padding: 18px;
+  padding: 14px;
 }
 
 .auth-form {
@@ -757,8 +761,8 @@ tbody tr:hover {
 .auth-switch {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 12px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .auth-switch-btn {
@@ -766,10 +770,10 @@ tbody tr:hover {
 }
 
 .auth-message {
-  margin-top: 14px;
+  margin-top: 12px;
   color: var(--muted);
-  font-size: 13px;
-  min-height: 20px;
+  font-size: 12px;
+  min-height: 18px;
 }
 
 .modal {
@@ -779,7 +783,7 @@ tbody tr:hover {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 8px;
+  padding: 6px;
   z-index: 999;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -793,9 +797,9 @@ tbody tr:hover {
   width: 100%;
   max-width: 760px;
   background: var(--card);
-  border-radius: 18px;
+  border-radius: 14px;
   box-shadow: var(--shadow);
-  padding: 14px;
+  padding: 10px;
   border: 1px solid var(--border);
   margin-top: 4px;
   margin-bottom: 8px;
@@ -805,30 +809,30 @@ tbody tr:hover {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .modal-header h2 {
-  font-size: 1.08rem;
+  font-size: 1rem;
 }
 
 .modal-close {
   width: auto;
-  min-width: 42px;
-  min-height: 42px;
-  padding: 6px 12px;
-  border-radius: 10px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 4px 10px;
+  border-radius: 9px;
   border: none;
   background: var(--card-2);
   cursor: pointer;
-  font-size: 22px;
+  font-size: 20px;
   line-height: 1;
 }
 
 .modal-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: flex-end;
   flex-wrap: wrap;
   flex-direction: column;
@@ -839,14 +843,14 @@ tbody tr:hover {
 }
 
 .see-more-wrap {
-  margin-top: 16px;
+  margin-top: 10px;
   display: flex;
   justify-content: center;
 }
 
 .mobile-cards {
   display: grid;
-  gap: 12px;
+  gap: 6px;
 }
 
 .desktop-table {
@@ -857,8 +861,8 @@ tbody tr:hover {
 .checklist-card {
   background: var(--card-2);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 9px;
 }
 
 .checklist-card.is-paid {
@@ -879,66 +883,66 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
   align-items: flex-start;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 .expense-card h3,
 .checklist-card h3 {
-  font-size: 0.93rem;
-  margin-bottom: 6px;
-  line-height: 1.28;
+  font-size: 0.82rem;
+  margin-bottom: 3px;
+  line-height: 1.15;
   word-break: break-word;
 }
 
 .expense-card p,
 .checklist-card p {
   color: var(--text);
-  margin-bottom: 5px;
-  font-size: 12px;
-  line-height: 1.32;
+  margin-bottom: 3px;
+  font-size: 10px;
+  line-height: 1.2;
   word-break: break-word;
 }
 
 .mobile-check-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 8px 0;
+  gap: 6px;
+  margin: 5px 0;
   color: var(--text);
   flex-wrap: wrap;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .mobile-check-label input {
-  width: 18px;
+  width: 15px;
   min-height: auto;
 }
 
 .empty-card {
   background: var(--card-2);
   border: 1px dashed var(--border);
-  padding: 16px;
-  border-radius: 16px;
+  padding: 12px;
+  border-radius: 12px;
   text-align: center;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .ipva-form {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .ipva-row {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 8px;
   align-items: end;
-  padding: 12px;
+  padding: 10px;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 12px;
   background: var(--card-2);
 }
 
@@ -948,30 +952,30 @@ tbody tr:hover {
 
 .remove-ipva-btn {
   width: 100%;
-  padding: 12px;
-  border-radius: 12px;
+  padding: 10px;
+  border-radius: 10px;
 }
 
 .chart-box {
-  height: 230px;
+  height: 190px;
   position: relative;
   background: var(--card-2);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 10px;
+  border-radius: 12px;
+  padding: 6px;
 }
 
 .legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .legend-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 999px;
   display: inline-block;
 }
@@ -1001,20 +1005,20 @@ tbody tr:hover {
 }
 
 .checkmark-box {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
   border: 2px solid var(--border);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--card);
   position: relative;
   display: inline-block;
 }
 
 .small-check {
-  width: 22px;
-  height: 22px;
-  min-width: 22px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
 }
 
 .checklist-checkbox:checked + .checkmark-box {
@@ -1029,51 +1033,52 @@ tbody tr:hover {
   display: grid;
   place-items: center;
   color: white;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: bold;
 }
 
 .calendar-toggle-panel {
-  padding: 14px;
+  padding: 10px;
 }
 
 .calendar-shortcut {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 14px;
+  gap: 10px;
   flex-wrap: wrap;
+  flex-direction: column;
 }
 
 .calendar-shortcut-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   min-width: 0;
 }
 
 .calendar-shortcut-left h2 {
-  font-size: 1.05rem;
-  margin-bottom: 4px;
+  font-size: 0.92rem;
+  margin-bottom: 3px;
 }
 
 .calendar-shortcut-left p {
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 11px;
+  line-height: 1.25;
 }
 
 .calendar-icon-btn {
-  width: 54px;
-  min-width: 54px;
-  height: 54px;
-  min-height: 54px;
-  border-radius: 16px;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--card-2);
   display: grid;
   place-items: center;
-  font-size: 24px;
+  font-size: 18px;
   padding: 0;
   flex-shrink: 0;
 }
@@ -1081,18 +1086,18 @@ tbody tr:hover {
 .calendar-shortcut-summary {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 3px;
 }
 
 .calendar-shortcut-summary span {
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 0.88rem;
 }
 
 .calendar-shortcut-summary small {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 10px;
   text-transform: capitalize;
 }
 
@@ -1101,7 +1106,7 @@ tbody tr:hover {
 }
 
 .calendar-wrapper {
-  margin-top: 16px;
+  margin-top: 10px;
 }
 
 .calendar-inner-panel {
@@ -1138,170 +1143,9 @@ tr.edited-highlight td {
   border-color: rgba(29, 78, 216, 0.45);
 }
 
-@media (max-width: 767px) {
-  .panel {
-    padding: 14px;
-    margin-bottom: 14px;
-  }
-
-  .panel-header {
-    margin-bottom: 10px;
-  }
-
-  .panel-header h2 {
-    font-size: 1rem;
-  }
-
-  .panel-header p {
-    font-size: 12px;
-    line-height: 1.3;
-  }
-
-  .status-filters,
-  .filter-buttons {
-    gap: 6px;
-  }
-
-  .filter-btn,
-  .status-filter-btn {
-    min-height: 36px;
-    font-size: 12px;
-    padding: 8px 10px;
-  }
-
-  .mobile-cards {
-    gap: 8px;
-  }
-
-  .expense-card,
-  .checklist-card {
-    padding: 10px;
-    border-radius: 12px;
-  }
-
-  .expense-card-top {
-    gap: 5px;
-    margin-bottom: 6px;
-  }
-
-  .expense-card h3,
-  .checklist-card h3 {
-    font-size: 0.9rem;
-    margin-bottom: 4px;
-    line-height: 1.22;
-  }
-
-  .expense-card p,
-  .checklist-card p {
-    font-size: 11px;
-    margin-bottom: 4px;
-    line-height: 1.25;
-  }
-
-  .mobile-check-label {
-    margin: 6px 0;
-    gap: 6px;
-    font-size: 11px;
-  }
-
-  .mobile-check-label input {
-    width: 16px;
-  }
-
-  .actions-cell {
-    gap: 5px;
-  }
-
-  .action-btn {
-    min-height: 34px;
-    font-size: 11px;
-    padding: 7px 9px;
-  }
-
-  .status,
-  .status-row {
-    padding: 4px 7px;
-    font-size: 9px;
-    margin-top: 2px;
-  }
-
-  .tag {
-    padding: 4px 7px;
-    font-size: 9px;
-  }
-
-  .see-more-wrap {
-    margin-top: 10px;
-  }
-
-  .chart-box {
-    height: 210px;
-    padding: 8px;
-  }
-
-  .summary-card {
-    padding: 14px;
-  }
-
-  .summary-card h3 {
-    font-size: 1.1rem;
-  }
-
-  .hero {
-    padding: 14px;
-    gap: 12px;
-  }
-
-  .hero h1 {
-    font-size: 1.25rem;
-  }
-
-  .hero p {
-    font-size: 12px;
-  }
-
-  .hero-total {
-    padding: 12px;
-  }
-
-  .hero-total h2 {
-    font-size: 1.25rem;
-  }
-
-  .calendar-shortcut-left h2 {
-    font-size: 0.98rem;
-  }
-
-  .calendar-shortcut-left p {
-    font-size: 12px;
-  }
-
-  .calendar-shortcut {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .calendar-shortcut-summary {
-    align-items: flex-start;
-  }
-
-  .calendar-icon-btn {
-    width: 50px;
-    min-width: 50px;
-    height: 50px;
-    min-height: 50px;
-    font-size: 22px;
-    border-radius: 14px;
-  }
-
-  .calendar-wrapper {
-    margin-top: 12px;
-  }
-}
-
 @media (min-width: 640px) {
   .container {
-    width: min(1180px, calc(100% - 28px));
+    width: min(1180px, calc(100% - 24px));
   }
 
   .summary-grid {
@@ -1319,17 +1163,29 @@ tr.edited-highlight td {
 
   .hero-actions,
   .auth-switch,
-  .modal-actions,
-  .actions-cell {
+  .modal-actions {
     flex-direction: row;
     flex-wrap: wrap;
   }
 
-  .action-btn,
   .modal-actions button,
   .hero-actions button,
   .auth-switch-btn {
     width: auto;
+  }
+
+  .actions-cell {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    width: auto;
+  }
+
+  .actions-cell .btn-toggle {
+    grid-column: auto;
   }
 }
 
@@ -1460,6 +1316,39 @@ tr.edited-highlight td {
 
   .modal-actions button {
     width: auto;
+  }
+
+  .expense-card,
+  .checklist-card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .expense-card h3,
+  .checklist-card h3 {
+    font-size: 1rem;
+  }
+
+  .expense-card p,
+  .checklist-card p {
+    font-size: 13px;
+  }
+
+  .action-btn {
+    min-height: 42px;
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .tag {
+    font-size: 11px;
+    padding: 7px 10px;
+  }
+
+  .status,
+  .status-row {
+    font-size: 11px;
+    padding: 6px 10px;
   }
 }
 
