@@ -70,7 +70,7 @@
         <div class="hero-text">
           <span class="badge">💙 Site financeiro do casal</span>
           <h1>Controle Financeiro</h1>
-          <p>Painel para acompanhar gastos, vencimentos, pagamentos e o IPVA do carro.</p>
+          <p>Veja todas as contas em um só lugar e marque o que já foi pago sem ficar procurando na tela.</p>
         </div>
 
         <div class="hero-total">
@@ -93,7 +93,7 @@
             <p id="alerta-vencidas-texto">Nenhuma conta vencida no momento.</p>
           </div>
         </div>
-        <button id="ver-vencidas-btn" type="button" class="btn-light">Ver vencidas</button>
+        <button id="ver-vencidas-btn" type="button" class="btn-light">Mostrar vencidas</button>
       </section>
 
       <section class="summary-grid">
@@ -161,73 +161,11 @@
         </form>
       </section>
 
-      <section class="panel">
-        <div class="panel-header">
-          <h2>Gráfico mensal</h2>
-          <p>Total gasto por mês, no estilo visão de fatura</p>
-        </div>
-
-        <div class="chart-box">
-          <canvas id="monthlyChart" aria-label="Gráfico mensal de gastos"></canvas>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-header checklist-header">
-          <div>
-            <h2>Checklist em tabela</h2>
-            <p>Visual rápido do que já foi pago, do que está pendente e do que venceu</p>
-          </div>
-
-          <div class="checklist-legend">
-            <span class="legend-item">
-              <span class="legend-dot legend-pending"></span>
-              Pendente
-            </span>
-            <span class="legend-item">
-              <span class="legend-dot legend-paid"></span>
-              Pago
-            </span>
-            <span class="legend-item">
-              <span class="legend-dot legend-overdue"></span>
-              Vencido
-            </span>
-          </div>
-        </div>
-
-        <div class="status-filters">
-          <button class="status-filter-btn active" data-status-filter="Todos" type="button">Todos</button>
-          <button class="status-filter-btn" data-status-filter="Pago" type="button">Pago</button>
-          <button class="status-filter-btn" data-status-filter="Pendente" type="button">Pendente</button>
-          <button class="status-filter-btn" data-status-filter="Vencido" type="button">Vencido</button>
-        </div>
-
-        <div class="table-box desktop-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Check</th>
-                <th>Status</th>
-                <th>Categoria</th>
-                <th>Descrição</th>
-                <th>Valor</th>
-                <th>Vencimento</th>
-                <th>Observação</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="checklist-table-body"></tbody>
-          </table>
-        </div>
-
-        <div id="checklist-mobile-cards" class="mobile-cards"></div>
-      </section>
-
-      <section class="panel">
+      <section class="panel panel-main-list">
         <div class="panel-header filters">
           <div>
-            <h2>Despesas</h2>
-            <p>Tabela consolidada do casal</p>
+            <h2>Lista principal de contas</h2>
+            <p>Tudo em um só lugar para marcar, filtrar, editar e visualizar</p>
           </div>
 
           <div class="filter-buttons">
@@ -238,7 +176,7 @@
           </div>
         </div>
 
-        <div class="tools-grid">
+        <div class="tools-grid tools-grid-main">
           <div class="field">
             <label for="search-input">Buscar despesa</label>
             <input
@@ -252,31 +190,65 @@
             <label for="month-filter">Filtrar por mês</label>
             <input type="month" id="month-filter" />
           </div>
+
+          <div class="field">
+            <label for="status-filter-main">Filtrar por status</label>
+            <select id="status-filter-main">
+              <option value="Todos">Todos</option>
+              <option value="Pago">Pago</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Vencido">Vencido</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="sort-filter-main">Ordenar</label>
+            <select id="sort-filter-main">
+              <option value="vencimento-asc">Vencimento mais próximo</option>
+              <option value="vencimento-desc">Vencimento mais distante</option>
+              <option value="valor-desc">Maior valor</option>
+              <option value="valor-asc">Menor valor</option>
+              <option value="descricao-asc">Descrição A-Z</option>
+              <option value="descricao-desc">Descrição Z-A</option>
+            </select>
+          </div>
         </div>
 
-        <div class="table-box desktop-table">
+        <div class="quick-summary-bar">
+          <div class="quick-pill">
+            <span>Itens visíveis</span>
+            <strong id="visible-items-count">0</strong>
+          </div>
+          <div class="quick-pill">
+            <span>Total visível</span>
+            <strong id="visible-total">R$ 0,00</strong>
+          </div>
+          <div class="quick-pill">
+            <span>Pendentes visíveis</span>
+            <strong id="visible-pending">0</strong>
+          </div>
+        </div>
+
+        <div class="table-box desktop-table main-table-box">
           <table>
             <thead>
               <tr>
+                <th>Pagar</th>
+                <th>Status</th>
                 <th>Categoria</th>
                 <th>Descrição</th>
                 <th>Valor</th>
                 <th>Vencimento</th>
                 <th>Observação</th>
-                <th>Status</th>
                 <th>Criado por</th>
                 <th>Ações</th>
               </tr>
             </thead>
-            <tbody id="tabela-despesas"></tbody>
+            <tbody id="main-table-body"></tbody>
           </table>
         </div>
 
-        <div id="cards-despesas" class="mobile-cards"></div>
-
-        <div class="see-more-wrap">
-          <button id="toggle-more-btn" type="button" class="btn-light">Ver mais</button>
-        </div>
+        <div id="main-mobile-cards" class="mobile-cards main-mobile-cards"></div>
       </section>
 
       <section class="bottom-grid">
@@ -321,6 +293,17 @@
           </div>
 
           <div id="ipva-list"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Gráfico mensal</h2>
+          <p>Total gasto por mês, no estilo visão de fatura</p>
+        </div>
+
+        <div class="chart-box">
+          <canvas id="monthlyChart" aria-label="Gráfico mensal de gastos"></canvas>
         </div>
       </section>
 
@@ -419,10 +402,9 @@
       const form = document.getElementById("expense-form");
       const logoutBtn = document.getElementById("logout-btn");
       const userEmail = document.getElementById("user-email");
-      const tbody = document.getElementById("tabela-despesas");
-      const cardsDespesas = document.getElementById("cards-despesas");
-      const checklistTableBody = document.getElementById("checklist-table-body");
-      const checklistMobileCards = document.getElementById("checklist-mobile-cards");
+
+      const mainTableBody = document.getElementById("main-table-body");
+      const mainMobileCards = document.getElementById("main-mobile-cards");
 
       const totalGeralEl = document.getElementById("total-geral");
       const totalComumEl = document.getElementById("total-comum");
@@ -449,8 +431,13 @@
 
       const searchInput = document.getElementById("search-input");
       const monthFilter = document.getElementById("month-filter");
-      const toggleMoreBtn = document.getElementById("toggle-more-btn");
+      const statusFilterMain = document.getElementById("status-filter-main");
+      const sortFilterMain = document.getElementById("sort-filter-main");
       const themeToggle = document.getElementById("theme-toggle");
+
+      const visibleItemsCount = document.getElementById("visible-items-count");
+      const visibleTotal = document.getElementById("visible-total");
+      const visiblePending = document.getElementById("visible-pending");
 
       const ipvaList = document.getElementById("ipva-list");
       const editIpvaBtn = document.getElementById("edit-ipva-btn");
@@ -468,18 +455,15 @@
 
       let modo = "login";
       let filtroAtual = "Todos";
-      let filtroStatusChecklist = "Todos";
+      let filtroStatusMain = "Todos";
+      let ordenacaoAtual = "vencimento-asc";
       let despesasCache = [];
-      let origemEdicao = "despesas";
       let unsubscribe = null;
       let unsubscribeIpva = null;
       let searchTerm = "";
       let monthTerm = "";
-      let expanded = false;
       let lastEditedId = null;
-      let lastChecklistEditedId = null;
       let monthlyChart = null;
-      const INITIAL_LIMIT = 8;
 
       let ipvaData = [];
       const ipvaPadrao = [
@@ -553,6 +537,15 @@
         return "Pendente";
       }
 
+      function escapeHtml(texto) {
+        return String(texto ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
       function aplicarFiltros(lista) {
         let resultado = [...lista];
 
@@ -575,42 +568,41 @@
           );
         }
 
+        if (filtroStatusMain !== "Todos") {
+          resultado = resultado.filter(item => getStatusDespesa(item) === filtroStatusMain);
+        }
+
+        resultado.sort((a, b) => {
+          switch (ordenacaoAtual) {
+            case "vencimento-desc":
+              return (b.vencimento || "").localeCompare(a.vencimento || "");
+            case "valor-desc":
+              return Number(b.valor || 0) - Number(a.valor || 0);
+            case "valor-asc":
+              return Number(a.valor || 0) - Number(b.valor || 0);
+            case "descricao-asc":
+              return (a.descricao || "").localeCompare(b.descricao || "");
+            case "descricao-desc":
+              return (b.descricao || "").localeCompare(a.descricao || "");
+            case "vencimento-asc":
+            default:
+              return (a.vencimento || "").localeCompare(b.vencimento || "");
+          }
+        });
+
         return resultado;
       }
 
-      function aplicarFiltroStatusChecklist(lista) {
-        if (filtroStatusChecklist === "Todos") return lista;
-        return lista.filter(item => getStatusDespesa(item) === filtroStatusChecklist);
+      function atualizarResumoListaVisivel(lista) {
+        const total = lista.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+        const pendentes = lista.filter(item => !item.pago).length;
+
+        visibleItemsCount.textContent = String(lista.length);
+        visibleTotal.textContent = formatarMoeda(total);
+        visiblePending.textContent = String(pendentes);
       }
 
-      function getListaVisivel() {
-        const listaFiltrada = aplicarFiltros(despesasCache);
-        return expanded ? listaFiltrada : listaFiltrada.slice(0, INITIAL_LIMIT);
-      }
-
-      function atualizarBotaoVerMais() {
-        const total = aplicarFiltros(despesasCache).length;
-        if (total <= INITIAL_LIMIT) {
-          toggleMoreBtn.style.display = "none";
-          return;
-        }
-
-        toggleMoreBtn.style.display = "inline-flex";
-        toggleMoreBtn.textContent = expanded ? "Ver menos" : "Ver mais";
-      }
-
-      function escapeHtml(texto) {
-        return String(texto ?? "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
-      }
-
-      function abrirModalEdicao(item, origem = "despesas") {
-        origemEdicao = origem;
-
+      function abrirModalEdicao(item) {
         document.getElementById("edit-id").value = item.id;
         document.getElementById("edit-descricao").value = item.descricao || "";
         document.getElementById("edit-categoria").value = item.categoria || "Gastos comuns";
@@ -625,14 +617,12 @@
         editForm.reset();
       }
 
-      function destacarDespesaEditada(id) {
+      function destacarItemEditado(id) {
         if (!id) return;
 
         const alvo =
-          document.querySelector(`tr[data-expense-id="${id}"]`) ||
-          document.querySelector(`.expense-card[data-expense-id="${id}"]`) ||
-          document.querySelector(`tr[data-checklist-id="${id}"]`) ||
-          document.querySelector(`.checklist-card[data-checklist-id="${id}"]`);
+          document.querySelector(`tr[data-item-id="${id}"]`) ||
+          document.querySelector(`.main-card[data-item-id="${id}"]`);
 
         if (!alvo) return;
 
@@ -647,40 +637,20 @@
         }, 1800);
       }
 
-      function destacarChecklistEditado(id) {
-        if (!id) return;
+      function renderTabelaPrincipal() {
+        mainTableBody.innerHTML = "";
+        mainMobileCards.innerHTML = "";
 
-        const alvo =
-          document.querySelector(`tr[data-checklist-id="${id}"]`) ||
-          document.querySelector(`.checklist-card[data-checklist-id="${id}"]`);
+        const lista = aplicarFiltros(despesasCache);
+        atualizarResumoListaVisivel(lista);
 
-        if (!alvo) return;
-
-        alvo.classList.add("edited-highlight");
-        alvo.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
-        });
-
-        setTimeout(() => {
-          alvo.classList.remove("edited-highlight");
-        }, 1800);
-      }
-
-      function renderTabela() {
-        tbody.innerHTML = "";
-        cardsDespesas.innerHTML = "";
-
-        const lista = getListaVisivel();
-
-        if (lista.length === 0) {
-          tbody.innerHTML = `
+        if (!lista.length) {
+          mainTableBody.innerHTML = `
             <tr>
-              <td colspan="8">Nenhuma despesa encontrada.</td>
+              <td colspan="9">Nenhuma despesa encontrada.</td>
             </tr>
           `;
-          cardsDespesas.innerHTML = `<div class="empty-card">Nenhuma despesa encontrada.</div>`;
-          atualizarBotaoVerMais();
+          mainMobileCards.innerHTML = `<div class="empty-card">Nenhuma despesa encontrada.</div>`;
           return;
         }
 
@@ -689,105 +659,7 @@
           const status = getStatusDespesa(item);
 
           const tr = document.createElement("tr");
-          tr.setAttribute("data-expense-id", item.id);
-          if (vencida) tr.classList.add("row-overdue");
-
-          tr.innerHTML = `
-            <td><span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span></td>
-            <td>${escapeHtml(item.descricao)}</td>
-            <td>${formatarMoeda(item.valor)}</td>
-            <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
-            <td>${escapeHtml(item.observacao || "-")}</td>
-            <td>
-              <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">
-                ${status}
-              </span>
-            </td>
-            <td>${escapeHtml(item.criadoPor || "-")}</td>
-            <td>
-              <div class="actions-cell">
-                <button class="action-btn btn-toggle" data-id="${item.id}" data-action="toggle" type="button">
-                  ${item.pago ? "Desmarcar" : "Marcar pago"}
-                </button>
-                <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">
-                  Editar
-                </button>
-                <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">
-                  Excluir
-                </button>
-              </div>
-            </td>
-          `;
-          tbody.appendChild(tr);
-
-          const card = document.createElement("div");
-          card.className = `expense-card ${vencida ? "expense-card-overdue" : ""}`;
-          card.setAttribute("data-expense-id", item.id);
-          card.innerHTML = `
-            <div class="expense-card-top">
-              <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
-              <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">
-                ${status}
-              </span>
-            </div>
-            <h3>${escapeHtml(item.descricao)}</h3>
-            <p><strong>Valor:</strong> ${formatarMoeda(item.valor)}</p>
-            <p><strong>Vencimento:</strong> ${escapeHtml(formatarDataBR(item.vencimento || "-"))}</p>
-            <p><strong>Observação:</strong> ${escapeHtml(item.observacao || "-")}</p>
-            <p><strong>Criado por:</strong> ${escapeHtml(item.criadoPor || "-")}</p>
-            <div class="actions-cell">
-              <button class="action-btn btn-toggle" data-id="${item.id}" data-action="toggle" type="button">
-                ${item.pago ? "Desmarcar" : "Marcar pago"}
-              </button>
-              <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">
-                Editar
-              </button>
-              <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">
-                Excluir
-              </button>
-            </div>
-          `;
-          cardsDespesas.appendChild(card);
-        });
-
-        atualizarBotaoVerMais();
-
-        if (lastEditedId) {
-          setTimeout(() => {
-            destacarDespesaEditada(lastEditedId);
-            lastEditedId = null;
-          }, 150);
-        }
-      }
-
-      function renderChecklistTabela() {
-        checklistTableBody.innerHTML = "";
-        checklistMobileCards.innerHTML = "";
-
-        const listaBase = aplicarFiltros(despesasCache)
-          .sort((a, b) => {
-            if (a.pago !== b.pago) return a.pago ? 1 : -1;
-            return (a.vencimento || "").localeCompare(b.vencimento || "");
-          });
-
-        const lista = aplicarFiltroStatusChecklist(listaBase);
-
-        if (!lista.length) {
-          checklistTableBody.innerHTML = `
-            <tr>
-              <td colspan="8">Nenhum item encontrado neste status.</td>
-            </tr>
-          `;
-          checklistMobileCards.innerHTML = `<div class="empty-card">Nenhum item encontrado neste status.</div>`;
-          return;
-        }
-
-        lista.forEach(item => {
-          const vencida = isVencida(item);
-          const status = getStatusDespesa(item);
-
-          const tr = document.createElement("tr");
-          tr.setAttribute("data-checklist-id", item.id);
+          tr.setAttribute("data-item-id", item.id);
           if (vencida) tr.classList.add("row-overdue");
           if (item.pago) tr.classList.add("row-paid");
 
@@ -813,6 +685,7 @@
             <td>${formatarMoeda(item.valor)}</td>
             <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
             <td>${escapeHtml(item.observacao || "-")}</td>
+            <td>${escapeHtml(item.criadoPor || "-")}</td>
             <td>
               <div class="actions-cell">
                 <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">Editar</button>
@@ -820,12 +693,11 @@
               </div>
             </td>
           `;
-
-          checklistTableBody.appendChild(tr);
+          mainTableBody.appendChild(tr);
 
           const card = document.createElement("div");
-          card.className = `checklist-card ${item.pago ? "is-paid" : ""} ${vencida ? "is-overdue" : ""}`;
-          card.setAttribute("data-checklist-id", item.id);
+          card.className = `checklist-card main-card ${item.pago ? "is-paid" : ""} ${vencida ? "is-overdue" : ""}`;
+          card.setAttribute("data-item-id", item.id);
           card.innerHTML = `
             <div class="expense-card-top">
               <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
@@ -836,11 +708,12 @@
             <p><strong>Valor:</strong> ${formatarMoeda(item.valor)}</p>
             <p><strong>Vencimento:</strong> ${escapeHtml(formatarDataBR(item.vencimento || "-"))}</p>
             <p><strong>Obs:</strong> ${escapeHtml(item.observacao || "-")}</p>
+            <p><strong>Criado por:</strong> ${escapeHtml(item.criadoPor || "-")}</p>
 
             <label class="mobile-check-label">
               <input
                 type="checkbox"
-                class="checklist-checkbox mobile-real-check"
+                class="mobile-real-check"
                 data-id="${item.id}"
                 ${item.pago ? "checked" : ""}
               />
@@ -852,14 +725,13 @@
               <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">Excluir</button>
             </div>
           `;
-
-          checklistMobileCards.appendChild(card);
+          mainMobileCards.appendChild(card);
         });
 
-        if (lastChecklistEditedId) {
+        if (lastEditedId) {
           setTimeout(() => {
-            destacarChecklistEditado(lastChecklistEditedId);
-            lastChecklistEditedId = null;
+            destacarItemEditado(lastEditedId);
+            lastEditedId = null;
           }, 150);
         }
       }
@@ -1137,20 +1009,8 @@
             observacao
           });
 
-          expanded = true;
           lastEditedId = id;
-          lastChecklistEditedId = id;
-
           fecharModalEdicao();
-
-          setTimeout(() => {
-            if (origemEdicao === "checklist") {
-              document.querySelector(".checklist-header")?.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-              });
-            }
-          }, 150);
         } catch (error) {
           console.error(error);
           alert("Erro ao editar despesa: " + error.message);
@@ -1181,6 +1041,22 @@
           console.error(error);
           alert("Erro ao excluir despesa: " + error.message);
         }
+      }
+
+      function traduzirErroAuth(code) {
+        const erros = {
+          "auth/invalid-email": "E-mail inválido.",
+          "auth/missing-password": "Digite a senha.",
+          "auth/weak-password": "A senha deve ter pelo menos 6 caracteres.",
+          "auth/email-already-in-use": "Este e-mail já está em uso.",
+          "auth/user-not-found": "Usuário não encontrado.",
+          "auth/wrong-password": "Senha incorreta.",
+          "auth/invalid-credential": "E-mail ou senha inválidos.",
+          "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde.",
+          "auth/api-key-not-valid": "API Key do Firebase inválida."
+        };
+
+        return erros[code] || `Erro: ${code}`;
       }
 
       tabLogin.addEventListener("click", () => {
@@ -1217,22 +1093,6 @@
         }
       });
 
-      function traduzirErroAuth(code) {
-        const erros = {
-          "auth/invalid-email": "E-mail inválido.",
-          "auth/missing-password": "Digite a senha.",
-          "auth/weak-password": "A senha deve ter pelo menos 6 caracteres.",
-          "auth/email-already-in-use": "Este e-mail já está em uso.",
-          "auth/user-not-found": "Usuário não encontrado.",
-          "auth/wrong-password": "Senha incorreta.",
-          "auth/invalid-credential": "E-mail ou senha inválidos.",
-          "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde.",
-          "auth/api-key-not-valid": "API Key do Firebase inválida."
-        };
-
-        return erros[code] || `Erro: ${code}`;
-      }
-
       form.addEventListener("submit", salvarDespesa);
       editForm.addEventListener("submit", salvarEdicao);
 
@@ -1243,53 +1103,7 @@
         if (e.target === editModal) fecharModalEdicao();
       });
 
-      tbody.addEventListener("click", async (e) => {
-        const btn = e.target.closest("button");
-        if (!btn) return;
-
-        const id = btn.dataset.id;
-        const action = btn.dataset.action;
-
-        if (action === "toggle") {
-          await alternarPagamento(id);
-          return;
-        }
-
-        if (action === "edit") {
-          const item = despesasCache.find(d => d.id === id);
-          if (item) abrirModalEdicao(item, "despesas");
-          return;
-        }
-
-        if (action === "delete") {
-          await excluirDespesa(id);
-        }
-      });
-
-      cardsDespesas.addEventListener("click", async (e) => {
-        const btn = e.target.closest("button");
-        if (!btn) return;
-
-        const id = btn.dataset.id;
-        const action = btn.dataset.action;
-
-        if (action === "toggle") {
-          await alternarPagamento(id);
-          return;
-        }
-
-        if (action === "edit") {
-          const item = despesasCache.find(d => d.id === id);
-          if (item) abrirModalEdicao(item, "despesas");
-          return;
-        }
-
-        if (action === "delete") {
-          await excluirDespesa(id);
-        }
-      });
-
-      checklistTableBody.addEventListener("click", async (e) => {
+      mainTableBody.addEventListener("click", async (e) => {
         const checkbox = e.target.closest(".checklist-checkbox");
         if (checkbox) {
           await alternarPagamento(checkbox.dataset.id);
@@ -1304,7 +1118,7 @@
 
         if (action === "edit") {
           const item = despesasCache.find(d => d.id === id);
-          if (item) abrirModalEdicao(item, "checklist");
+          if (item) abrirModalEdicao(item);
           return;
         }
 
@@ -1313,10 +1127,10 @@
         }
       });
 
-      checklistMobileCards.addEventListener("click", async (e) => {
-        const checkbox = e.target.closest(".checklist-checkbox");
-        if (checkbox) {
-          await alternarPagamento(checkbox.dataset.id);
+      mainMobileCards.addEventListener("click", async (e) => {
+        const realCheck = e.target.closest(".mobile-real-check");
+        if (realCheck) {
+          await alternarPagamento(realCheck.dataset.id);
           return;
         }
 
@@ -1328,7 +1142,7 @@
 
         if (action === "edit") {
           const item = despesasCache.find(d => d.id === id);
-          if (item) abrirModalEdicao(item, "checklist");
+          if (item) abrirModalEdicao(item);
           return;
         }
 
@@ -1361,38 +1175,28 @@
           document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
           botao.classList.add("active");
           filtroAtual = botao.dataset.filter;
-          expanded = false;
-          renderTabela();
-          renderChecklistTabela();
-        });
-      });
-
-      document.querySelectorAll(".status-filter-btn").forEach((botao) => {
-        botao.addEventListener("click", () => {
-          document.querySelectorAll(".status-filter-btn").forEach((b) => b.classList.remove("active"));
-          botao.classList.add("active");
-          filtroStatusChecklist = botao.dataset.statusFilter;
-          renderChecklistTabela();
+          renderTabelaPrincipal();
         });
       });
 
       searchInput.addEventListener("input", () => {
         searchTerm = searchInput.value.trim();
-        expanded = false;
-        renderTabela();
-        renderChecklistTabela();
+        renderTabelaPrincipal();
       });
 
       monthFilter.addEventListener("input", () => {
         monthTerm = monthFilter.value;
-        expanded = false;
-        renderTabela();
-        renderChecklistTabela();
+        renderTabelaPrincipal();
       });
 
-      toggleMoreBtn.addEventListener("click", () => {
-        expanded = !expanded;
-        renderTabela();
+      statusFilterMain.addEventListener("change", () => {
+        filtroStatusMain = statusFilterMain.value;
+        renderTabelaPrincipal();
+      });
+
+      sortFilterMain.addEventListener("change", () => {
+        ordenacaoAtual = sortFilterMain.value;
+        renderTabelaPrincipal();
       });
 
       themeToggle.addEventListener("click", () => {
@@ -1402,6 +1206,7 @@
 
       editIpvaBtn.addEventListener("click", abrirModalIpva);
       closeIpvaModal.addEventListener("click", fecharModalIpva);
+
       ipvaModal.addEventListener("click", (e) => {
         if (e.target === ipvaModal) fecharModalIpva();
       });
@@ -1439,17 +1244,15 @@
       });
 
       verVencidasBtn.addEventListener("click", () => {
-        filtroStatusChecklist = "Vencido";
-        document.querySelectorAll(".status-filter-btn").forEach((b) => {
-          b.classList.toggle("active", b.dataset.statusFilter === "Vencido");
-        });
+        filtroStatusMain = "Vencido";
+        statusFilterMain.value = "Vencido";
 
-        document.querySelector(".status-filters")?.scrollIntoView({
+        document.querySelector(".panel-main-list")?.scrollIntoView({
           behavior: "smooth",
-          block: "center"
+          block: "start"
         });
 
-        renderChecklistTabela();
+        renderTabelaPrincipal();
       });
 
       auth.onAuthStateChanged(async (user) => {
@@ -1496,8 +1299,7 @@
               ...doc.data()
             }));
 
-            renderTabela();
-            renderChecklistTabela();
+            renderTabelaPrincipal();
             atualizarResumo();
             renderGraficoMensal();
             renderAlertaVencidas();
