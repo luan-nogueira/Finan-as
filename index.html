@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -51,14 +51,18 @@
         <div class="hero-text">
           <span class="badge">💙 Site financeiro do casal</span>
           <h1>Controle Financeiro</h1>
-          <p>Painel para acompanhar os gastos comuns, contas pessoais e parcelas do IPVA.</p>
+          <p>Painel para acompanhar gastos, contas pessoais e o IPVA do carro.</p>
         </div>
 
         <div class="hero-total">
-          <p>Total geral do mês</p>
+          <p>Total geral</p>
           <h2 id="total-geral">R$ 0,00</h2>
           <span id="user-email">Carregando usuário...</span>
-          <button id="logout-btn" class="btn-secondary" type="button">Sair</button>
+
+          <div class="hero-actions">
+            <button id="theme-toggle" class="btn-light" type="button">🌙 Tema escuro</button>
+            <button id="logout-btn" class="btn-secondary" type="button">Sair</button>
+          </div>
         </div>
       </header>
 
@@ -113,7 +117,7 @@
 
           <div class="field">
             <label for="vencimento">Vencimento</label>
-            <input type="text" id="vencimento" placeholder="Ex: 10/03" />
+            <input type="date" id="vencimento" />
           </div>
 
           <div class="field full">
@@ -142,7 +146,19 @@
           </div>
         </div>
 
-        <div class="table-box">
+        <div class="tools-grid">
+          <div class="field">
+            <label for="search-input">Buscar despesa</label>
+            <input type="text" id="search-input" placeholder="Buscar por descrição, observação ou criador" />
+          </div>
+
+          <div class="field">
+            <label for="month-filter">Filtrar por mês</label>
+            <input type="month" id="month-filter" />
+          </div>
+        </div>
+
+        <div class="table-box desktop-table">
           <table>
             <thead>
               <tr>
@@ -152,11 +168,18 @@
                 <th>Vencimento</th>
                 <th>Observação</th>
                 <th>Status</th>
+                <th>Criado por</th>
                 <th>Ações</th>
               </tr>
             </thead>
             <tbody id="tabela-despesas"></tbody>
           </table>
+        </div>
+
+        <div id="cards-despesas" class="mobile-cards"></div>
+
+        <div class="see-more-wrap">
+          <button id="toggle-more-btn" type="button" class="btn-light">Ver mais</button>
         </div>
       </section>
 
@@ -193,43 +216,15 @@
         </div>
 
         <div class="panel">
-          <div class="panel-header">
-            <h2>IPVA do carro</h2>
-            <p>Acompanhamento 2026</p>
+          <div class="panel-header ipva-header">
+            <div>
+              <h2>IPVA do carro</h2>
+              <p>Acompanhamento editável</p>
+            </div>
+            <button id="edit-ipva-btn" class="btn-light" type="button">Editar IPVA</button>
           </div>
 
-          <div class="resume-item">
-            <div>
-              <strong>30/01/2026</strong>
-              <span>1ª parcela</span>
-            </div>
-            <div class="status-box">
-              <strong>R$ 772,77</strong>
-              <span class="status paid">Pago ✅</span>
-            </div>
-          </div>
-
-          <div class="resume-item">
-            <div>
-              <strong>03/03/2026</strong>
-              <span>2ª parcela</span>
-            </div>
-            <div class="status-box">
-              <strong>R$ 772,77</strong>
-              <span class="status open">Em aberto</span>
-            </div>
-          </div>
-
-          <div class="resume-item">
-            <div>
-              <strong>07/04/2026</strong>
-              <span>3ª parcela</span>
-            </div>
-            <div class="status-box">
-              <strong>R$ 772,78</strong>
-              <span class="status next">Próxima</span>
-            </div>
-          </div>
+          <div id="ipva-list"></div>
         </div>
       </section>
 
@@ -270,7 +265,7 @@
 
         <div class="field">
           <label for="edit-vencimento">Vencimento</label>
-          <input type="text" id="edit-vencimento" />
+          <input type="date" id="edit-vencimento" />
         </div>
 
         <div class="field full">
@@ -281,6 +276,24 @@
         <div class="modal-actions full">
           <button type="button" class="btn-light" id="cancel-edit">Cancelar</button>
           <button type="submit" class="btn-primary">Salvar alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="ipva-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar IPVA</h2>
+        <button type="button" class="modal-close" id="close-ipva-modal">&times;</button>
+      </div>
+
+      <form id="ipva-form" class="ipva-form">
+        <div id="ipva-form-list"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-light" id="add-ipva-row">Adicionar parcela</button>
+          <button type="submit" class="btn-primary">Salvar IPVA</button>
         </div>
       </form>
     </div>
@@ -311,6 +324,7 @@
       const logoutBtn = document.getElementById("logout-btn");
       const userEmail = document.getElementById("user-email");
       const tbody = document.getElementById("tabela-despesas");
+      const cardsDespesas = document.getElementById("cards-despesas");
 
       const totalGeralEl = document.getElementById("total-geral");
       const totalComumEl = document.getElementById("total-comum");
@@ -335,10 +349,32 @@
       const tabLogin = document.getElementById("tab-login");
       const tabRegister = document.getElementById("tab-register");
 
+      const searchInput = document.getElementById("search-input");
+      const monthFilter = document.getElementById("month-filter");
+      const toggleMoreBtn = document.getElementById("toggle-more-btn");
+      const themeToggle = document.getElementById("theme-toggle");
+
+      const ipvaList = document.getElementById("ipva-list");
+      const editIpvaBtn = document.getElementById("edit-ipva-btn");
+      const ipvaModal = document.getElementById("ipva-modal");
+      const closeIpvaModal = document.getElementById("close-ipva-modal");
+      const ipvaForm = document.getElementById("ipva-form");
+      const ipvaFormList = document.getElementById("ipva-form-list");
+      const addIpvaRowBtn = document.getElementById("add-ipva-row");
+
       let modo = "login";
       let filtroAtual = "Todos";
       let despesasCache = [];
       let unsubscribe = null;
+      let searchTerm = "";
+      let monthTerm = "";
+      let expanded = false;
+      const INITIAL_LIMIT = 8;
+      let ipvaData = [
+        { data: "2026-01-30", valor: 772.77, status: "Pago ✅", tipo: "paid" },
+        { data: "2026-03-03", valor: 772.77, status: "Em aberto", tipo: "open" },
+        { data: "2026-04-07", valor: 772.78, status: "Próxima", tipo: "next" }
+      ];
 
       function mostrarApp(logado) {
         loginBox.style.display = logado ? "none" : "grid";
@@ -369,15 +405,75 @@
         });
       }
 
+      function formatarDataBR(valor) {
+        if (!valor) return "-";
+        if (valor.includes("/")) return valor;
+
+        const date = new Date(valor + "T00:00:00");
+        if (Number.isNaN(date.getTime())) return valor;
+
+        return date.toLocaleDateString("pt-BR");
+      }
+
       function classeCategoria(categoria) {
         if (categoria === "Gastos comuns") return "common";
         if (categoria === "Luan") return "luan";
         return "kelly";
       }
 
-      function aplicarFiltro(lista) {
-        if (filtroAtual === "Todos") return lista;
-        return lista.filter(item => item.categoria === filtroAtual);
+      function getTodayISO() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      }
+
+      function isVencida(item) {
+        if (!item.vencimento || item.pago) return false;
+        if (!item.vencimento.includes("-")) return false;
+        return item.vencimento < getTodayISO();
+      }
+
+      function aplicarFiltros(lista) {
+        let resultado = [...lista];
+
+        if (filtroAtual !== "Todos") {
+          resultado = resultado.filter(item => item.categoria === filtroAtual);
+        }
+
+        if (searchTerm) {
+          const termo = searchTerm.toLowerCase();
+          resultado = resultado.filter(item =>
+            (item.descricao || "").toLowerCase().includes(termo) ||
+            (item.observacao || "").toLowerCase().includes(termo) ||
+            (item.criadoPor || "").toLowerCase().includes(termo)
+          );
+        }
+
+        if (monthTerm) {
+          resultado = resultado.filter(item =>
+            (item.vencimento || "").startsWith(monthTerm)
+          );
+        }
+
+        return resultado;
+      }
+
+      function getListaVisivel() {
+        const listaFiltrada = aplicarFiltros(despesasCache);
+        return expanded ? listaFiltrada : listaFiltrada.slice(0, INITIAL_LIMIT);
+      }
+
+      function atualizarBotaoVerMais() {
+        const total = aplicarFiltros(despesasCache).length;
+        if (total <= INITIAL_LIMIT) {
+          toggleMoreBtn.style.display = "none";
+          return;
+        }
+
+        toggleMoreBtn.style.display = "inline-flex";
+        toggleMoreBtn.textContent = expanded ? "Ver menos" : "Ver mais";
       }
 
       function escapeHtml(texto) {
@@ -406,30 +502,38 @@
 
       function renderTabela() {
         tbody.innerHTML = "";
-        const lista = aplicarFiltro(despesasCache);
+        cardsDespesas.innerHTML = "";
+
+        const lista = getListaVisivel();
 
         if (lista.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="7">Nenhuma despesa encontrada.</td>
+              <td colspan="8">Nenhuma despesa encontrada.</td>
             </tr>
           `;
+          cardsDespesas.innerHTML = `<div class="empty-card">Nenhuma despesa encontrada.</div>`;
+          atualizarBotaoVerMais();
           return;
         }
 
         lista.forEach((item) => {
+          const vencida = isVencida(item);
           const tr = document.createElement("tr");
+          if (vencida) tr.classList.add("row-overdue");
+
           tr.innerHTML = `
             <td><span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span></td>
             <td>${escapeHtml(item.descricao)}</td>
             <td>${formatarMoeda(item.valor)}</td>
-            <td>${escapeHtml(item.vencimento || "-")}</td>
+            <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
             <td>${escapeHtml(item.observacao || "-")}</td>
             <td>
-              <span class="status-row ${item.pago ? "status-pago" : "status-pendente"}">
-                ${item.pago ? "Pago" : "Pendente"}
+              <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">
+                ${item.pago ? "Pago" : (vencida ? "Vencido" : "Pendente")}
               </span>
             </td>
+            <td>${escapeHtml(item.criadoPor || "-")}</td>
             <td>
               <div class="actions-cell">
                 <button class="action-btn btn-toggle" data-id="${item.id}" data-action="toggle">
@@ -445,7 +549,37 @@
             </td>
           `;
           tbody.appendChild(tr);
+
+          const card = document.createElement("div");
+          card.className = `expense-card ${vencida ? "expense-card-overdue" : ""}`;
+          card.innerHTML = `
+            <div class="expense-card-top">
+              <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
+              <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">
+                ${item.pago ? "Pago" : (vencida ? "Vencido" : "Pendente")}
+              </span>
+            </div>
+            <h3>${escapeHtml(item.descricao)}</h3>
+            <p><strong>Valor:</strong> ${formatarMoeda(item.valor)}</p>
+            <p><strong>Vencimento:</strong> ${escapeHtml(formatarDataBR(item.vencimento || "-"))}</p>
+            <p><strong>Observação:</strong> ${escapeHtml(item.observacao || "-")}</p>
+            <p><strong>Criado por:</strong> ${escapeHtml(item.criadoPor || "-")}</p>
+            <div class="actions-cell">
+              <button class="action-btn btn-toggle" data-id="${item.id}" data-action="toggle">
+                ${item.pago ? "Desmarcar" : "Marcar pago"}
+              </button>
+              <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit">
+                Editar
+              </button>
+              <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete">
+                Excluir
+              </button>
+            </div>
+          `;
+          cardsDespesas.appendChild(card);
         });
+
+        atualizarBotaoVerMais();
       }
 
       function atualizarResumo() {
@@ -473,6 +607,84 @@
         resumoComumEl.textContent = formatarMoeda(totalComum);
         resumoLuanEl.textContent = formatarMoeda(totalLuan);
         resumoKellyEl.textContent = formatarMoeda(totalKelly);
+      }
+
+      function renderIpva() {
+        ipvaList.innerHTML = "";
+
+        ipvaData.forEach(item => {
+          const row = document.createElement("div");
+          row.className = "resume-item";
+          row.innerHTML = `
+            <div>
+              <strong>${formatarDataBR(item.data)}</strong>
+              <span>${item.status}</span>
+            </div>
+            <div class="status-box">
+              <strong>${formatarMoeda(item.valor)}</strong>
+              <span class="status ${item.tipo || "next"}">${item.status}</span>
+            </div>
+          `;
+          ipvaList.appendChild(row);
+        });
+      }
+
+      function abrirModalIpva() {
+        ipvaFormList.innerHTML = "";
+
+        ipvaData.forEach((item) => {
+          adicionarLinhaIpva(item);
+        });
+
+        ipvaModal.classList.remove("hidden");
+      }
+
+      function fecharModalIpva() {
+        ipvaModal.classList.add("hidden");
+      }
+
+      function adicionarLinhaIpva(item = { data: "", valor: "", status: "Próxima", tipo: "next" }) {
+        const div = document.createElement("div");
+        div.className = "ipva-row";
+        div.innerHTML = `
+          <div class="field">
+            <label>Data</label>
+            <input type="date" class="ipva-data" value="${item.data || ""}">
+          </div>
+          <div class="field">
+            <label>Valor</label>
+            <input type="number" step="0.01" class="ipva-valor" value="${item.valor || ""}">
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select class="ipva-status">
+              <option value="Pago ✅" ${item.status === "Pago ✅" ? "selected" : ""}>Pago ✅</option>
+              <option value="Em aberto" ${item.status === "Em aberto" ? "selected" : ""}>Em aberto</option>
+              <option value="Próxima" ${item.status === "Próxima" ? "selected" : ""}>Próxima</option>
+            </select>
+          </div>
+          <div class="field remove-ipva-wrap">
+            <label>&nbsp;</label>
+            <button type="button" class="btn-delete remove-ipva-btn">Remover</button>
+          </div>
+        `;
+
+        div.querySelector(".remove-ipva-btn").addEventListener("click", () => {
+          div.remove();
+        });
+
+        ipvaFormList.appendChild(div);
+      }
+
+      function salvarTema(theme) {
+        localStorage.setItem("finance_theme", theme);
+        document.documentElement.setAttribute("data-theme", theme);
+        themeToggle.textContent = theme === "dark" ? "☀️ Tema claro" : "🌙 Tema escuro";
+      }
+
+      function carregarTema() {
+        const saved = localStorage.getItem("finance_theme") || "light";
+        salvarTema(saved);
       }
 
       async function salvarDespesa(e) {
@@ -615,32 +827,32 @@
       cancelEditBtn.addEventListener("click", fecharModalEdicao);
 
       editModal.addEventListener("click", (e) => {
-        if (e.target === editModal) {
-          fecharModalEdicao();
-        }
+        if (e.target === editModal) fecharModalEdicao();
       });
 
-      tbody.addEventListener("click", async (e) => {
-        const btn = e.target.closest("button");
-        if (!btn) return;
+      [tbody, cardsDespesas].forEach(container => {
+        container.addEventListener("click", async (e) => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
 
-        const id = btn.dataset.id;
-        const action = btn.dataset.action;
+          const id = btn.dataset.id;
+          const action = btn.dataset.action;
 
-        if (action === "toggle") {
-          await alternarPagamento(id);
-          return;
-        }
+          if (action === "toggle") {
+            await alternarPagamento(id);
+            return;
+          }
 
-        if (action === "edit") {
-          const item = despesasCache.find(d => d.id === id);
-          if (item) abrirModalEdicao(item);
-          return;
-        }
+          if (action === "edit") {
+            const item = despesasCache.find(d => d.id === id);
+            if (item) abrirModalEdicao(item);
+            return;
+          }
 
-        if (action === "delete") {
-          await excluirDespesa(id);
-        }
+          if (action === "delete") {
+            await excluirDespesa(id);
+          }
+        });
       });
 
       logoutBtn.addEventListener("click", async () => {
@@ -661,8 +873,61 @@
           document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
           botao.classList.add("active");
           filtroAtual = botao.dataset.filter;
+          expanded = false;
           renderTabela();
         });
+      });
+
+      searchInput.addEventListener("input", () => {
+        searchTerm = searchInput.value.trim();
+        expanded = false;
+        renderTabela();
+      });
+
+      monthFilter.addEventListener("input", () => {
+        monthTerm = monthFilter.value;
+        expanded = false;
+        renderTabela();
+      });
+
+      toggleMoreBtn.addEventListener("click", () => {
+        expanded = !expanded;
+        renderTabela();
+      });
+
+      themeToggle.addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-theme") || "light";
+        salvarTema(current === "dark" ? "light" : "dark");
+      });
+
+      editIpvaBtn.addEventListener("click", abrirModalIpva);
+      closeIpvaModal.addEventListener("click", fecharModalIpva);
+      ipvaModal.addEventListener("click", (e) => {
+        if (e.target === ipvaModal) fecharModalIpva();
+      });
+
+      addIpvaRowBtn.addEventListener("click", () => adicionarLinhaIpva());
+
+      ipvaForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const rows = [...ipvaFormList.querySelectorAll(".ipva-row")];
+        ipvaData = rows.map(row => {
+          const data = row.querySelector(".ipva-data").value;
+          const valor = Number(row.querySelector(".ipva-valor").value || 0);
+          const status = row.querySelector(".ipva-status").value;
+
+          let tipo = "next";
+          if (status === "Pago ✅") tipo = "paid";
+          if (status === "Em aberto") tipo = "open";
+          if (status === "Próxima") tipo = "next";
+
+          return { data, valor, status, tipo };
+        }).filter(item => item.data);
+
+        localStorage.setItem("finance_ipva_data", JSON.stringify(ipvaData));
+        renderIpva();
+        fecharModalIpva();
       });
 
       auth.onAuthStateChanged((user) => {
@@ -708,6 +973,15 @@
           });
       });
 
+      const savedIpva = localStorage.getItem("finance_ipva_data");
+      if (savedIpva) {
+        try {
+          ipvaData = JSON.parse(savedIpva);
+        } catch (_) {}
+      }
+
+      carregarTema();
+      renderIpva();
       atualizarModo();
     })();
   </script>
