@@ -47,22 +47,41 @@ body {
   min-height: 100%;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background: linear-gradient(180deg, var(--bg) 0%, var(--card-2) 40%, var(--bg) 100%);
   color: var(--text);
   transition: background 0.25s ease, color 0.25s ease;
+  overflow-x: hidden;
+}
+
+img,
+canvas,
+svg {
+  max-width: 100%;
+  display: block;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 .container {
   width: min(1180px, calc(100% - 32px));
-  margin: 30px auto;
+  margin: 24px auto;
 }
 
 .hero {
   background: var(--hero-bg);
   color: white;
   border-radius: 28px;
-  padding: 36px;
+  padding: 32px;
   box-shadow: var(--shadow);
   display: grid;
   grid-template-columns: 1.6fr 1fr;
@@ -87,10 +106,12 @@ body {
 .hero h1 {
   font-size: 2.3rem;
   margin-bottom: 10px;
+  line-height: 1.15;
 }
 
 .hero p {
   color: rgba(255, 255, 255, 0.92);
+  line-height: 1.5;
 }
 
 .hero-total {
@@ -104,6 +125,7 @@ body {
 
 .hero-total h2 {
   font-size: 2rem;
+  line-height: 1.1;
 }
 
 .hero-total span {
@@ -137,6 +159,7 @@ body {
 
 .summary-card {
   padding: 22px;
+  min-width: 0;
 }
 
 .summary-card p {
@@ -147,6 +170,8 @@ body {
 
 .summary-card h3 {
   font-size: 1.7rem;
+  line-height: 1.1;
+  word-break: break-word;
 }
 
 .green { color: var(--green); }
@@ -155,7 +180,7 @@ body {
 
 .panel {
   padding: 22px;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .panel-header {
@@ -165,11 +190,13 @@ body {
 .panel-header h2 {
   font-size: 1.35rem;
   margin-bottom: 4px;
+  line-height: 1.2;
 }
 
 .panel-header p {
   color: var(--muted);
   font-size: 14px;
+  line-height: 1.45;
 }
 
 .filters,
@@ -198,6 +225,7 @@ body {
 .field {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .field label {
@@ -213,6 +241,7 @@ input,
 select,
 button {
   width: 100%;
+  min-height: 46px;
   padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -229,6 +258,7 @@ select:focus {
 
 .table-box {
   overflow-x: auto;
+  border-radius: 16px;
 }
 
 table {
@@ -266,6 +296,7 @@ tbody tr:hover {
   border-radius: 999px;
   font-size: 12px;
   font-weight: bold;
+  white-space: nowrap;
 }
 
 .common {
@@ -306,6 +337,7 @@ tbody tr:hover {
   color: var(--muted);
   font-size: 14px;
   margin-top: 4px;
+  line-height: 1.4;
 }
 
 .status-box {
@@ -358,6 +390,7 @@ tbody tr:hover {
   cursor: pointer;
   font-weight: bold;
   width: auto;
+  min-height: 42px;
 }
 
 .filter-btn.active {
@@ -381,9 +414,10 @@ tbody tr:hover {
 }
 
 .action-btn {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 10px;
   width: auto;
+  min-height: 42px;
 }
 
 .btn-primary {
@@ -428,6 +462,7 @@ tbody tr:hover {
   font-size: 14px;
   margin-top: 8px;
   padding-bottom: 20px;
+  line-height: 1.5;
 }
 
 .auth-page {
@@ -506,6 +541,8 @@ tbody tr:hover {
 
 .modal-close {
   width: auto;
+  min-width: 44px;
+  min-height: 44px;
   padding: 8px 14px;
   border-radius: 10px;
   border: none;
@@ -553,19 +590,23 @@ tbody tr:hover {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 12px;
 }
 
 .expense-card h3 {
   font-size: 1rem;
   margin-bottom: 12px;
+  line-height: 1.35;
+  word-break: break-word;
 }
 
 .expense-card p {
   color: var(--text);
   margin-bottom: 8px;
   font-size: 14px;
+  line-height: 1.45;
+  word-break: break-word;
 }
 
 .empty-card {
@@ -682,9 +723,9 @@ tbody tr:hover {
 }
 
 .checkmark-box {
-  width: 22px;
-  height: 22px;
-  min-width: 22px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
   border: 2px solid var(--border);
   border-radius: 8px;
   margin-top: 2px;
@@ -725,15 +766,18 @@ tbody tr:hover {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  min-width: 0;
 }
 
 .checklist-title {
   font-size: 1rem;
   line-height: 1.35;
+  word-break: break-word;
 }
 
 .checklist-value {
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .checklist-meta {
@@ -742,6 +786,7 @@ tbody tr:hover {
   gap: 10px 16px;
   color: var(--muted);
   font-size: 14px;
+  line-height: 1.45;
 }
 
 .checklist-actions {
@@ -785,10 +830,18 @@ tr.edited-highlight td {
   border-color: rgba(29, 78, 216, 0.45);
 }
 
+@media (max-width: 1100px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 980px) {
   .hero,
-  .summary-grid,
-  .bottom-grid,
   .form-grid,
   .tools-grid {
     grid-template-columns: 1fr;
@@ -805,15 +858,50 @@ tr.edited-highlight td {
   .checklist-actions {
     justify-content: flex-start;
   }
+
+  .hero-total {
+    padding: 20px;
+  }
 }
 
 @media (max-width: 760px) {
+  .container {
+    width: min(100% - 18px, 1180px);
+    margin: 16px auto;
+  }
+
   .desktop-table {
     display: none;
   }
 
   .mobile-cards {
     display: grid;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .hero,
+  .summary-card,
+  .panel,
+  .auth-card {
+    padding: 16px;
+  }
+
+  .hero {
+    border-radius: 22px;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: 1.55rem;
+  }
+
+  .hero-total h2,
+  .summary-card h3 {
+    font-size: 1.3rem;
   }
 
   .hero-actions,
@@ -829,28 +917,54 @@ tr.edited-highlight td {
   .modal-actions button,
   .auth-switch-btn,
   .hero-actions button,
-  .checklist-actions button {
+  .checklist-actions button,
+  .filter-btn {
     width: 100%;
+  }
+
+  .filter-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    gap: 8px;
   }
 
   .checklist-main {
     grid-template-columns: auto auto 1fr;
+    gap: 12px;
   }
 
   .checklist-top {
     flex-direction: column;
     align-items: flex-start;
+    gap: 6px;
+  }
+
+  .checklist-value {
+    white-space: normal;
   }
 
   .chart-box {
-    height: 280px;
+    height: 260px;
+    padding: 12px;
+  }
+
+  .panel-header h2 {
+    font-size: 1.15rem;
+  }
+
+  .panel-header p,
+  .checklist-meta,
+  .expense-card p,
+  .resume-item span {
+    font-size: 13px;
   }
 }
 
 @media (max-width: 640px) {
   .container {
-    width: min(100% - 20px, 1180px);
-    margin: 20px auto;
+    width: min(100% - 14px, 1180px);
+    margin: 12px auto;
   }
 
   .hero,
@@ -858,44 +972,143 @@ tr.edited-highlight td {
   .panel,
   .auth-card,
   .modal-content {
-    padding: 18px;
+    padding: 14px;
+  }
+
+  .hero {
+    border-radius: 18px;
   }
 
   .hero h1 {
-    font-size: 1.7rem;
+    font-size: 1.35rem;
   }
 
-  .summary-card h3,
-  .hero-total h2 {
-    font-size: 1.45rem;
+  .badge {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tools-grid,
+  .form-grid,
+  .ipva-row {
+    grid-template-columns: 1fr;
   }
 
   .modal {
-    padding: 12px;
+    padding: 10px;
     align-items: flex-start;
   }
 
   .modal-content {
-    padding: 16px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    padding: 14px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    border-radius: 18px;
+  }
+
+  .modal-header {
+    align-items: flex-start;
+  }
+
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .modal-close {
+    min-width: 42px;
+    min-height: 42px;
+    padding: 6px 12px;
   }
 
   .ipva-form {
     gap: 10px;
   }
 
-  .ipva-row {
-    grid-template-columns: 1fr;
+  .checklist-item {
+    padding: 14px;
+    border-radius: 16px;
   }
 
   .checklist-meta {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+  }
+
+  .expense-card {
+    padding: 14px;
+  }
+
+  .expense-card-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .chart-box {
-    height: 240px;
+    height: 230px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .resume-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .status-box {
+    text-align: left;
+  }
+}
+
+@media (max-width: 420px) {
+  .container {
+    width: calc(100% - 12px);
+  }
+
+  .hero,
+  .summary-card,
+  .panel,
+  .auth-card,
+  .modal-content,
+  .expense-card,
+  .checklist-item {
     padding: 12px;
+  }
+
+  .hero h1 {
+    font-size: 1.22rem;
+  }
+
+  .hero-total h2,
+  .summary-card h3 {
+    font-size: 1.15rem;
+  }
+
+  .panel-header h2 {
+    font-size: 1.05rem;
+  }
+
+  .filter-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  input,
+  select,
+  button {
+    font-size: 13px;
+    min-height: 44px;
+  }
+
+  .tag,
+  .status,
+  .status-row {
+    font-size: 11px;
+  }
+
+  .checklist-title {
+    font-size: 0.95rem;
   }
 }
