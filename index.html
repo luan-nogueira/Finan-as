@@ -161,99 +161,6 @@
         </form>
       </section>
 
-      <section class="panel calendar-toggle-panel">
-        <div class="calendar-shortcut">
-          <div class="calendar-shortcut-left">
-            <button
-              id="calendar-toggle-btn"
-              type="button"
-              class="calendar-icon-btn"
-              aria-expanded="false"
-              aria-controls="calendar-wrapper"
-              title="Abrir calendário"
-            >
-              📅
-            </button>
-
-            <div>
-              <h2>Calendário de vencimentos</h2>
-              <p>Toque no ícone para abrir ou fechar o calendário</p>
-            </div>
-          </div>
-
-          <div class="calendar-shortcut-summary">
-            <span id="calendar-month-total-mini">R$ 0,00</span>
-            <small id="calendar-title-mini">Mês</small>
-          </div>
-        </div>
-
-        <div id="calendar-wrapper" class="calendar-wrapper hidden">
-          <section class="calendar-grid">
-            <div class="panel calendar-inner-panel">
-              <div class="panel-header calendar-header">
-                <div>
-                  <h2>Calendário de vencimentos</h2>
-                  <p>Visualize as contas por dia do mês</p>
-                </div>
-
-                <div class="calendar-controls">
-                  <button id="prev-month-btn" type="button" class="btn-light">←</button>
-                  <strong id="calendar-title">Mês</strong>
-                  <button id="next-month-btn" type="button" class="btn-light">→</button>
-                </div>
-              </div>
-
-              <div class="calendar-legend">
-                <span class="legend-item"><span class="legend-dot legend-paid"></span> Pago</span>
-                <span class="legend-item"><span class="legend-dot legend-pending"></span> Pendente</span>
-                <span class="legend-item"><span class="legend-dot legend-overdue"></span> Vencido</span>
-              </div>
-
-              <div id="calendar-grid" class="calendar-box"></div>
-            </div>
-
-            <div class="panel calendar-inner-panel">
-              <div class="panel-header">
-                <h2>Resumo do mês no calendário</h2>
-                <p>Leitura rápida do período selecionado</p>
-              </div>
-
-              <div class="resume-item">
-                <div>
-                  <strong>Pagas no mês</strong>
-                  <span>Contas marcadas como pagas</span>
-                </div>
-                <strong class="green" id="calendar-paid-count">0</strong>
-              </div>
-
-              <div class="resume-item">
-                <div>
-                  <strong>Pendentes no mês</strong>
-                  <span>Contas ainda não pagas</span>
-                </div>
-                <strong class="orange" id="calendar-pending-count">0</strong>
-              </div>
-
-              <div class="resume-item">
-                <div>
-                  <strong>Vencidas no mês</strong>
-                  <span>Contas atrasadas</span>
-                </div>
-                <strong class="red" id="calendar-overdue-count">0</strong>
-              </div>
-
-              <div class="resume-item">
-                <div>
-                  <strong>Total do mês</strong>
-                  <span>Soma das contas com vencimento no mês</span>
-                </div>
-                <strong id="calendar-month-total">R$ 0,00</strong>
-              </div>
-            </div>
-          </section>
-        </div>
-      </section>
-
       <section class="panel">
         <div class="panel-header">
           <h2>Gráfico mensal</h2>
@@ -559,33 +466,20 @@
       const alertaVencidasTexto = document.getElementById("alerta-vencidas-texto");
       const verVencidasBtn = document.getElementById("ver-vencidas-btn");
 
-      const calendarGrid = document.getElementById("calendar-grid");
-      const calendarTitle = document.getElementById("calendar-title");
-      const calendarTitleMini = document.getElementById("calendar-title-mini");
-      const calendarMonthTotalMini = document.getElementById("calendar-month-total-mini");
-      const prevMonthBtn = document.getElementById("prev-month-btn");
-      const nextMonthBtn = document.getElementById("next-month-btn");
-      const calendarPaidCount = document.getElementById("calendar-paid-count");
-      const calendarPendingCount = document.getElementById("calendar-pending-count");
-      const calendarOverdueCount = document.getElementById("calendar-overdue-count");
-      const calendarMonthTotal = document.getElementById("calendar-month-total");
-      const calendarToggleBtn = document.getElementById("calendar-toggle-btn");
-      const calendarWrapper = document.getElementById("calendar-wrapper");
-
       let modo = "login";
       let filtroAtual = "Todos";
       let filtroStatusChecklist = "Todos";
       let despesasCache = [];
+      let origemEdicao = "despesas";
       let unsubscribe = null;
       let unsubscribeIpva = null;
       let searchTerm = "";
       let monthTerm = "";
       let expanded = false;
       let lastEditedId = null;
+      let lastChecklistEditedId = null;
       let monthlyChart = null;
       const INITIAL_LIMIT = 8;
-      let calendarDate = new Date();
-      let calendarOpen = false;
 
       let ipvaData = [];
       const ipvaPadrao = [
@@ -714,7 +608,9 @@
           .replaceAll("'", "&#039;");
       }
 
-      function abrirModalEdicao(item) {
+      function abrirModalEdicao(item, origem = "despesas") {
+        origemEdicao = origem;
+
         document.getElementById("edit-id").value = item.id;
         document.getElementById("edit-descricao").value = item.descricao || "";
         document.getElementById("edit-categoria").value = item.categoria || "Gastos comuns";
@@ -735,6 +631,26 @@
         const alvo =
           document.querySelector(`tr[data-expense-id="${id}"]`) ||
           document.querySelector(`.expense-card[data-expense-id="${id}"]`) ||
+          document.querySelector(`tr[data-checklist-id="${id}"]`) ||
+          document.querySelector(`.checklist-card[data-checklist-id="${id}"]`);
+
+        if (!alvo) return;
+
+        alvo.classList.add("edited-highlight");
+        alvo.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+
+        setTimeout(() => {
+          alvo.classList.remove("edited-highlight");
+        }, 1800);
+      }
+
+      function destacarChecklistEditado(id) {
+        if (!id) return;
+
+        const alvo =
           document.querySelector(`tr[data-checklist-id="${id}"]`) ||
           document.querySelector(`.checklist-card[data-checklist-id="${id}"]`);
 
@@ -924,7 +840,7 @@
             <label class="mobile-check-label">
               <input
                 type="checkbox"
-                class="checklist-checkbox"
+                class="checklist-checkbox mobile-real-check"
                 data-id="${item.id}"
                 ${item.pago ? "checked" : ""}
               />
@@ -939,6 +855,13 @@
 
           checklistMobileCards.appendChild(card);
         });
+
+        if (lastChecklistEditedId) {
+          setTimeout(() => {
+            destacarChecklistEditado(lastChecklistEditedId);
+            lastChecklistEditedId = null;
+          }, 150);
+        }
       }
 
       function atualizarResumo() {
@@ -1069,131 +992,6 @@
           `${vencidas.length} conta(s) vencida(s), total de ${formatarMoeda(total)} aguardando pagamento.`;
       }
 
-      function formatarTituloMes(data) {
-        return data.toLocaleDateString("pt-BR", {
-          month: "long",
-          year: "numeric"
-        });
-      }
-
-      function isMobileCalendar() {
-        return window.innerWidth < 768;
-      }
-
-      function renderCalendario() {
-        const ano = calendarDate.getFullYear();
-        const mes = calendarDate.getMonth();
-        const primeiroDia = new Date(ano, mes, 1);
-        const ultimoDia = new Date(ano, mes + 1, 0);
-        const diasNoMes = ultimoDia.getDate();
-        const inicioSemana = primeiroDia.getDay();
-        const offset = inicioSemana === 0 ? 6 : inicioSemana - 1;
-        const mobileMode = isMobileCalendar();
-
-        calendarTitle.textContent = formatarTituloMes(primeiroDia);
-        calendarTitleMini.textContent = formatarTituloMes(primeiroDia);
-        calendarGrid.classList.toggle("calendar-mobile-bank", mobileMode);
-
-        const nomesDias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
-        let html = "";
-
-        if (!mobileMode) {
-          nomesDias.forEach(nome => {
-            html += `<div class="calendar-weekday">${nome}</div>`;
-          });
-
-          for (let i = 0; i < offset; i++) {
-            html += `<div class="calendar-day empty"></div>`;
-          }
-        }
-
-        let paidCount = 0;
-        let pendingCount = 0;
-        let overdueCount = 0;
-        let totalMes = 0;
-
-        for (let dia = 1; dia <= diasNoMes; dia++) {
-          const dayISO = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
-          const itensDia = despesasCache.filter(item => item.vencimento === dayISO);
-
-          const paidItems = itensDia.filter(item => item.pago);
-          const overdueItems = itensDia.filter(item => isVencida(item));
-          const pendingItems = itensDia.filter(item => !item.pago && !isVencida(item));
-
-          paidCount += paidItems.length;
-          overdueCount += overdueItems.length;
-          pendingCount += pendingItems.length;
-          totalMes += itensDia.reduce((acc, item) => acc + Number(item.valor || 0), 0);
-
-          const classes = ["calendar-day"];
-          if (itensDia.length) classes.push("has-items");
-          if (overdueItems.length) classes.push("day-overdue");
-          else if (pendingItems.length) classes.push("day-pending");
-          else if (paidItems.length) classes.push("day-paid");
-          if (mobileMode) classes.push("calendar-day-mobile");
-
-          const bullets = [
-            paidItems.length ? `<span class="mini-badge paid-badge">${mobileMode ? `🟢 ${paidItems.length}` : `Pago: ${paidItems.length}`}</span>` : "",
-            pendingItems.length ? `<span class="mini-badge pending-badge">${mobileMode ? `🟡 ${pendingItems.length}` : `Pend: ${pendingItems.length}`}</span>` : "",
-            overdueItems.length ? `<span class="mini-badge overdue-badge">${mobileMode ? `🔴 ${overdueItems.length}` : `Venc: ${overdueItems.length}`}</span>` : ""
-          ].join("");
-
-          let listaInterna = "";
-          let mais = "";
-
-          if (mobileMode) {
-            if (itensDia.length > 0) {
-              const primeiroItem = itensDia[0];
-              listaInterna = `
-                <div class="calendar-mobile-line">
-                  <span class="calendar-mobile-desc">${escapeHtml(primeiroItem.descricao)}</span>
-                  <strong>${formatarMoeda(primeiroItem.valor)}</strong>
-                </div>
-              `;
-            }
-
-            if (itensDia.length > 1) {
-              mais = `<div class="calendar-mobile-more">+${itensDia.length - 1}</div>`;
-            }
-          } else {
-            listaInterna = itensDia.slice(0, 3).map(item => {
-              const status = getStatusDespesa(item);
-              return `
-                <div class="calendar-item-line ${status === "Pago" ? "calendar-item-paid" : (status === "Vencido" ? "calendar-item-overdue" : "calendar-item-pending")}">
-                  <span>${escapeHtml(item.descricao)}</span>
-                  <strong>${formatarMoeda(item.valor)}</strong>
-                </div>
-              `;
-            }).join("");
-
-            mais = itensDia.length > 3
-              ? `<div class="calendar-more">+ ${itensDia.length - 3} item(ns)</div>`
-              : "";
-          }
-
-          html += `
-            <div class="${classes.join(" ")}">
-              <div class="calendar-day-head">
-                <div class="calendar-day-number">${dia}</div>
-                ${mobileMode && itensDia.length ? `<div class="calendar-mobile-total">${formatarMoeda(itensDia.reduce((acc, item) => acc + Number(item.valor || 0), 0))}</div>` : ""}
-              </div>
-              <div class="calendar-badges">${bullets}</div>
-              <div class="calendar-items">
-                ${listaInterna}
-                ${mais}
-              </div>
-            </div>
-          `;
-        }
-
-        calendarGrid.innerHTML = html;
-        calendarPaidCount.textContent = String(paidCount);
-        calendarPendingCount.textContent = String(pendingCount);
-        calendarOverdueCount.textContent = String(overdueCount);
-        calendarMonthTotal.textContent = formatarMoeda(totalMes);
-        calendarMonthTotalMini.textContent = formatarMoeda(totalMes);
-      }
-
       function renderIpva() {
         ipvaList.innerHTML = "";
 
@@ -1277,13 +1075,6 @@
         salvarTema(saved);
       }
 
-      function atualizarEstadoCalendario() {
-        calendarWrapper.classList.toggle("hidden", !calendarOpen);
-        calendarToggleBtn.setAttribute("aria-expanded", String(calendarOpen));
-        calendarToggleBtn.textContent = calendarOpen ? "✕" : "📅";
-        calendarToggleBtn.title = calendarOpen ? "Fechar calendário" : "Abrir calendário";
-      }
-
       async function garantirIpvaInicial() {
         const ref = db.collection("configuracoes").doc("ipva_carro");
         const snap = await ref.get();
@@ -1348,7 +1139,18 @@
 
           expanded = true;
           lastEditedId = id;
+          lastChecklistEditedId = id;
+
           fecharModalEdicao();
+
+          setTimeout(() => {
+            if (origemEdicao === "checklist") {
+              document.querySelector(".checklist-header")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+              });
+            }
+          }, 150);
         } catch (error) {
           console.error(error);
           alert("Erro ao editar despesa: " + error.message);
@@ -1441,35 +1243,98 @@
         if (e.target === editModal) fecharModalEdicao();
       });
 
-      [tbody, cardsDespesas, checklistTableBody, checklistMobileCards].forEach(container => {
-        container.addEventListener("click", async (e) => {
-          const checkbox = e.target.closest(".checklist-checkbox");
-          if (checkbox) {
-            await alternarPagamento(checkbox.dataset.id);
-            return;
-          }
+      tbody.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
 
-          const btn = e.target.closest("button");
-          if (!btn) return;
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
 
-          const id = btn.dataset.id;
-          const action = btn.dataset.action;
+        if (action === "toggle") {
+          await alternarPagamento(id);
+          return;
+        }
 
-          if (action === "toggle") {
-            await alternarPagamento(id);
-            return;
-          }
+        if (action === "edit") {
+          const item = despesasCache.find(d => d.id === id);
+          if (item) abrirModalEdicao(item, "despesas");
+          return;
+        }
 
-          if (action === "edit") {
-            const item = despesasCache.find(d => d.id === id);
-            if (item) abrirModalEdicao(item);
-            return;
-          }
+        if (action === "delete") {
+          await excluirDespesa(id);
+        }
+      });
 
-          if (action === "delete") {
-            await excluirDespesa(id);
-          }
-        });
+      cardsDespesas.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+
+        if (action === "toggle") {
+          await alternarPagamento(id);
+          return;
+        }
+
+        if (action === "edit") {
+          const item = despesasCache.find(d => d.id === id);
+          if (item) abrirModalEdicao(item, "despesas");
+          return;
+        }
+
+        if (action === "delete") {
+          await excluirDespesa(id);
+        }
+      });
+
+      checklistTableBody.addEventListener("click", async (e) => {
+        const checkbox = e.target.closest(".checklist-checkbox");
+        if (checkbox) {
+          await alternarPagamento(checkbox.dataset.id);
+          return;
+        }
+
+        const btn = e.target.closest("button");
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+
+        if (action === "edit") {
+          const item = despesasCache.find(d => d.id === id);
+          if (item) abrirModalEdicao(item, "checklist");
+          return;
+        }
+
+        if (action === "delete") {
+          await excluirDespesa(id);
+        }
+      });
+
+      checklistMobileCards.addEventListener("click", async (e) => {
+        const checkbox = e.target.closest(".checklist-checkbox");
+        if (checkbox) {
+          await alternarPagamento(checkbox.dataset.id);
+          return;
+        }
+
+        const btn = e.target.closest("button");
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+
+        if (action === "edit") {
+          const item = despesasCache.find(d => d.id === id);
+          if (item) abrirModalEdicao(item, "checklist");
+          return;
+        }
+
+        if (action === "delete") {
+          await excluirDespesa(id);
+        }
       });
 
       logoutBtn.addEventListener("click", async () => {
@@ -1587,25 +1452,6 @@
         renderChecklistTabela();
       });
 
-      calendarToggleBtn.addEventListener("click", () => {
-        calendarOpen = !calendarOpen;
-        atualizarEstadoCalendario();
-      });
-
-      prevMonthBtn.addEventListener("click", () => {
-        calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
-        renderCalendario();
-      });
-
-      nextMonthBtn.addEventListener("click", () => {
-        calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
-        renderCalendario();
-      });
-
-      window.addEventListener("resize", () => {
-        renderCalendario();
-      });
-
       auth.onAuthStateChanged(async (user) => {
         if (!user) {
           if (unsubscribe) {
@@ -1655,7 +1501,6 @@
             atualizarResumo();
             renderGraficoMensal();
             renderAlertaVencidas();
-            renderCalendario();
           }, (error) => {
             console.error(error);
 
@@ -1684,8 +1529,6 @@
 
       carregarTema();
       renderIpva();
-      renderCalendario();
-      atualizarEstadoCalendario();
       atualizarModo();
     })();
   </script>
