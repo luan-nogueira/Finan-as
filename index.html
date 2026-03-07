@@ -495,6 +495,7 @@
             observacao,
             pago: false,
             uid: auth.currentUser.uid,
+            criadoPor: auth.currentUser.email || "",
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
@@ -683,7 +684,6 @@
         }
 
         unsubscribe = db.collection("despesas")
-          .where("uid", "==", user.uid)
           .orderBy("createdAt", "desc")
           .onSnapshot((snapshot) => {
             despesasCache = snapshot.docs.map(doc => ({
