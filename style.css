@@ -15,6 +15,8 @@
   --radius: 20px;
   --hero-bg: linear-gradient(135deg, #0f172a, #1d4ed8);
   --row-overdue: #fff1f2;
+  --alert-bg: #fff7ed;
+  --alert-border: #fdba74;
 }
 
 :root[data-theme="dark"] {
@@ -33,6 +35,8 @@
   --shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
   --hero-bg: linear-gradient(135deg, #020617, #1d4ed8);
   --row-overdue: rgba(127, 29, 29, 0.28);
+  --alert-bg: rgba(251, 146, 60, 0.12);
+  --alert-border: rgba(251, 146, 60, 0.35);
 }
 
 * {
@@ -140,6 +144,44 @@ textarea {
   flex-wrap: wrap;
 }
 
+.alert-panel {
+  margin-top: 20px;
+  margin-bottom: 24px;
+  background: var(--alert-bg);
+  border: 1px solid var(--alert-border);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.alert-panel.hidden {
+  display: none;
+}
+
+.alert-panel-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.alert-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.alert-panel h3 {
+  margin-bottom: 4px;
+  font-size: 1.05rem;
+}
+
+.alert-panel p {
+  color: var(--text);
+  line-height: 1.45;
+}
+
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -201,12 +243,164 @@ textarea {
 
 .filters,
 .ipva-header,
-.checklist-header {
+.checklist-header,
+.calendar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+}
+
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.calendar-controls strong {
+  min-width: 150px;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.calendar-box {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--muted);
+  padding: 8px 4px;
+}
+
+.calendar-day {
+  min-height: 128px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card-2);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calendar-day.empty {
+  background: transparent;
+  border-style: dashed;
+  min-height: 90px;
+}
+
+.calendar-day.has-items {
+  box-shadow: inset 0 0 0 1px rgba(29, 78, 216, 0.04);
+}
+
+.day-paid {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.day-pending {
+  border-color: rgba(245, 158, 11, 0.38);
+}
+
+.day-overdue {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: var(--row-overdue);
+}
+
+.calendar-day-number {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.calendar-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mini-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 5px 8px;
+  border-radius: 999px;
+}
+
+.paid-badge {
+  background: rgba(22, 163, 74, 0.18);
+  color: #166534;
+}
+
+.pending-badge {
+  background: rgba(217, 119, 6, 0.16);
+  color: #92400e;
+}
+
+.overdue-badge {
+  background: rgba(220, 38, 38, 0.15);
+  color: #991b1b;
+}
+
+.calendar-items {
+  display: grid;
+  gap: 6px;
+}
+
+.calendar-item-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.3;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+
+.calendar-item-line span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-item-line strong {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.calendar-item-paid {
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.calendar-item-pending {
+  background: rgba(217, 119, 6, 0.12);
+}
+
+.calendar-item-overdue {
+  background: rgba(220, 38, 38, 0.12);
+}
+
+.calendar-more {
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .form-grid {
@@ -288,6 +482,10 @@ tbody tr:hover {
 
 .row-overdue {
   background: var(--row-overdue);
+}
+
+.row-paid {
+  opacity: 0.92;
 }
 
 .tag {
@@ -376,13 +574,15 @@ tbody tr:hover {
   color: #991b1b;
 }
 
-.filter-buttons {
+.filter-buttons,
+.status-filters {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.filter-btn {
+.filter-btn,
+.status-filter-btn {
   border: 1px solid var(--border);
   background: var(--card);
   padding: 10px 14px;
@@ -393,7 +593,8 @@ tbody tr:hover {
   min-height: 42px;
 }
 
-.filter-btn.active {
+.filter-btn.active,
+.status-filter-btn.active {
   background: var(--primary);
   color: white;
   border-color: var(--primary);
@@ -574,11 +775,21 @@ tbody tr:hover {
   gap: 12px;
 }
 
-.expense-card {
+.expense-card,
+.checklist-card {
   background: var(--card-2);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 16px;
+}
+
+.checklist-card.is-paid {
+  opacity: 0.92;
+}
+
+.checklist-card.is-overdue {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: var(--row-overdue);
 }
 
 .expense-card-overdue {
@@ -594,19 +805,34 @@ tbody tr:hover {
   margin-bottom: 12px;
 }
 
-.expense-card h3 {
+.expense-card h3,
+.checklist-card h3 {
   font-size: 1rem;
   margin-bottom: 12px;
   line-height: 1.35;
   word-break: break-word;
 }
 
-.expense-card p {
+.expense-card p,
+.checklist-card p {
   color: var(--text);
   margin-bottom: 8px;
   font-size: 14px;
   line-height: 1.45;
   word-break: break-word;
+}
+
+.mobile-check-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  color: var(--text);
+}
+
+.mobile-check-label input {
+  width: 18px;
+  min-height: auto;
 }
 
 .empty-card {
@@ -682,38 +908,14 @@ tbody tr:hover {
   background: #22c55e;
 }
 
-.checklist-list {
-  display: grid;
-  gap: 12px;
+.legend-overdue {
+  background: #ef4444;
 }
 
-.checklist-item {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 14px;
+.table-check-wrap {
+  display: inline-flex;
   align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 16px;
-  background: var(--card-2);
-  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-}
-
-.checklist-item.is-paid {
-  opacity: 0.88;
-}
-
-.checklist-item.is-overdue {
-  border-color: rgba(220, 38, 38, 0.32);
-  background: var(--row-overdue);
-}
-
-.checklist-main {
-  display: grid;
-  grid-template-columns: auto auto 1fr;
-  gap: 14px;
-  align-items: flex-start;
-  cursor: pointer;
+  justify-content: center;
 }
 
 .checklist-checkbox {
@@ -728,9 +930,15 @@ tbody tr:hover {
   min-width: 24px;
   border: 2px solid var(--border);
   border-radius: 8px;
-  margin-top: 2px;
   background: var(--card);
   position: relative;
+  display: inline-block;
+}
+
+.small-check {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
 }
 
 .checklist-checkbox:checked + .checkmark-box {
@@ -747,53 +955,6 @@ tbody tr:hover {
   color: white;
   font-size: 14px;
   font-weight: bold;
-}
-
-.checklist-content {
-  min-width: 0;
-}
-
-.checklist-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-
-.checklist-title-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  min-width: 0;
-}
-
-.checklist-title {
-  font-size: 1rem;
-  line-height: 1.35;
-  word-break: break-word;
-}
-
-.checklist-value {
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.checklist-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.checklist-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
 }
 
 .desktop-table {
@@ -825,7 +986,7 @@ tr.edited-highlight td {
   background: rgba(29, 78, 216, 0.08);
 }
 
-.checklist-item.edited-highlight,
+.checklist-card.edited-highlight,
 .expense-card.edited-highlight {
   border-color: rgba(29, 78, 216, 0.45);
 }
@@ -835,7 +996,8 @@ tr.edited-highlight td {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .bottom-grid {
+  .bottom-grid,
+  .calendar-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -851,16 +1013,12 @@ tr.edited-highlight td {
     grid-template-columns: 1fr 1fr;
   }
 
-  .checklist-item {
-    grid-template-columns: 1fr;
-  }
-
-  .checklist-actions {
-    justify-content: flex-start;
-  }
-
   .hero-total {
     padding: 20px;
+  }
+
+  .calendar-day {
+    min-height: 110px;
   }
 }
 
@@ -908,7 +1066,8 @@ tr.edited-highlight td {
   .auth-switch,
   .modal-actions,
   .actions-cell,
-  .checklist-actions {
+  .filter-buttons,
+  .status-filters {
     flex-direction: column;
     align-items: stretch;
   }
@@ -917,31 +1076,17 @@ tr.edited-highlight td {
   .modal-actions button,
   .auth-switch-btn,
   .hero-actions button,
-  .checklist-actions button,
-  .filter-btn {
+  .filter-btn,
+  .status-filter-btn {
     width: 100%;
   }
 
-  .filter-buttons {
+  .filter-buttons,
+  .status-filters {
     display: grid;
     grid-template-columns: 1fr 1fr;
     width: 100%;
     gap: 8px;
-  }
-
-  .checklist-main {
-    grid-template-columns: auto auto 1fr;
-    gap: 12px;
-  }
-
-  .checklist-top {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .checklist-value {
-    white-space: normal;
   }
 
   .chart-box {
@@ -949,15 +1094,37 @@ tr.edited-highlight td {
     padding: 12px;
   }
 
+  .calendar-box {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .calendar-weekday {
+    display: none;
+  }
+
+  .calendar-day.empty {
+    display: none;
+  }
+
+  .calendar-day {
+    min-height: 140px;
+  }
+
   .panel-header h2 {
     font-size: 1.15rem;
   }
 
   .panel-header p,
-  .checklist-meta,
   .expense-card p,
-  .resume-item span {
+  .checklist-card p,
+  .resume-item span,
+  .calendar-item-line {
     font-size: 13px;
+  }
+
+  .alert-panel {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
@@ -1028,17 +1195,8 @@ tr.edited-highlight td {
     gap: 10px;
   }
 
-  .checklist-item {
-    padding: 14px;
-    border-radius: 16px;
-  }
-
-  .checklist-meta {
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .expense-card {
+  .expense-card,
+  .checklist-card {
     padding: 14px;
   }
 
@@ -1061,6 +1219,15 @@ tr.edited-highlight td {
   .status-box {
     text-align: left;
   }
+
+  .calendar-box {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-buttons,
+  .status-filters {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 420px) {
@@ -1074,7 +1241,7 @@ tr.edited-highlight td {
   .auth-card,
   .modal-content,
   .expense-card,
-  .checklist-item {
+  .checklist-card {
     padding: 12px;
   }
 
@@ -1091,10 +1258,6 @@ tr.edited-highlight td {
     font-size: 1.05rem;
   }
 
-  .filter-buttons {
-    grid-template-columns: 1fr;
-  }
-
   input,
   select,
   button {
@@ -1104,11 +1267,8 @@ tr.edited-highlight td {
 
   .tag,
   .status,
-  .status-row {
+  .status-row,
+  .mini-badge {
     font-size: 11px;
-  }
-
-  .checklist-title {
-    font-size: 0.95rem;
   }
 }
