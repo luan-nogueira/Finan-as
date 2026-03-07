@@ -2,7 +2,10 @@
 <html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
   <title>Financeiro do Casal</title>
   <link rel="stylesheet" href="style.css" />
 
@@ -24,12 +27,26 @@
       <form id="auth-form" class="form-grid auth-form">
         <div class="field full">
           <label for="email">E-mail</label>
-          <input type="email" id="email" required placeholder="seuemail@exemplo.com" />
+          <input
+            type="email"
+            id="email"
+            required
+            placeholder="seuemail@exemplo.com"
+            inputmode="email"
+            autocomplete="email"
+          />
         </div>
 
         <div class="field full">
           <label for="password">Senha</label>
-          <input type="password" id="password" required minlength="6" placeholder="Digite sua senha" />
+          <input
+            type="password"
+            id="password"
+            required
+            minlength="6"
+            placeholder="Digite sua senha"
+            autocomplete="current-password"
+          />
         </div>
 
         <div class="full">
@@ -48,6 +65,7 @@
 
   <div id="appRoot" style="display:none;">
     <div class="container">
+
       <header class="hero">
         <div class="hero-text">
           <span class="badge">💙 Site financeiro do casal</span>
@@ -113,7 +131,7 @@
 
           <div class="field">
             <label for="valor">Valor</label>
-            <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required />
+            <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required inputmode="decimal" />
           </div>
 
           <div class="field">
@@ -139,7 +157,7 @@
         </div>
 
         <div class="chart-box">
-          <canvas id="monthlyChart"></canvas>
+          <canvas id="monthlyChart" aria-label="Gráfico mensal de gastos"></canvas>
         </div>
       </section>
 
@@ -183,7 +201,11 @@
         <div class="tools-grid">
           <div class="field">
             <label for="search-input">Buscar despesa</label>
-            <input type="text" id="search-input" placeholder="Buscar por descrição, observação ou criador" />
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Buscar por descrição, observação ou criador"
+            />
           </div>
 
           <div class="field">
@@ -272,7 +294,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Editar despesa</h2>
-        <button type="button" class="modal-close" id="close-modal">&times;</button>
+        <button type="button" class="modal-close" id="close-modal" aria-label="Fechar modal">&times;</button>
       </div>
 
       <form id="edit-form" class="form-grid">
@@ -294,7 +316,7 @@
 
         <div class="field">
           <label for="edit-valor">Valor</label>
-          <input type="number" id="edit-valor" step="0.01" min="0" required />
+          <input type="number" id="edit-valor" step="0.01" min="0" required inputmode="decimal" />
         </div>
 
         <div class="field">
@@ -319,7 +341,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Editar IPVA</h2>
-        <button type="button" class="modal-close" id="close-ipva-modal">&times;</button>
+        <button type="button" class="modal-close" id="close-ipva-modal" aria-label="Fechar modal">&times;</button>
       </div>
 
       <form id="ipva-form" class="ipva-form">
@@ -602,13 +624,13 @@
             <td>${escapeHtml(item.criadoPor || "-")}</td>
             <td>
               <div class="actions-cell">
-                <button class="action-btn btn-toggle" data-id="${item.id}" data-action="toggle">
+                <button class="action-btn btn-toggle" data-id="${item.id}" data-action="toggle" type="button">
                   ${item.pago ? "Desmarcar" : "Marcar pago"}
                 </button>
-                <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit">
+                <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">
                   Editar
                 </button>
-                <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete">
+                <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">
                   Excluir
                 </button>
               </div>
@@ -632,13 +654,13 @@
             <p><strong>Observação:</strong> ${escapeHtml(item.observacao || "-")}</p>
             <p><strong>Criado por:</strong> ${escapeHtml(item.criadoPor || "-")}</p>
             <div class="actions-cell">
-              <button class="action-btn btn-toggle" data-id="${item.id}" data-action="toggle">
+              <button class="action-btn btn-toggle" data-id="${item.id}" data-action="toggle" type="button">
                 ${item.pago ? "Desmarcar" : "Marcar pago"}
               </button>
-              <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit">
+              <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">
                 Editar
               </button>
-              <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete">
+              <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">
                 Excluir
               </button>
             </div>
@@ -877,7 +899,7 @@
           </div>
           <div class="field">
             <label>Valor</label>
-            <input type="number" step="0.01" class="ipva-valor" value="${item.valor || ""}">
+            <input type="number" step="0.01" class="ipva-valor" value="${item.valor || ""}" inputmode="decimal">
           </div>
           <div class="field">
             <label>Status</label>
