@@ -562,9 +562,9 @@ tbody tr:hover {
 
 .tag {
   display: inline-block;
-  padding: 7px 10px;
+  padding: 5px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: bold;
   white-space: nowrap;
 }
@@ -612,10 +612,10 @@ tbody tr:hover {
 .status,
 .status-row {
   display: inline-block;
-  margin-top: 6px;
-  padding: 6px 10px;
+  margin-top: 4px;
+  padding: 5px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: bold;
 }
 
@@ -670,7 +670,7 @@ tbody tr:hover {
 
 .actions-cell {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   flex-direction: column;
   align-items: stretch;
@@ -685,10 +685,11 @@ tbody tr:hover {
 }
 
 .action-btn {
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-radius: 10px;
   width: 100%;
-  min-height: 42px;
+  min-height: 36px;
+  font-size: 12px;
 }
 
 .btn-primary {
@@ -856,8 +857,8 @@ tbody tr:hover {
 .checklist-card {
   background: var(--card-2);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 14px;
+  border-radius: 14px;
+  padding: 12px;
 }
 
 .checklist-card.is-paid {
@@ -878,35 +879,36 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .expense-card h3,
 .checklist-card h3 {
-  font-size: 1rem;
-  margin-bottom: 10px;
-  line-height: 1.35;
+  font-size: 0.93rem;
+  margin-bottom: 6px;
+  line-height: 1.28;
   word-break: break-word;
 }
 
 .expense-card p,
 .checklist-card p {
   color: var(--text);
-  margin-bottom: 8px;
-  font-size: 13px;
-  line-height: 1.45;
+  margin-bottom: 5px;
+  font-size: 12px;
+  line-height: 1.32;
   word-break: break-word;
 }
 
 .mobile-check-label {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 12px 0;
+  gap: 8px;
+  margin: 8px 0;
   color: var(--text);
   flex-wrap: wrap;
+  font-size: 12px;
 }
 
 .mobile-check-label input {
@@ -1137,6 +1139,143 @@ tr.edited-highlight td {
 }
 
 @media (max-width: 767px) {
+  .panel {
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  .panel-header {
+    margin-bottom: 10px;
+  }
+
+  .panel-header h2 {
+    font-size: 1rem;
+  }
+
+  .panel-header p {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .status-filters,
+  .filter-buttons {
+    gap: 6px;
+  }
+
+  .filter-btn,
+  .status-filter-btn {
+    min-height: 36px;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .mobile-cards {
+    gap: 8px;
+  }
+
+  .expense-card,
+  .checklist-card {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .expense-card-top {
+    gap: 5px;
+    margin-bottom: 6px;
+  }
+
+  .expense-card h3,
+  .checklist-card h3 {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    line-height: 1.22;
+  }
+
+  .expense-card p,
+  .checklist-card p {
+    font-size: 11px;
+    margin-bottom: 4px;
+    line-height: 1.25;
+  }
+
+  .mobile-check-label {
+    margin: 6px 0;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .mobile-check-label input {
+    width: 16px;
+  }
+
+  .actions-cell {
+    gap: 5px;
+  }
+
+  .action-btn {
+    min-height: 34px;
+    font-size: 11px;
+    padding: 7px 9px;
+  }
+
+  .status,
+  .status-row {
+    padding: 4px 7px;
+    font-size: 9px;
+    margin-top: 2px;
+  }
+
+  .tag {
+    padding: 4px 7px;
+    font-size: 9px;
+  }
+
+  .see-more-wrap {
+    margin-top: 10px;
+  }
+
+  .chart-box {
+    height: 210px;
+    padding: 8px;
+  }
+
+  .summary-card {
+    padding: 14px;
+  }
+
+  .summary-card h3 {
+    font-size: 1.1rem;
+  }
+
+  .hero {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .hero h1 {
+    font-size: 1.25rem;
+  }
+
+  .hero p {
+    font-size: 12px;
+  }
+
+  .hero-total {
+    padding: 12px;
+  }
+
+  .hero-total h2 {
+    font-size: 1.25rem;
+  }
+
+  .calendar-shortcut-left h2 {
+    font-size: 0.98rem;
+  }
+
+  .calendar-shortcut-left p {
+    font-size: 12px;
+  }
+
   .calendar-shortcut {
     align-items: flex-start;
     flex-direction: column;
