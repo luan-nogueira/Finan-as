@@ -493,7 +493,7 @@
 
       function abrirModalIpva() {
         ipvaFormList.innerHTML = "";
-        ipvaData.forEach((item, index) => adicionarLinhaIpva(item, index));
+        ipvaData.forEach((item) => adicionarLinhaIpva(item));
         ipvaModal.classList.remove("hidden");
       }
 
@@ -501,7 +501,7 @@
         ipvaModal.classList.add("hidden");
       }
 
-      function adicionarLinhaIpva(item = { data: "", valor: "", pago: false }, index = null) {
+      function adicionarLinhaIpva(item = { data: "", valor: "", pago: false }) {
         const div = document.createElement("div");
         div.className = "ipva-row";
         div.innerHTML = `
@@ -511,7 +511,7 @@
           </div>
           <div class="field">
             <label>Valor</label>
-            <input type="number" step="0.01" class="ipva-valor" value="${item.valor || ""}">
+            <input type="number" step="0.01" class="ipva-valor" value="${item.valor ?? ""}">
           </div>
           <div class="field">
             <label>Pago</label>
@@ -806,9 +806,10 @@
 
       async function alternarIpva(index) {
         const novaLista = ipvaData.map((item, i) => ({
-          ...item,
-          pago: i === index ? !item.pago : item.pago
-        }));
+          data: item?.data || "",
+          valor: Number(item?.valor || 0),
+          pago: i === index ? !Boolean(item?.pago) : Boolean(item?.pago)
+        })).filter(item => item.data);
 
         try {
           await db.collection("configuracoes").doc("ipva_carro").set({
@@ -873,11 +874,22 @@
         e.preventDefault();
 
         const rows = [...ipvaFormList.querySelectorAll(".ipva-row")];
-        const parcelas = rows.map(row => ({
-          data: row.querySelector(".ipva-data").value,
-          valor: Number(row.querySelector(".ipva-valor").value || 0),
-          pago: row.querySelector(".ipva-pago").value === "true"
-        })).filter(item => item.data);
+
+        const parcelas = rows.map(row => {
+          const dataInput = row.querySelector(".ipva-data");
+          const valorInput = row.querySelector(".ipva-valor");
+          const pagoInput = row.querySelector(".ipva-pago");
+
+          const data = dataInput?.value || "";
+          const valor = Number(valorInput?.value || 0);
+          const pago = pagoInput?.value === "true";
+
+          return {
+            data: data || null,
+            valor: Number.isFinite(valor) ? valor : 0,
+            pago: Boolean(pago)
+          };
+        }).filter(item => item.data !== null);
 
         try {
           await db.collection("configuracoes").doc("ipva_carro").set({
@@ -994,7 +1006,12 @@
         unsubscribeIpva = db.collection("configuracoes")
           .doc("ipva_carro")
           .onSnapshot((doc) => {
-            ipvaData = doc.data()?.parcelas || [];
+            ipvaData = (doc.data()?.parcelas || []).map(item => ({
+              data: item?.data || "",
+              valor: Number(item?.valor || 0),
+              pago: Boolean(item?.pago)
+            })).filter(item => item.data);
+
             renderIpva();
           }, () => {
             alert("Erro ao carregar IPVA.");
