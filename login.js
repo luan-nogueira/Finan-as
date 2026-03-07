@@ -18,14 +18,19 @@ let modo = "login";
 
 function atualizarModo() {
   if (modo === "login") {
-    tabLogin.classList.add("active");
-    tabRegister.classList.remove("active");
     submitBtn.textContent = "Entrar";
+    tabLogin.classList.remove("btn-secondary");
+    tabLogin.classList.add("btn-light");
+    tabRegister.classList.remove("btn-light");
+    tabRegister.classList.add("btn-secondary");
   } else {
-    tabRegister.classList.add("active");
-    tabLogin.classList.remove("active");
     submitBtn.textContent = "Criar conta";
+    tabRegister.classList.remove("btn-secondary");
+    tabRegister.classList.add("btn-light");
+    tabLogin.classList.remove("btn-light");
+    tabLogin.classList.add("btn-secondary");
   }
+
   authMessage.textContent = "";
 }
 
