@@ -28,6 +28,15 @@ const totalLuanEl = document.getElementById("total-luan");
 const totalKellyEl = document.getElementById("total-kelly");
 const totalPendentesEl = document.getElementById("total-pendentes");
 
+const resumoComumEl = document.getElementById("resumo-comum");
+const resumoLuanEl = document.getElementById("resumo-luan");
+const resumoKellyEl = document.getElementById("resumo-kelly");
+
+const editModal = document.getElementById("edit-modal");
+const editForm = document.getElementById("edit-form");
+const closeModalBtn = document.getElementById("close-modal");
+const cancelEditBtn = document.getElementById("cancel-edit");
+
 let filtroAtual = "Todos";
 let despesasCache = [];
 let unsubscribe = null;
@@ -50,6 +59,31 @@ function aplicarFiltro(lista) {
   return lista.filter((item) => item.categoria === filtroAtual);
 }
 
+function escapeHtml(texto) {
+  return String(texto ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function abrirModalEdicao(item) {
+  document.getElementById("edit-id").value = item.id;
+  document.getElementById("edit-descricao").value = item.descricao || "";
+  document.getElementById("edit-categoria").value = item.categoria || "Gastos comuns";
+  document.getElementById("edit-valor").value = Number(item.valor || 0);
+  document.getElementById("edit-vencimento").value = item.vencimento || "";
+  document.getElementById("edit-observacao").value = item.observacao || "";
+
+  editModal.classList.remove("hidden");
+}
+
+function fecharModalEdicao() {
+  editModal.classList.add("hidden");
+  editForm.reset();
+}
+
 function renderTabela() {
   tbody.innerHTML = "";
 
@@ -68,7 +102,7 @@ function renderTabela() {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-      <td><span class="tag ${classeCategoria(item.categoria)}">${item.categoria}</span></td>
+      <td><span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span></td>
       <td>${escapeHtml(item.descricao)}</td>
       <td>${formatarMoeda(item.valor)}</td>
       <td>${escapeHtml(item.vencimento || "-")}</td>
@@ -82,6 +116,9 @@ function renderTabela() {
         <div class="actions-cell">
           <button class="action-btn btn-toggle" data-id="${item.id}" data-action="toggle">
             ${item.pago ? "Desmarcar" : "Marcar pago"}
+          </button>
+          <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit">
+            Editar
           </button>
           <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete">
             Excluir
@@ -115,15 +152,10 @@ function atualizarResumo() {
   totalKellyEl.textContent = formatarMoeda(totalKelly);
   totalGeralEl.textContent = formatarMoeda(totalGeral);
   totalPendentesEl.textContent = String(pendentes);
-}
 
-function escapeHtml(texto) {
-  return String(texto)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  resumoComumEl.textContent = formatarMoeda(totalComum);
+  resumoLuanEl.textContent = formatarMoeda(totalLuan);
+  resumoKellyEl.textContent = formatarMoeda(totalKelly);
 }
 
 async function salvarDespesa(e) {
@@ -152,6 +184,31 @@ async function salvarDespesa(e) {
     form.reset();
   } catch (error) {
     alert("Erro ao salvar despesa: " + error.message);
+  }
+}
+
+async function salvarEdicao(e) {
+  e.preventDefault();
+
+  const id = document.getElementById("edit-id").value;
+  const descricao = document.getElementById("edit-descricao").value.trim();
+  const categoria = document.getElementById("edit-categoria").value;
+  const valor = Number(document.getElementById("edit-valor").value);
+  const vencimento = document.getElementById("edit-vencimento").value.trim();
+  const observacao = document.getElementById("edit-observacao").value.trim();
+
+  try {
+    await updateDoc(doc(db, "despesas", id), {
+      descricao,
+      categoria,
+      valor,
+      vencimento,
+      observacao
+    });
+
+    fecharModalEdicao();
+  } catch (error) {
+    alert("Erro ao editar despesa: " + error.message);
   }
 }
 
@@ -188,6 +245,13 @@ tbody.addEventListener("click", async (e) => {
 
   if (action === "toggle") {
     await alternarPagamento(id);
+    return;
+  }
+
+  if (action === "edit") {
+    const item = despesasCache.find((d) => d.id === id);
+    if (item) abrirModalEdicao(item);
+    return;
   }
 
   if (action === "delete") {
@@ -196,6 +260,16 @@ tbody.addEventListener("click", async (e) => {
 });
 
 form.addEventListener("submit", salvarDespesa);
+editForm.addEventListener("submit", salvarEdicao);
+
+closeModalBtn.addEventListener("click", fecharModalEdicao);
+cancelEditBtn.addEventListener("click", fecharModalEdicao);
+
+editModal.addEventListener("click", (e) => {
+  if (e.target === editModal) {
+    fecharModalEdicao();
+  }
+});
 
 logoutBtn.addEventListener("click", async () => {
   await signOut(auth);
