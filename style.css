@@ -12,7 +12,6 @@
   --red: #dc2626;
   --purple: #6d28d9;
   --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-  --radius: 20px;
   --hero-bg: linear-gradient(135deg, #0f172a, #1d4ed8);
   --row-overdue: #fff1f2;
   --alert-bg: #fff7ed;
@@ -61,14 +60,6 @@ html {
 body {
   background: linear-gradient(180deg, var(--bg) 0%, var(--card-2) 40%, var(--bg) 100%);
   color: var(--text);
-  transition: background 0.25s ease, color 0.25s ease;
-}
-
-img,
-canvas,
-svg {
-  max-width: 100%;
-  display: block;
 }
 
 button,
@@ -96,7 +87,6 @@ button {
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
-  align-items: center;
 }
 
 .badge {
@@ -206,12 +196,10 @@ button {
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: var(--shadow);
-  transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 .summary-card {
   padding: 12px;
-  min-width: 0;
 }
 
 .summary-card p {
@@ -223,7 +211,6 @@ button {
 .summary-card h3 {
   font-size: 1rem;
   line-height: 1.1;
-  word-break: break-word;
 }
 
 .green { color: var(--green); }
@@ -281,7 +268,6 @@ button {
 .field {
   display: grid;
   gap: 5px;
-  min-width: 0;
 }
 
 .field label {
@@ -491,7 +477,6 @@ tbody tr:hover {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 5px;
-  align-items: stretch;
 }
 
 .action-btn,
@@ -650,75 +635,113 @@ tbody tr:hover {
   width: 100%;
 }
 
-.mobile-cards {
-  display: grid;
-  gap: 8px;
-}
-
 .desktop-table {
   display: none;
 }
 
-.checklist-card,
+.mobile-list-wrap {
+  display: block;
+}
+
+.mobile-list-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.mobile-list-head strong {
+  font-size: 0.95rem;
+}
+
+.mobile-list-head span {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.main-mobile-cards {
+  display: grid;
+  gap: 8px;
+  max-height: 68vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
 .main-card {
   background: var(--card-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 10px;
 }
 
-.checklist-card.is-paid {
-  opacity: 0.92;
+.main-card.is-paid {
+  opacity: 0.94;
 }
 
-.checklist-card.is-overdue {
+.main-card.is-overdue {
   border-color: rgba(220, 38, 38, 0.35);
   background: var(--row-overdue);
 }
 
-.expense-card-top {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 4px;
-  align-items: flex-start;
-  margin-bottom: 6px;
-}
-
-.checklist-card h3,
-.main-card h3 {
-  font-size: 0.86rem;
-  margin-bottom: 4px;
-  line-height: 1.15;
-  word-break: break-word;
-}
-
-.checklist-card p,
-.main-card p {
-  color: var(--text);
-  margin-bottom: 4px;
-  font-size: 10px;
-  line-height: 1.2;
-  word-break: break-word;
-}
-
-.mobile-check-label {
-  display: flex;
-  align-items: center;
+.mobile-compact-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
   gap: 8px;
-  margin: 8px 0;
-  color: var(--text);
-  flex-wrap: wrap;
-  font-size: 11px;
+  align-items: start;
+  cursor: pointer;
 }
 
 .mobile-real-check {
-  width: 18px !important;
-  min-width: 18px !important;
-  min-height: 18px !important;
-  height: 18px !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  margin-top: 2px;
+  accent-color: var(--green);
+}
+
+.mobile-compact-content {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.mobile-line-1,
+.mobile-line-2,
+.mobile-line-3 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-desc {
+  font-size: 0.92rem;
+  line-height: 1.15;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.mobile-line-2,
+.mobile-line-3,
+.mobile-obs {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.mobile-obs {
+  text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .empty-card {
@@ -745,10 +768,6 @@ tbody tr:hover {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--card-2);
-}
-
-.remove-ipva-wrap {
-  min-width: 0;
 }
 
 .remove-ipva-btn {
@@ -844,8 +863,7 @@ tr.edited-highlight td {
   background: rgba(29, 78, 216, 0.08);
 }
 
-.main-card.edited-highlight,
-.checklist-card.edited-highlight {
+.main-card.edited-highlight {
   border-color: rgba(29, 78, 216, 0.45);
 }
 
@@ -914,7 +932,7 @@ tr.edited-highlight td {
     display: block;
   }
 
-  .mobile-cards {
+  .mobile-list-wrap {
     display: none;
   }
 
@@ -977,22 +995,6 @@ tr.edited-highlight td {
 
   .modal-actions button {
     width: auto;
-  }
-
-  .main-card,
-  .checklist-card {
-    padding: 14px;
-    border-radius: 16px;
-  }
-
-  .main-card h3,
-  .checklist-card h3 {
-    font-size: 1rem;
-  }
-
-  .main-card p,
-  .checklist-card p {
-    font-size: 13px;
   }
 
   .action-btn {
