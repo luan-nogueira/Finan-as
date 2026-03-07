@@ -11,7 +11,7 @@
     <header class="hero">
       <div class="hero-text">
         <span class="badge">💙 Site financeiro do casal</span>
-        <h1>Controle Financeiro - Março</h1>
+        <h1>Controle Financeiro</h1>
         <p>
           Painel para acompanhar os gastos comuns, contas pessoais e parcelas do IPVA.
         </p>
@@ -19,37 +19,90 @@
 
       <div class="hero-total">
         <p>Total geral do mês</p>
-        <h2>R$ 8.379,18</h2>
-        <span>Sem incluir itens sem valor preenchido</span>
+        <h2 id="total-geral">R$ 0,00</h2>
+        <span id="user-email">Carregando usuário...</span>
+        <button id="logout-btn" class="btn-secondary" type="button">Sair</button>
       </div>
     </header>
 
     <section class="summary-grid">
       <div class="summary-card">
         <p>Gastos comuns</p>
-        <h3>R$ 4.941,99</h3>
+        <h3 id="total-comum">R$ 0,00</h3>
       </div>
 
       <div class="summary-card">
         <p>Luan</p>
-        <h3 class="green">R$ 2.344,19</h3>
+        <h3 class="green" id="total-luan">R$ 0,00</h3>
       </div>
 
       <div class="summary-card">
         <p>Kelly</p>
-        <h3 class="orange">R$ 1.093,00</h3>
+        <h3 class="orange" id="total-kelly">R$ 0,00</h3>
       </div>
 
       <div class="summary-card">
         <p>Itens pendentes</p>
-        <h3 class="red">5</h3>
+        <h3 class="red" id="total-pendentes">0</h3>
       </div>
     </section>
 
     <section class="panel">
       <div class="panel-header">
-        <h2>Despesas de Março</h2>
-        <p>Tabela consolidada do casal</p>
+        <h2>Nova despesa</h2>
+        <p>Adicione uma nova conta</p>
+      </div>
+
+      <form id="expense-form" class="form-grid">
+        <div class="field">
+          <label for="descricao">Descrição</label>
+          <input type="text" id="descricao" placeholder="Ex: Cartão Nubank" required />
+        </div>
+
+        <div class="field">
+          <label for="categoria">Categoria</label>
+          <select id="categoria" required>
+            <option value="">Selecione</option>
+            <option value="Gastos comuns">Gastos comuns</option>
+            <option value="Luan">Luan</option>
+            <option value="Kelly">Kelly</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="valor">Valor</label>
+          <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required />
+        </div>
+
+        <div class="field">
+          <label for="vencimento">Vencimento</label>
+          <input type="text" id="vencimento" placeholder="Ex: 10/03" />
+        </div>
+
+        <div class="field full">
+          <label for="observacao">Observação</label>
+          <input type="text" id="observacao" placeholder="Ex: Parcela 12/48" />
+        </div>
+
+        <div class="full">
+          <button type="submit" class="btn-primary">Salvar despesa</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header filters">
+        <div>
+          <h2>Despesas</h2>
+          <p>Tabela consolidada do casal</p>
+        </div>
+
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="Todos" type="button">Todos</button>
+          <button class="filter-btn" data-filter="Gastos comuns" type="button">Gastos comuns</button>
+          <button class="filter-btn" data-filter="Luan" type="button">Luan</button>
+          <button class="filter-btn" data-filter="Kelly" type="button">Kelly</button>
+        </div>
       </div>
 
       <div class="table-box">
@@ -61,180 +114,11 @@
               <th>Valor</th>
               <th>Vencimento</th>
               <th>Observação</th>
+              <th>Status</th>
+              <th>Ações</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>Condomínio</td>
-              <td>R$ 390,00</td>
-              <td>08/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>Internet</td>
-              <td>R$ 80,00</td>
-              <td>10/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>Luz</td>
-              <td>—</td>
-              <td>27/02</td>
-              <td>Valor não informado</td>
-            </tr>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>Gás</td>
-              <td>R$ 53,99</td>
-              <td>25/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>Riachuelo</td>
-              <td>R$ 301,00</td>
-              <td>13/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>Cartão Carrefour</td>
-              <td>R$ 405,00</td>
-              <td>21/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>Cartão Renner</td>
-              <td>R$ 476,00</td>
-              <td>10/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>C&A</td>
-              <td>R$ 96,00</td>
-              <td>15/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>Carro</td>
-              <td>R$ 1.500,00</td>
-              <td>20/03</td>
-              <td>Parcela 12/48</td>
-            </tr>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>Mercado Pago</td>
-              <td>R$ 1.640,00</td>
-              <td>22/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag common">Gastos comuns</span></td>
-              <td>Cartão Caixa</td>
-              <td>—</td>
-              <td>24/03</td>
-              <td>Valor não informado</td>
-            </tr>
-
-            <tr>
-              <td><span class="tag luan">Luan</span></td>
-              <td>Cartão Nubank</td>
-              <td>R$ 81,74</td>
-              <td>08/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag luan">Luan</span></td>
-              <td>Cartão Santander</td>
-              <td>R$ 22,00</td>
-              <td>07/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag luan">Luan</span></td>
-              <td>Cartão BB</td>
-              <td>R$ 2.076,81</td>
-              <td>09/03</td>
-              <td>Inclui R$ 300,00 mãe</td>
-            </tr>
-            <tr>
-              <td><span class="tag luan">Luan</span></td>
-              <td>Vivo</td>
-              <td>R$ 55,00</td>
-              <td>10/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag luan">Luan</span></td>
-              <td>Mercado Pago</td>
-              <td>R$ 108,64</td>
-              <td>12/03</td>
-              <td>-</td>
-            </tr>
-
-            <tr>
-              <td><span class="tag kelly">Kelly</span></td>
-              <td>Claro</td>
-              <td>R$ 55,00</td>
-              <td>10/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag kelly">Kelly</span></td>
-              <td>Cartão Preto</td>
-              <td>R$ 153,00</td>
-              <td>20/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag kelly">Kelly</span></td>
-              <td>Cartão Inter</td>
-              <td>R$ 189,00</td>
-              <td>15/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag kelly">Kelly</span></td>
-              <td>Cartão Nubank</td>
-              <td>R$ 184,00</td>
-              <td>07/03</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td><span class="tag kelly">Kelly</span></td>
-              <td>Reneg. Itaú</td>
-              <td>R$ 70,00</td>
-              <td>—</td>
-              <td>Sem data</td>
-            </tr>
-            <tr>
-              <td><span class="tag kelly">Kelly</span></td>
-              <td>Reneg. Casas Bahia</td>
-              <td>R$ 100,00</td>
-              <td>25/03</td>
-              <td>Parcela 10/10</td>
-            </tr>
-            <tr>
-              <td><span class="tag kelly">Kelly</span></td>
-              <td>Faculdade</td>
-              <td>R$ 570,00</td>
-              <td>—</td>
-              <td>Sem data</td>
-            </tr>
-            <tr>
-              <td><span class="tag kelly">Kelly</span></td>
-              <td>Coren</td>
-              <td>—</td>
-              <td>—</td>
-              <td>Sem valor e data</td>
-            </tr>
-          </tbody>
+          <tbody id="tabela-despesas"></tbody>
         </table>
       </div>
     </section>
@@ -249,25 +133,25 @@
         <div class="resume-item">
           <div>
             <strong>Luan</strong>
-            <span>5 lançamentos</span>
+            <span>Despesas pessoais</span>
           </div>
-          <strong class="green">R$ 2.344,19</strong>
+          <strong class="green" id="resumo-luan">R$ 0,00</strong>
         </div>
 
         <div class="resume-item">
           <div>
             <strong>Kelly</strong>
-            <span>8 lançamentos, 1 sem valor</span>
+            <span>Despesas pessoais</span>
           </div>
-          <strong class="orange">R$ 1.093,00</strong>
+          <strong class="orange" id="resumo-kelly">R$ 0,00</strong>
         </div>
 
         <div class="resume-item">
           <div>
             <strong>Gastos comuns</strong>
-            <span>11 lançamentos, 2 sem valor</span>
+            <span>Despesas compartilhadas</span>
           </div>
-          <strong>R$ 4.941,99</strong>
+          <strong id="resumo-comum">R$ 0,00</strong>
         </div>
       </div>
 
@@ -313,8 +197,58 @@
     </section>
 
     <footer class="footer">
-      <p>Alguns itens ainda estão sem valor ou sem data preenchida.</p>
+      <p>Os dados podem ser cadastrados e editados diretamente no site.</p>
     </footer>
   </div>
+
+  <!-- Modal de edição -->
+  <div id="edit-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar despesa</h2>
+        <button type="button" class="modal-close" id="close-modal">&times;</button>
+      </div>
+
+      <form id="edit-form" class="form-grid">
+        <input type="hidden" id="edit-id" />
+
+        <div class="field">
+          <label for="edit-descricao">Descrição</label>
+          <input type="text" id="edit-descricao" required />
+        </div>
+
+        <div class="field">
+          <label for="edit-categoria">Categoria</label>
+          <select id="edit-categoria" required>
+            <option value="Gastos comuns">Gastos comuns</option>
+            <option value="Luan">Luan</option>
+            <option value="Kelly">Kelly</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="edit-valor">Valor</label>
+          <input type="number" id="edit-valor" step="0.01" min="0" required />
+        </div>
+
+        <div class="field">
+          <label for="edit-vencimento">Vencimento</label>
+          <input type="text" id="edit-vencimento" />
+        </div>
+
+        <div class="field full">
+          <label for="edit-observacao">Observação</label>
+          <input type="text" id="edit-observacao" />
+        </div>
+
+        <div class="modal-actions full">
+          <button type="button" class="btn-light" id="cancel-edit">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
 </body>
 </html>
