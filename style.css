@@ -252,8 +252,7 @@ button {
 }
 
 .filters,
-.ipva-header,
-.checklist-header {
+.ipva-header {
   display: flex;
   justify-content: space-between;
   align-items: stretch;
@@ -273,6 +272,10 @@ button {
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
+}
+
+.tools-grid-main {
+  margin-bottom: 10px;
 }
 
 .field {
@@ -320,7 +323,7 @@ textarea:focus {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 980px;
+  min-width: 1120px;
 }
 
 th,
@@ -336,6 +339,9 @@ th {
   font-size: 11px;
   text-transform: uppercase;
   color: var(--muted);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 tbody tr:hover {
@@ -431,16 +437,14 @@ tbody tr:hover {
   color: #991b1b;
 }
 
-.filter-buttons,
-.status-filters {
+.filter-buttons {
   display: grid;
   grid-template-columns: 1fr;
   gap: 6px;
   width: 100%;
 }
 
-.filter-btn,
-.status-filter-btn {
+.filter-btn {
   border: 1px solid var(--border);
   background: var(--card);
   padding: 8px 10px;
@@ -452,11 +456,35 @@ tbody tr:hover {
   font-size: 11px;
 }
 
-.filter-btn.active,
-.status-filter-btn.active {
+.filter-btn.active {
   background: var(--primary);
   color: white;
   border-color: var(--primary);
+}
+
+.quick-summary-bar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.quick-pill {
+  border: 1px solid var(--border);
+  background: var(--card-2);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.quick-pill span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.quick-pill strong {
+  font-size: 0.95rem;
 }
 
 .actions-cell {
@@ -464,10 +492,6 @@ tbody tr:hover {
   grid-template-columns: 1fr 1fr;
   gap: 5px;
   align-items: stretch;
-}
-
-.actions-cell .btn-toggle {
-  grid-column: 1 / -1;
 }
 
 .action-btn,
@@ -502,12 +526,6 @@ tbody tr:hover {
   background: var(--card-2);
   color: var(--text);
   border: 1px solid var(--border);
-}
-
-.btn-toggle {
-  background: rgba(29, 78, 216, 0.12);
-  color: #1d4ed8;
-  border: none;
 }
 
 .btn-edit {
@@ -632,27 +650,21 @@ tbody tr:hover {
   width: 100%;
 }
 
-.see-more-wrap {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-}
-
 .mobile-cards {
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .desktop-table {
   display: none;
 }
 
-.expense-card,
-.checklist-card {
+.checklist-card,
+.main-card {
   background: var(--card-2);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 9px;
+  padding: 10px;
 }
 
 .checklist-card.is-paid {
@@ -664,32 +676,27 @@ tbody tr:hover {
   background: var(--row-overdue);
 }
 
-.expense-card-overdue {
-  border-color: rgba(220, 38, 38, 0.35);
-  background: var(--row-overdue);
-}
-
 .expense-card-top {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 4px;
   align-items: flex-start;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
-.expense-card h3,
-.checklist-card h3 {
-  font-size: 0.82rem;
-  margin-bottom: 3px;
+.checklist-card h3,
+.main-card h3 {
+  font-size: 0.86rem;
+  margin-bottom: 4px;
   line-height: 1.15;
   word-break: break-word;
 }
 
-.expense-card p,
-.checklist-card p {
+.checklist-card p,
+.main-card p {
   color: var(--text);
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   font-size: 10px;
   line-height: 1.2;
   word-break: break-word;
@@ -706,9 +713,6 @@ tbody tr:hover {
 }
 
 .mobile-real-check {
-  position: static !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
   width: 18px !important;
   min-width: 18px !important;
   min-height: 18px !important;
@@ -762,33 +766,6 @@ tbody tr:hover {
   padding: 6px;
 }
 
-.legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  display: inline-block;
-}
-
-.legend-pending {
-  background: #f59e0b;
-}
-
-.legend-paid {
-  background: #22c55e;
-}
-
-.legend-overdue {
-  background: #ef4444;
-}
-
 .table-check-wrap {
   display: inline-flex;
   align-items: center;
@@ -835,6 +812,13 @@ tbody tr:hover {
   font-weight: bold;
 }
 
+.main-table-box {
+  max-height: 68vh;
+  overflow: auto;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
 @keyframes flashEdited {
   0% {
     transform: scale(1);
@@ -860,8 +844,8 @@ tr.edited-highlight td {
   background: rgba(29, 78, 216, 0.08);
 }
 
-.checklist-card.edited-highlight,
-.expense-card.edited-highlight {
+.main-card.edited-highlight,
+.checklist-card.edited-highlight {
   border-color: rgba(29, 78, 216, 0.45);
 }
 
@@ -875,7 +859,7 @@ tr.edited-highlight td {
   }
 
   .filter-buttons,
-  .status-filters {
+  .quick-summary-bar {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -901,15 +885,11 @@ tr.edited-highlight td {
   .action-btn {
     width: auto;
   }
-
-  .actions-cell .btn-toggle {
-    grid-column: auto;
-  }
 }
 
 @media (min-width: 768px) {
   .container {
-    width: min(1180px, calc(100% - 32px));
+    width: min(1280px, calc(100% - 32px));
     margin: 18px auto 30px;
   }
 
@@ -943,8 +923,7 @@ tr.edited-highlight td {
   }
 
   .filters,
-  .ipva-header,
-  .checklist-header {
+  .ipva-header {
     flex-direction: row;
     align-items: center;
   }
@@ -954,19 +933,21 @@ tr.edited-highlight td {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .tools-grid-main {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
   .ipva-row {
     grid-template-columns: 1.2fr 1fr 1fr auto;
   }
 
-  .filter-buttons,
-  .status-filters {
+  .filter-buttons {
     display: flex;
     flex-wrap: wrap;
     width: auto;
   }
 
-  .filter-btn,
-  .status-filter-btn {
+  .filter-btn {
     width: auto;
   }
 
@@ -998,18 +979,18 @@ tr.edited-highlight td {
     width: auto;
   }
 
-  .expense-card,
+  .main-card,
   .checklist-card {
     padding: 14px;
     border-radius: 16px;
   }
 
-  .expense-card h3,
+  .main-card h3,
   .checklist-card h3 {
     font-size: 1rem;
   }
 
-  .expense-card p,
+  .main-card p,
   .checklist-card p {
     font-size: 13px;
   }
@@ -1029,6 +1010,10 @@ tr.edited-highlight td {
   .status-row {
     font-size: 11px;
     padding: 6px 10px;
+  }
+
+  .quick-summary-bar {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
