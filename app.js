@@ -183,6 +183,7 @@ async function salvarDespesa(e) {
 
     form.reset();
   } catch (error) {
+    console.error(error);
     alert("Erro ao salvar despesa: " + error.message);
   }
 }
@@ -208,6 +209,7 @@ async function salvarEdicao(e) {
 
     fecharModalEdicao();
   } catch (error) {
+    console.error(error);
     alert("Erro ao editar despesa: " + error.message);
   }
 }
@@ -221,6 +223,7 @@ async function alternarPagamento(id) {
       pago: !item.pago
     });
   } catch (error) {
+    console.error(error);
     alert("Erro ao atualizar status: " + error.message);
   }
 }
@@ -232,6 +235,7 @@ async function excluirDespesa(id) {
   try {
     await deleteDoc(doc(db, "despesas", id));
   } catch (error) {
+    console.error(error);
     alert("Erro ao excluir despesa: " + error.message);
   }
 }
