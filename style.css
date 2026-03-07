@@ -65,6 +65,8 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 22px;
   padding: 24px;
+  display: grid;
+  gap: 10px;
 }
 
 .hero-total p {
@@ -80,6 +82,7 @@ body {
 .hero-total span {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.85);
+  word-break: break-word;
 }
 
 .summary-grid {
@@ -142,6 +145,50 @@ body {
   font-size: 14px;
 }
 
+.filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+input,
+select,
+button {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
 .table-box {
   overflow-x: auto;
 }
@@ -149,7 +196,7 @@ body {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 760px;
+  min-width: 980px;
 }
 
 th,
@@ -157,6 +204,7 @@ td {
   text-align: left;
   padding: 14px 12px;
   border-bottom: 1px solid var(--border);
+  vertical-align: middle;
 }
 
 th {
@@ -246,6 +294,97 @@ tbody tr:hover {
   color: #3730a3;
 }
 
+.status-row {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status-pago {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pendente {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  border: 1px solid var(--border);
+  background: white;
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: bold;
+  width: auto;
+}
+
+.filter-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn,
+.btn-primary,
+.btn-secondary,
+.btn-light {
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.action-btn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  width: auto;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--primary-dark);
+}
+
+.btn-light {
+  background: #eef2ff;
+  color: var(--primary-dark);
+}
+
+.btn-toggle {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.btn-edit {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.btn-delete {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 .footer {
   text-align: center;
   color: var(--muted);
@@ -254,10 +393,68 @@ tbody tr:hover {
   padding-bottom: 20px;
 }
 
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 999;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 720px;
+  background: white;
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.modal-header h2 {
+  font-size: 1.35rem;
+}
+
+.modal-close {
+  width: auto;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #f3f4f6;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modal-actions button {
+  width: auto;
+}
+
 @media (max-width: 980px) {
   .hero,
   .summary-grid,
-  .bottom-grid {
+  .bottom-grid,
+  .form-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -270,7 +467,8 @@ tbody tr:hover {
 
   .hero,
   .summary-card,
-  .panel {
+  .panel,
+  .modal-content {
     padding: 18px;
   }
 
@@ -281,5 +479,15 @@ tbody tr:hover {
   .summary-card h3,
   .hero-total h2 {
     font-size: 1.45rem;
+  }
+
+  .actions-cell {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-btn,
+  .modal-actions button {
+    width: 100%;
   }
 }
