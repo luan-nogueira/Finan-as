@@ -161,67 +161,96 @@
         </form>
       </section>
 
-      <section class="calendar-grid">
-        <div class="panel">
-          <div class="panel-header calendar-header">
+      <section class="panel calendar-toggle-panel">
+        <div class="calendar-shortcut">
+          <div class="calendar-shortcut-left">
+            <button
+              id="calendar-toggle-btn"
+              type="button"
+              class="calendar-icon-btn"
+              aria-expanded="false"
+              aria-controls="calendar-wrapper"
+              title="Abrir calendário"
+            >
+              📅
+            </button>
+
             <div>
               <h2>Calendário de vencimentos</h2>
-              <p>Visualize as contas por dia do mês</p>
-            </div>
-
-            <div class="calendar-controls">
-              <button id="prev-month-btn" type="button" class="btn-light">←</button>
-              <strong id="calendar-title">Mês</strong>
-              <button id="next-month-btn" type="button" class="btn-light">→</button>
+              <p>Toque no ícone para abrir ou fechar o calendário</p>
             </div>
           </div>
 
-          <div class="calendar-legend">
-            <span class="legend-item"><span class="legend-dot legend-paid"></span> Pago</span>
-            <span class="legend-item"><span class="legend-dot legend-pending"></span> Pendente</span>
-            <span class="legend-item"><span class="legend-dot legend-overdue"></span> Vencido</span>
+          <div class="calendar-shortcut-summary">
+            <span id="calendar-month-total-mini">R$ 0,00</span>
+            <small id="calendar-title-mini">Mês</small>
           </div>
-
-          <div id="calendar-grid" class="calendar-box"></div>
         </div>
 
-        <div class="panel">
-          <div class="panel-header">
-            <h2>Resumo do mês no calendário</h2>
-            <p>Leitura rápida do período selecionado</p>
-          </div>
+        <div id="calendar-wrapper" class="calendar-wrapper hidden">
+          <section class="calendar-grid">
+            <div class="panel calendar-inner-panel">
+              <div class="panel-header calendar-header">
+                <div>
+                  <h2>Calendário de vencimentos</h2>
+                  <p>Visualize as contas por dia do mês</p>
+                </div>
 
-          <div class="resume-item">
-            <div>
-              <strong>Pagas no mês</strong>
-              <span>Contas marcadas como pagas</span>
-            </div>
-            <strong class="green" id="calendar-paid-count">0</strong>
-          </div>
+                <div class="calendar-controls">
+                  <button id="prev-month-btn" type="button" class="btn-light">←</button>
+                  <strong id="calendar-title">Mês</strong>
+                  <button id="next-month-btn" type="button" class="btn-light">→</button>
+                </div>
+              </div>
 
-          <div class="resume-item">
-            <div>
-              <strong>Pendentes no mês</strong>
-              <span>Contas ainda não pagas</span>
-            </div>
-            <strong class="orange" id="calendar-pending-count">0</strong>
-          </div>
+              <div class="calendar-legend">
+                <span class="legend-item"><span class="legend-dot legend-paid"></span> Pago</span>
+                <span class="legend-item"><span class="legend-dot legend-pending"></span> Pendente</span>
+                <span class="legend-item"><span class="legend-dot legend-overdue"></span> Vencido</span>
+              </div>
 
-          <div class="resume-item">
-            <div>
-              <strong>Vencidas no mês</strong>
-              <span>Contas atrasadas</span>
+              <div id="calendar-grid" class="calendar-box"></div>
             </div>
-            <strong class="red" id="calendar-overdue-count">0</strong>
-          </div>
 
-          <div class="resume-item">
-            <div>
-              <strong>Total do mês</strong>
-              <span>Soma das contas com vencimento no mês</span>
+            <div class="panel calendar-inner-panel">
+              <div class="panel-header">
+                <h2>Resumo do mês no calendário</h2>
+                <p>Leitura rápida do período selecionado</p>
+              </div>
+
+              <div class="resume-item">
+                <div>
+                  <strong>Pagas no mês</strong>
+                  <span>Contas marcadas como pagas</span>
+                </div>
+                <strong class="green" id="calendar-paid-count">0</strong>
+              </div>
+
+              <div class="resume-item">
+                <div>
+                  <strong>Pendentes no mês</strong>
+                  <span>Contas ainda não pagas</span>
+                </div>
+                <strong class="orange" id="calendar-pending-count">0</strong>
+              </div>
+
+              <div class="resume-item">
+                <div>
+                  <strong>Vencidas no mês</strong>
+                  <span>Contas atrasadas</span>
+                </div>
+                <strong class="red" id="calendar-overdue-count">0</strong>
+              </div>
+
+              <div class="resume-item">
+                <div>
+                  <strong>Total do mês</strong>
+                  <span>Soma das contas com vencimento no mês</span>
+                </div>
+                <strong id="calendar-month-total">R$ 0,00</strong>
+              </div>
             </div>
-            <strong id="calendar-month-total">R$ 0,00</strong>
-          </div>
+          </section>
         </div>
       </section>
 
@@ -532,12 +561,16 @@
 
       const calendarGrid = document.getElementById("calendar-grid");
       const calendarTitle = document.getElementById("calendar-title");
+      const calendarTitleMini = document.getElementById("calendar-title-mini");
+      const calendarMonthTotalMini = document.getElementById("calendar-month-total-mini");
       const prevMonthBtn = document.getElementById("prev-month-btn");
       const nextMonthBtn = document.getElementById("next-month-btn");
       const calendarPaidCount = document.getElementById("calendar-paid-count");
       const calendarPendingCount = document.getElementById("calendar-pending-count");
       const calendarOverdueCount = document.getElementById("calendar-overdue-count");
       const calendarMonthTotal = document.getElementById("calendar-month-total");
+      const calendarToggleBtn = document.getElementById("calendar-toggle-btn");
+      const calendarWrapper = document.getElementById("calendar-wrapper");
 
       let modo = "login";
       let filtroAtual = "Todos";
@@ -552,6 +585,7 @@
       let monthlyChart = null;
       const INITIAL_LIMIT = 8;
       let calendarDate = new Date();
+      let calendarOpen = false;
 
       let ipvaData = [];
       const ipvaPadrao = [
@@ -1057,6 +1091,7 @@
         const mobileMode = isMobileCalendar();
 
         calendarTitle.textContent = formatarTituloMes(primeiroDia);
+        calendarTitleMini.textContent = formatarTituloMes(primeiroDia);
         calendarGrid.classList.toggle("calendar-mobile-bank", mobileMode);
 
         const nomesDias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -1156,6 +1191,7 @@
         calendarPendingCount.textContent = String(pendingCount);
         calendarOverdueCount.textContent = String(overdueCount);
         calendarMonthTotal.textContent = formatarMoeda(totalMes);
+        calendarMonthTotalMini.textContent = formatarMoeda(totalMes);
       }
 
       function renderIpva() {
@@ -1239,6 +1275,13 @@
       function carregarTema() {
         const saved = localStorage.getItem("finance_theme") || "light";
         salvarTema(saved);
+      }
+
+      function atualizarEstadoCalendario() {
+        calendarWrapper.classList.toggle("hidden", !calendarOpen);
+        calendarToggleBtn.setAttribute("aria-expanded", String(calendarOpen));
+        calendarToggleBtn.textContent = calendarOpen ? "✕" : "📅";
+        calendarToggleBtn.title = calendarOpen ? "Fechar calendário" : "Abrir calendário";
       }
 
       async function garantirIpvaInicial() {
@@ -1544,6 +1587,11 @@
         renderChecklistTabela();
       });
 
+      calendarToggleBtn.addEventListener("click", () => {
+        calendarOpen = !calendarOpen;
+        atualizarEstadoCalendario();
+      });
+
       prevMonthBtn.addEventListener("click", () => {
         calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
         renderCalendario();
@@ -1637,6 +1685,7 @@
       carregarTema();
       renderIpva();
       renderCalendario();
+      atualizarEstadoCalendario();
       atualizarModo();
     })();
   </script>
