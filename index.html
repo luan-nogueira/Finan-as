@@ -5,202 +5,244 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Financeiro do Casal</title>
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase Compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <div class="container">
-    <header class="hero">
-      <div class="hero-text">
-        <span class="badge">💙 Site financeiro do casal</span>
-        <h1>Controle Financeiro</h1>
-        <p>
-          Painel para acompanhar os gastos comuns, contas pessoais e parcelas do IPVA.
-        </p>
-      </div>
 
-      <div class="hero-total">
-        <p>Total geral do mês</p>
-        <h2 id="total-geral">R$ 0,00</h2>
-        <span id="user-email">Carregando usuário...</span>
-        <button id="logout-btn" class="btn-secondary" type="button">Sair</button>
-      </div>
-    </header>
-
-    <section class="summary-grid">
-      <div class="summary-card">
-        <p>Gastos comuns</p>
-        <h3 id="total-comum">R$ 0,00</h3>
-      </div>
-
-      <div class="summary-card">
-        <p>Luan</p>
-        <h3 class="green" id="total-luan">R$ 0,00</h3>
-      </div>
-
-      <div class="summary-card">
-        <p>Kelly</p>
-        <h3 class="orange" id="total-kelly">R$ 0,00</h3>
-      </div>
-
-      <div class="summary-card">
-        <p>Itens pendentes</p>
-        <h3 class="red" id="total-pendentes">0</h3>
-      </div>
-    </section>
-
-    <section class="panel">
+  <!-- LOGIN -->
+  <section class="auth-page" id="loginBox">
+    <div class="auth-card">
       <div class="panel-header">
-        <h2>Nova despesa</h2>
-        <p>Adicione uma nova conta</p>
+        <span class="badge badge-login">🔐 Área de login</span>
+        <h2>Entrar no sistema</h2>
+        <p>Acesse o painel financeiro com seu e-mail e senha.</p>
       </div>
 
-      <form id="expense-form" class="form-grid">
-        <div class="field">
-          <label for="descricao">Descrição</label>
-          <input type="text" id="descricao" placeholder="Ex: Cartão Nubank" required />
-        </div>
-
-        <div class="field">
-          <label for="categoria">Categoria</label>
-          <select id="categoria" required>
-            <option value="">Selecione</option>
-            <option value="Gastos comuns">Gastos comuns</option>
-            <option value="Luan">Luan</option>
-            <option value="Kelly">Kelly</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="valor">Valor</label>
-          <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required />
-        </div>
-
-        <div class="field">
-          <label for="vencimento">Vencimento</label>
-          <input type="text" id="vencimento" placeholder="Ex: 10/03" />
+      <form id="auth-form" class="form-grid auth-form">
+        <div class="field full">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" required placeholder="seuemail@exemplo.com" />
         </div>
 
         <div class="field full">
-          <label for="observacao">Observação</label>
-          <input type="text" id="observacao" placeholder="Ex: Parcela 12/48" />
+          <label for="password">Senha</label>
+          <input type="password" id="password" required minlength="6" placeholder="Digite sua senha" />
         </div>
 
         <div class="full">
-          <button type="submit" class="btn-primary">Salvar despesa</button>
+          <button id="submit-btn" type="submit" class="btn-primary">Entrar</button>
         </div>
       </form>
-    </section>
 
-    <section class="panel">
-      <div class="panel-header filters">
-        <div>
-          <h2>Despesas</h2>
-          <p>Tabela consolidada do casal</p>
-        </div>
-
-        <div class="filter-buttons">
-          <button class="filter-btn active" data-filter="Todos" type="button">Todos</button>
-          <button class="filter-btn" data-filter="Gastos comuns" type="button">Gastos comuns</button>
-          <button class="filter-btn" data-filter="Luan" type="button">Luan</button>
-          <button class="filter-btn" data-filter="Kelly" type="button">Kelly</button>
-        </div>
+      <div class="auth-switch">
+        <button id="tab-login" type="button" class="btn-light auth-switch-btn">Modo login</button>
+        <button id="tab-register" type="button" class="btn-secondary auth-switch-btn">Criar conta</button>
       </div>
 
-      <div class="table-box">
-        <table>
-          <thead>
-            <tr>
-              <th>Categoria</th>
-              <th>Descrição</th>
-              <th>Valor</th>
-              <th>Vencimento</th>
-              <th>Observação</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-despesas"></tbody>
-        </table>
-      </div>
-    </section>
+      <p id="auth-message" class="auth-message"></p>
+    </div>
+  </section>
 
-    <section class="bottom-grid">
-      <div class="panel">
+  <!-- APP -->
+  <div id="appRoot" style="display:none;">
+    <div class="container">
+      <header class="hero">
+        <div class="hero-text">
+          <span class="badge">💙 Site financeiro do casal</span>
+          <h1>Controle Financeiro</h1>
+          <p>Painel para acompanhar os gastos comuns, contas pessoais e parcelas do IPVA.</p>
+        </div>
+
+        <div class="hero-total">
+          <p>Total geral do mês</p>
+          <h2 id="total-geral">R$ 0,00</h2>
+          <span id="user-email">Carregando usuário...</span>
+          <button id="logout-btn" class="btn-secondary" type="button">Sair</button>
+        </div>
+      </header>
+
+      <section class="summary-grid">
+        <div class="summary-card">
+          <p>Gastos comuns</p>
+          <h3 id="total-comum">R$ 0,00</h3>
+        </div>
+
+        <div class="summary-card">
+          <p>Luan</p>
+          <h3 class="green" id="total-luan">R$ 0,00</h3>
+        </div>
+
+        <div class="summary-card">
+          <p>Kelly</p>
+          <h3 class="orange" id="total-kelly">R$ 0,00</h3>
+        </div>
+
+        <div class="summary-card">
+          <p>Itens pendentes</p>
+          <h3 class="red" id="total-pendentes">0</h3>
+        </div>
+      </section>
+
+      <section class="panel">
         <div class="panel-header">
-          <h2>Resumo por pessoa</h2>
-          <p>Visão rápida</p>
+          <h2>Nova despesa</h2>
+          <p>Adicione uma nova conta</p>
         </div>
 
-        <div class="resume-item">
+        <form id="expense-form" class="form-grid">
+          <div class="field">
+            <label for="descricao">Descrição</label>
+            <input type="text" id="descricao" placeholder="Ex: Cartão Nubank" required />
+          </div>
+
+          <div class="field">
+            <label for="categoria">Categoria</label>
+            <select id="categoria" required>
+              <option value="">Selecione</option>
+              <option value="Gastos comuns">Gastos comuns</option>
+              <option value="Luan">Luan</option>
+              <option value="Kelly">Kelly</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="valor">Valor</label>
+            <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required />
+          </div>
+
+          <div class="field">
+            <label for="vencimento">Vencimento</label>
+            <input type="text" id="vencimento" placeholder="Ex: 10/03" />
+          </div>
+
+          <div class="field full">
+            <label for="observacao">Observação</label>
+            <input type="text" id="observacao" placeholder="Ex: Parcela 12/48" />
+          </div>
+
+          <div class="full">
+            <button type="submit" class="btn-primary">Salvar despesa</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header filters">
           <div>
-            <strong>Luan</strong>
-            <span>Despesas pessoais</span>
+            <h2>Despesas</h2>
+            <p>Tabela consolidada do casal</p>
           </div>
-          <strong class="green" id="resumo-luan">R$ 0,00</strong>
-        </div>
 
-        <div class="resume-item">
-          <div>
-            <strong>Kelly</strong>
-            <span>Despesas pessoais</span>
-          </div>
-          <strong class="orange" id="resumo-kelly">R$ 0,00</strong>
-        </div>
-
-        <div class="resume-item">
-          <div>
-            <strong>Gastos comuns</strong>
-            <span>Despesas compartilhadas</span>
-          </div>
-          <strong id="resumo-comum">R$ 0,00</strong>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <h2>IPVA do carro</h2>
-          <p>Acompanhamento 2026</p>
-        </div>
-
-        <div class="resume-item">
-          <div>
-            <strong>30/01/2026</strong>
-            <span>1ª parcela</span>
-          </div>
-          <div class="status-box">
-            <strong>R$ 772,77</strong>
-            <span class="status paid">Pago ✅</span>
+          <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="Todos" type="button">Todos</button>
+            <button class="filter-btn" data-filter="Gastos comuns" type="button">Gastos comuns</button>
+            <button class="filter-btn" data-filter="Luan" type="button">Luan</button>
+            <button class="filter-btn" data-filter="Kelly" type="button">Kelly</button>
           </div>
         </div>
 
-        <div class="resume-item">
-          <div>
-            <strong>03/03/2026</strong>
-            <span>2ª parcela</span>
+        <div class="table-box">
+          <table>
+            <thead>
+              <tr>
+                <th>Categoria</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Observação</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-despesas"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="bottom-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Resumo por pessoa</h2>
+            <p>Visão rápida</p>
           </div>
-          <div class="status-box">
-            <strong>R$ 772,77</strong>
-            <span class="status open">Em aberto</span>
+
+          <div class="resume-item">
+            <div>
+              <strong>Luan</strong>
+              <span>Despesas pessoais</span>
+            </div>
+            <strong class="green" id="resumo-luan">R$ 0,00</strong>
+          </div>
+
+          <div class="resume-item">
+            <div>
+              <strong>Kelly</strong>
+              <span>Despesas pessoais</span>
+            </div>
+            <strong class="orange" id="resumo-kelly">R$ 0,00</strong>
+          </div>
+
+          <div class="resume-item">
+            <div>
+              <strong>Gastos comuns</strong>
+              <span>Despesas compartilhadas</span>
+            </div>
+            <strong id="resumo-comum">R$ 0,00</strong>
           </div>
         </div>
 
-        <div class="resume-item">
-          <div>
-            <strong>07/04/2026</strong>
-            <span>3ª parcela</span>
+        <div class="panel">
+          <div class="panel-header">
+            <h2>IPVA do carro</h2>
+            <p>Acompanhamento 2026</p>
           </div>
-          <div class="status-box">
-            <strong>R$ 772,78</strong>
-            <span class="status next">Próxima</span>
+
+          <div class="resume-item">
+            <div>
+              <strong>30/01/2026</strong>
+              <span>1ª parcela</span>
+            </div>
+            <div class="status-box">
+              <strong>R$ 772,77</strong>
+              <span class="status paid">Pago ✅</span>
+            </div>
+          </div>
+
+          <div class="resume-item">
+            <div>
+              <strong>03/03/2026</strong>
+              <span>2ª parcela</span>
+            </div>
+            <div class="status-box">
+              <strong>R$ 772,77</strong>
+              <span class="status open">Em aberto</span>
+            </div>
+          </div>
+
+          <div class="resume-item">
+            <div>
+              <strong>07/04/2026</strong>
+              <span>3ª parcela</span>
+            </div>
+            <div class="status-box">
+              <strong>R$ 772,78</strong>
+              <span class="status next">Próxima</span>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <footer class="footer">
-      <p>Os dados podem ser cadastrados e editados diretamente no site.</p>
-    </footer>
+      <footer class="footer">
+        <p>Os dados podem ser cadastrados e editados diretamente no site.</p>
+      </footer>
+    </div>
   </div>
 
+  <!-- MODAL EDIÇÃO -->
   <div id="edit-modal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -248,6 +290,430 @@
     </div>
   </div>
 
-  <script type="module" src="app.js"></script>
+  <script>
+    (() => {
+      const firebaseConfig = {
+        apiKey: "COLE_SUA_API_KEY_AQUI",
+        authDomain: "SEU_PROJETO.firebaseapp.com",
+        projectId: "SEU_PROJECT_ID",
+        storageBucket: "SEU_PROJETO.firebasestorage.app",
+        messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+        appId: "SEU_APP_ID"
+      };
+
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+
+      const auth = firebase.auth();
+      const db = firebase.firestore();
+
+      const loginBox = document.getElementById("loginBox");
+      const appRoot = document.getElementById("appRoot");
+
+      const form = document.getElementById("expense-form");
+      const logoutBtn = document.getElementById("logout-btn");
+      const userEmail = document.getElementById("user-email");
+      const tbody = document.getElementById("tabela-despesas");
+
+      const totalGeralEl = document.getElementById("total-geral");
+      const totalComumEl = document.getElementById("total-comum");
+      const totalLuanEl = document.getElementById("total-luan");
+      const totalKellyEl = document.getElementById("total-kelly");
+      const totalPendentesEl = document.getElementById("total-pendentes");
+
+      const resumoComumEl = document.getElementById("resumo-comum");
+      const resumoLuanEl = document.getElementById("resumo-luan");
+      const resumoKellyEl = document.getElementById("resumo-kelly");
+
+      const editModal = document.getElementById("edit-modal");
+      const editForm = document.getElementById("edit-form");
+      const closeModalBtn = document.getElementById("close-modal");
+      const cancelEditBtn = document.getElementById("cancel-edit");
+
+      const authForm = document.getElementById("auth-form");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const submitBtn = document.getElementById("submit-btn");
+      const authMessage = document.getElementById("auth-message");
+      const tabLogin = document.getElementById("tab-login");
+      const tabRegister = document.getElementById("tab-register");
+
+      let modo = "login";
+      let filtroAtual = "Todos";
+      let despesasCache = [];
+      let unsubscribe = null;
+
+      function mostrarApp(logado) {
+        loginBox.style.display = logado ? "none" : "grid";
+        appRoot.style.display = logado ? "block" : "none";
+      }
+
+      function atualizarModo() {
+        if (modo === "login") {
+          submitBtn.textContent = "Entrar";
+          tabLogin.classList.remove("btn-secondary");
+          tabLogin.classList.add("btn-light");
+          tabRegister.classList.remove("btn-light");
+          tabRegister.classList.add("btn-secondary");
+        } else {
+          submitBtn.textContent = "Criar conta";
+          tabRegister.classList.remove("btn-secondary");
+          tabRegister.classList.add("btn-light");
+          tabLogin.classList.remove("btn-light");
+          tabLogin.classList.add("btn-secondary");
+        }
+        authMessage.textContent = "";
+      }
+
+      function formatarMoeda(valor) {
+        return Number(valor || 0).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        });
+      }
+
+      function classeCategoria(categoria) {
+        if (categoria === "Gastos comuns") return "common";
+        if (categoria === "Luan") return "luan";
+        return "kelly";
+      }
+
+      function aplicarFiltro(lista) {
+        if (filtroAtual === "Todos") return lista;
+        return lista.filter(item => item.categoria === filtroAtual);
+      }
+
+      function escapeHtml(texto) {
+        return String(texto ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function abrirModalEdicao(item) {
+        document.getElementById("edit-id").value = item.id;
+        document.getElementById("edit-descricao").value = item.descricao || "";
+        document.getElementById("edit-categoria").value = item.categoria || "Gastos comuns";
+        document.getElementById("edit-valor").value = Number(item.valor || 0);
+        document.getElementById("edit-vencimento").value = item.vencimento || "";
+        document.getElementById("edit-observacao").value = item.observacao || "";
+        editModal.classList.remove("hidden");
+      }
+
+      function fecharModalEdicao() {
+        editModal.classList.add("hidden");
+        editForm.reset();
+      }
+
+      function renderTabela() {
+        tbody.innerHTML = "";
+        const lista = aplicarFiltro(despesasCache);
+
+        if (lista.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7">Nenhuma despesa encontrada.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        lista.forEach((item) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span></td>
+            <td>${escapeHtml(item.descricao)}</td>
+            <td>${formatarMoeda(item.valor)}</td>
+            <td>${escapeHtml(item.vencimento || "-")}</td>
+            <td>${escapeHtml(item.observacao || "-")}</td>
+            <td>
+              <span class="status-row ${item.pago ? "status-pago" : "status-pendente"}">
+                ${item.pago ? "Pago" : "Pendente"}
+              </span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn btn-toggle" data-id="${item.id}" data-action="toggle">
+                  ${item.pago ? "Desmarcar" : "Marcar pago"}
+                </button>
+                <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit">
+                  Editar
+                </button>
+                <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete">
+                  Excluir
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function atualizarResumo() {
+        const totalComum = despesasCache
+          .filter(item => item.categoria === "Gastos comuns")
+          .reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+        const totalLuan = despesasCache
+          .filter(item => item.categoria === "Luan")
+          .reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+        const totalKelly = despesasCache
+          .filter(item => item.categoria === "Kelly")
+          .reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+        const totalGeral = totalComum + totalLuan + totalKelly;
+        const pendentes = despesasCache.filter(item => !item.pago).length;
+
+        totalComumEl.textContent = formatarMoeda(totalComum);
+        totalLuanEl.textContent = formatarMoeda(totalLuan);
+        totalKellyEl.textContent = formatarMoeda(totalKelly);
+        totalGeralEl.textContent = formatarMoeda(totalGeral);
+        totalPendentesEl.textContent = String(pendentes);
+
+        resumoComumEl.textContent = formatarMoeda(totalComum);
+        resumoLuanEl.textContent = formatarMoeda(totalLuan);
+        resumoKellyEl.textContent = formatarMoeda(totalKelly);
+      }
+
+      async function salvarDespesa(e) {
+        e.preventDefault();
+
+        const descricao = document.getElementById("descricao").value.trim();
+        const categoria = document.getElementById("categoria").value;
+        const valor = Number(document.getElementById("valor").value);
+        const vencimento = document.getElementById("vencimento").value.trim();
+        const observacao = document.getElementById("observacao").value.trim();
+
+        if (!auth.currentUser) return;
+
+        try {
+          await db.collection("despesas").add({
+            descricao,
+            categoria,
+            valor,
+            vencimento,
+            observacao,
+            pago: false,
+            uid: auth.currentUser.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          form.reset();
+        } catch (error) {
+          console.error(error);
+          alert("Erro ao salvar despesa: " + error.message);
+        }
+      }
+
+      async function salvarEdicao(e) {
+        e.preventDefault();
+
+        const id = document.getElementById("edit-id").value;
+        const descricao = document.getElementById("edit-descricao").value.trim();
+        const categoria = document.getElementById("edit-categoria").value;
+        const valor = Number(document.getElementById("edit-valor").value);
+        const vencimento = document.getElementById("edit-vencimento").value.trim();
+        const observacao = document.getElementById("edit-observacao").value.trim();
+
+        try {
+          await db.collection("despesas").doc(id).update({
+            descricao,
+            categoria,
+            valor,
+            vencimento,
+            observacao
+          });
+
+          fecharModalEdicao();
+        } catch (error) {
+          console.error(error);
+          alert("Erro ao editar despesa: " + error.message);
+        }
+      }
+
+      async function alternarPagamento(id) {
+        try {
+          const item = despesasCache.find(d => d.id === id);
+          if (!item) return;
+
+          await db.collection("despesas").doc(id).update({
+            pago: !item.pago
+          });
+        } catch (error) {
+          console.error(error);
+          alert("Erro ao atualizar status: " + error.message);
+        }
+      }
+
+      async function excluirDespesa(id) {
+        const confirmar = confirm("Deseja excluir esta despesa?");
+        if (!confirmar) return;
+
+        try {
+          await db.collection("despesas").doc(id).delete();
+        } catch (error) {
+          console.error(error);
+          alert("Erro ao excluir despesa: " + error.message);
+        }
+      }
+
+      tabLogin.addEventListener("click", () => {
+        modo = "login";
+        atualizarModo();
+      });
+
+      tabRegister.addEventListener("click", () => {
+        modo = "register";
+        atualizarModo();
+      });
+
+      authForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        authMessage.textContent = "Processando...";
+
+        try {
+          await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+          if (modo === "login") {
+            await auth.signInWithEmailAndPassword(email, password);
+          } else {
+            await auth.createUserWithEmailAndPassword(email, password);
+          }
+
+          authMessage.textContent = "";
+        } catch (error) {
+          console.error(error);
+          authMessage.textContent = traduzirErroAuth(error.code || error.message);
+        }
+      });
+
+      function traduzirErroAuth(code) {
+        const erros = {
+          "auth/invalid-email": "E-mail inválido.",
+          "auth/missing-password": "Digite a senha.",
+          "auth/weak-password": "A senha deve ter pelo menos 6 caracteres.",
+          "auth/email-already-in-use": "Este e-mail já está em uso.",
+          "auth/user-not-found": "Usuário não encontrado.",
+          "auth/wrong-password": "Senha incorreta.",
+          "auth/invalid-credential": "E-mail ou senha inválidos.",
+          "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde.",
+          "auth/api-key-not-valid.-please-pass-a-valid-api-key.": "API Key do Firebase inválida."
+        };
+
+        return erros[code] || `Erro: ${code}`;
+      }
+
+      form.addEventListener("submit", salvarDespesa);
+      editForm.addEventListener("submit", salvarEdicao);
+
+      closeModalBtn.addEventListener("click", fecharModalEdicao);
+      cancelEditBtn.addEventListener("click", fecharModalEdicao);
+
+      editModal.addEventListener("click", (e) => {
+        if (e.target === editModal) {
+          fecharModalEdicao();
+        }
+      });
+
+      tbody.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+
+        if (action === "toggle") {
+          await alternarPagamento(id);
+          return;
+        }
+
+        if (action === "edit") {
+          const item = despesasCache.find(d => d.id === id);
+          if (item) abrirModalEdicao(item);
+          return;
+        }
+
+        if (action === "delete") {
+          await excluirDespesa(id);
+        }
+      });
+
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          if (unsubscribe) {
+            unsubscribe();
+            unsubscribe = null;
+          }
+          await auth.signOut();
+        } catch (error) {
+          console.error(error);
+          alert("Erro ao sair.");
+        }
+      });
+
+      document.querySelectorAll(".filter-btn").forEach((botao) => {
+        botao.addEventListener("click", () => {
+          document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+          botao.classList.add("active");
+          filtroAtual = botao.dataset.filter;
+          renderTabela();
+        });
+      });
+
+      auth.onAuthStateChanged((user) => {
+        if (!user) {
+          if (unsubscribe) {
+            unsubscribe();
+            unsubscribe = null;
+          }
+          mostrarApp(false);
+          return;
+        }
+
+        mostrarApp(true);
+        userEmail.textContent = user.email || "Usuário logado";
+
+        if (unsubscribe) {
+          unsubscribe();
+          unsubscribe = null;
+        }
+
+        unsubscribe = db.collection("despesas")
+          .where("uid", "==", user.uid)
+          .orderBy("createdAt", "desc")
+          .onSnapshot((snapshot) => {
+            despesasCache = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+
+            renderTabela();
+            atualizarResumo();
+          }, (error) => {
+            console.error(error);
+
+            if (
+              error.code === "failed-precondition" ||
+              String(error.message).toLowerCase().includes("index")
+            ) {
+              alert("O Firestore precisa de um índice. Abra o link que aparece no console e crie o índice.");
+              return;
+            }
+
+            alert("Erro ao carregar dados.");
+          });
+      });
+
+      atualizarModo();
+    })();
+  </script>
 </body>
 </html>
