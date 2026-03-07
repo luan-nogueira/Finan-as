@@ -40,6 +40,7 @@ const cancelEditBtn = document.getElementById("cancel-edit");
 let filtroAtual = "Todos";
 let despesasCache = [];
 let unsubscribe = null;
+let authVerificada = false;
 
 function formatarMoeda(valor) {
   return Number(valor || 0).toLocaleString("pt-BR", {
@@ -69,6 +70,8 @@ function escapeHtml(texto) {
 }
 
 function abrirModalEdicao(item) {
+  if (!editModal) return;
+
   document.getElementById("edit-id").value = item.id;
   document.getElementById("edit-descricao").value = item.descricao || "";
   document.getElementById("edit-categoria").value = item.categoria || "Gastos comuns";
@@ -80,13 +83,15 @@ function abrirModalEdicao(item) {
 }
 
 function fecharModalEdicao() {
+  if (!editModal || !editForm) return;
   editModal.classList.add("hidden");
   editForm.reset();
 }
 
 function renderTabela() {
-  tbody.innerHTML = "";
+  if (!tbody) return;
 
+  tbody.innerHTML = "";
   const lista = aplicarFiltro(despesasCache);
 
   if (lista.length === 0) {
@@ -147,15 +152,15 @@ function atualizarResumo() {
   const totalGeral = totalComum + totalLuan + totalKelly;
   const pendentes = despesasCache.filter((item) => !item.pago).length;
 
-  totalComumEl.textContent = formatarMoeda(totalComum);
-  totalLuanEl.textContent = formatarMoeda(totalLuan);
-  totalKellyEl.textContent = formatarMoeda(totalKelly);
-  totalGeralEl.textContent = formatarMoeda(totalGeral);
-  totalPendentesEl.textContent = String(pendentes);
+  if (totalComumEl) totalComumEl.textContent = formatarMoeda(totalComum);
+  if (totalLuanEl) totalLuanEl.textContent = formatarMoeda(totalLuan);
+  if (totalKellyEl) totalKellyEl.textContent = formatarMoeda(totalKelly);
+  if (totalGeralEl) totalGeralEl.textContent = formatarMoeda(totalGeral);
+  if (totalPendentesEl) totalPendentesEl.textContent = String(pendentes);
 
-  resumoComumEl.textContent = formatarMoeda(totalComum);
-  resumoLuanEl.textContent = formatarMoeda(totalLuan);
-  resumoKellyEl.textContent = formatarMoeda(totalKelly);
+  if (resumoComumEl) resumoComumEl.textContent = formatarMoeda(totalComum);
+  if (resumoLuanEl) resumoLuanEl.textContent = formatarMoeda(totalLuan);
+  if (resumoKellyEl) resumoKellyEl.textContent = formatarMoeda(totalKelly);
 }
 
 async function salvarDespesa(e) {
@@ -167,7 +172,10 @@ async function salvarDespesa(e) {
   const vencimento = document.getElementById("vencimento").value.trim();
   const observacao = document.getElementById("observacao").value.trim();
 
-  if (!auth.currentUser) return;
+  if (!auth.currentUser) {
+    window.location.href = "./login.html";
+    return;
+  }
 
   try {
     await addDoc(collection(db, "despesas"), {
@@ -240,45 +248,71 @@ async function excluirDespesa(id) {
   }
 }
 
-tbody.addEventListener("click", async (e) => {
-  const btn = e.target.closest("button");
-  if (!btn) return;
+if (tbody) {
+  tbody.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
 
-  const id = btn.dataset.id;
-  const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
 
-  if (action === "toggle") {
-    await alternarPagamento(id);
-    return;
-  }
+    if (action === "toggle") {
+      await alternarPagamento(id);
+      return;
+    }
 
-  if (action === "edit") {
-    const item = despesasCache.find((d) => d.id === id);
-    if (item) abrirModalEdicao(item);
-    return;
-  }
+    if (action === "edit") {
+      const item = despesasCache.find((d) => d.id === id);
+      if (item) abrirModalEdicao(item);
+      return;
+    }
 
-  if (action === "delete") {
-    await excluirDespesa(id);
-  }
-});
+    if (action === "delete") {
+      await excluirDespesa(id);
+    }
+  });
+}
 
-form.addEventListener("submit", salvarDespesa);
-editForm.addEventListener("submit", salvarEdicao);
+if (form) {
+  form.addEventListener("submit", salvarDespesa);
+}
 
-closeModalBtn.addEventListener("click", fecharModalEdicao);
-cancelEditBtn.addEventListener("click", fecharModalEdicao);
+if (editForm) {
+  editForm.addEventListener("submit", salvarEdicao);
+}
 
-editModal.addEventListener("click", (e) => {
-  if (e.target === editModal) {
-    fecharModalEdicao();
-  }
-});
+if (closeModalBtn) {
+  closeModalBtn.addEventListener("click", fecharModalEdicao);
+}
 
-logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-  window.location.href = "./login.html";
-});
+if (cancelEditBtn) {
+  cancelEditBtn.addEventListener("click", fecharModalEdicao);
+}
+
+if (editModal) {
+  editModal.addEventListener("click", (e) => {
+    if (e.target === editModal) {
+      fecharModalEdicao();
+    }
+  });
+}
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+
+      await signOut(auth);
+      window.location.replace("./login.html");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao sair da conta.");
+    }
+  });
+}
 
 document.querySelectorAll(".filter-btn").forEach((botao) => {
   botao.addEventListener("click", () => {
@@ -290,15 +324,28 @@ document.querySelectorAll(".filter-btn").forEach((botao) => {
 });
 
 onAuthStateChanged(auth, (user) => {
+  authVerificada = true;
+
   if (!user) {
-    if (unsubscribe) unsubscribe();
-    window.location.href = "./login.html";
+    if (unsubscribe) {
+      unsubscribe();
+      unsubscribe = null;
+    }
+
+    if (!window.location.pathname.endsWith("/login.html")) {
+      window.location.replace("./login.html");
+    }
     return;
   }
 
-  userEmail.textContent = user.email || "Usuário logado";
+  if (userEmail) {
+    userEmail.textContent = user.email || "Usuário logado";
+  }
 
-  if (unsubscribe) unsubscribe();
+  if (unsubscribe) {
+    unsubscribe();
+    unsubscribe = null;
+  }
 
   const q = query(
     collection(db, "despesas"),
@@ -319,6 +366,15 @@ onAuthStateChanged(auth, (user) => {
     },
     (error) => {
       console.error(error);
+
+      if (
+        error.code === "failed-precondition" ||
+        String(error.message).toLowerCase().includes("index")
+      ) {
+        alert("O Firestore precisa de um índice para esta consulta. Abra o link que aparece no console do navegador e crie o índice.");
+        return;
+      }
+
       alert("Erro ao carregar dados em tempo real.");
     }
   );
