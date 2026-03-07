@@ -1,45 +1,102 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Financeiro do Casal</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <main class="auth-page">
-    <section class="auth-card">
-      <div class="panel-header">
-        <span class="badge badge-login">🔐 Área de login</span>
-        <h2>Entrar no sistema</h2>
-        <p>Acesse o painel financeiro com seu e-mail e senha.</p>
-      </div>
+import { auth } from "./firebase.js";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-      <form id="auth-form" class="form-grid auth-form">
-        <div class="field full">
-          <label for="email">E-mail</label>
-          <input type="email" id="email" required placeholder="seuemail@exemplo.com" />
-        </div>
+const form = document.getElementById("auth-form");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const submitBtn = document.getElementById("submit-btn");
+const authMessage = document.getElementById("auth-message");
 
-        <div class="field full">
-          <label for="password">Senha</label>
-          <input type="password" id="password" required minlength="6" placeholder="Digite sua senha" />
-        </div>
+const tabLogin = document.getElementById("tab-login");
+const tabRegister = document.getElementById("tab-register");
 
-        <div class="full">
-          <button id="submit-btn" type="submit" class="btn-primary">Entrar</button>
-        </div>
-      </form>
+let modo = "login";
+let authInicializada = false;
 
-      <div class="auth-switch">
-        <button id="tab-login" type="button" class="btn-light auth-switch-btn">Modo login</button>
-        <button id="tab-register" type="button" class="btn-secondary auth-switch-btn">Criar conta</button>
-      </div>
+function atualizarModo() {
+  if (modo === "login") {
+    submitBtn.textContent = "Entrar";
+    tabLogin.classList.remove("btn-secondary");
+    tabLogin.classList.add("btn-light");
+    tabRegister.classList.remove("btn-light");
+    tabRegister.classList.add("btn-secondary");
+  } else {
+    submitBtn.textContent = "Criar conta";
+    tabRegister.classList.remove("btn-secondary");
+    tabRegister.classList.add("btn-light");
+    tabLogin.classList.remove("btn-light");
+    tabLogin.classList.add("btn-secondary");
+  }
 
-      <p id="auth-message" class="auth-message"></p>
-    </section>
-  </main>
+  authMessage.textContent = "";
+}
 
-  <script type="module" src="login.js"></script>
-</body>
-</html>
+tabLogin.addEventListener("click", () => {
+  modo = "login";
+  atualizarModo();
+});
+
+tabRegister.addEventListener("click", () => {
+  modo = "register";
+  atualizarModo();
+});
+
+onAuthStateChanged(auth, (user) => {
+  if (!authInicializada) {
+    authInicializada = true;
+    return;
+  }
+
+  if (user) {
+    window.location.href = "./index.html";
+  }
+});
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  authMessage.textContent = "Processando...";
+
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+
+    if (modo === "login") {
+      await signInWithEmailAndPassword(auth, email, password);
+    } else {
+      await createUserWithEmailAndPassword(auth, email, password);
+    }
+
+    window.location.href = "./index.html";
+  } catch (error) {
+    console.error(error);
+    authMessage.textContent = traduzirErroAuth(error.code);
+  }
+});
+
+function traduzirErroAuth(code) {
+  const erros = {
+    "auth/invalid-email": "E-mail inválido.",
+    "auth/missing-password": "Digite a senha.",
+    "auth/weak-password": "A senha deve ter pelo menos 6 caracteres.",
+    "auth/email-already-in-use": "Este e-mail já está em uso.",
+    "auth/user-not-found": "Usuário não encontrado.",
+    "auth/wrong-password": "Senha incorreta.",
+    "auth/invalid-credential": "E-mail ou senha inválidos.",
+    "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde.",
+    "auth/api-key-not-valid.-please-pass-a-valid-api-key.": "API Key do Firebase inválida.",
+    "auth/network-request-failed": "Falha de conexão com o Firebase."
+  };
+
+  return erros[code] || `Erro: ${code}`;
+}
+
+atualizarModo();
