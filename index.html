@@ -12,7 +12,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -67,20 +66,22 @@
     <div class="container">
 
       <header class="hero">
-        <div class="hero-text">
+        <div>
           <span class="badge">💙 Financeiro do casal</span>
-          <h1>Checklist de pagamentos</h1>
-          <p>Marque manualmente o que já foi pago e o site atualiza sozinho.</p>
+          <h1>Tabela simples de gastos</h1>
+          <p>Marque os itens pagos e o site atualiza automaticamente em tempo real.</p>
         </div>
 
-        <div class="hero-total">
-          <p>Total geral</p>
-          <h2 id="total-geral">R$ 0,00</h2>
-          <span id="user-email">Carregando usuário...</span>
+        <div class="hero-side">
+          <div class="hero-total-box">
+            <span>Total visível</span>
+            <strong id="total-geral">R$ 0,00</strong>
+            <small id="user-email">Carregando usuário...</small>
+          </div>
 
           <div class="hero-actions">
-            <button id="theme-toggle" class="btn-light" type="button">🌙 Tema escuro</button>
-            <button id="logout-btn" class="btn-secondary" type="button">Sair</button>
+            <button id="theme-toggle" type="button" class="btn-light">🌙 Tema escuro</button>
+            <button id="logout-btn" type="button" class="btn-secondary">Sair</button>
           </div>
         </div>
       </header>
@@ -93,35 +94,31 @@
             <p id="alerta-vencidas-texto">Nenhuma conta vencida no momento.</p>
           </div>
         </div>
-        <button id="ver-vencidas-btn" type="button" class="btn-light">Mostrar vencidas</button>
       </section>
 
       <section class="summary-grid">
         <div class="summary-card">
-          <p>Gastos comuns</p>
-          <h3 id="total-comum">R$ 0,00</h3>
+          <p>Total pendente</p>
+          <h3 id="total-pendente">R$ 0,00</h3>
         </div>
-
         <div class="summary-card">
-          <p>Luan</p>
-          <h3 class="green" id="total-luan">R$ 0,00</h3>
+          <p>Total pago</p>
+          <h3 id="total-pago">R$ 0,00</h3>
         </div>
-
         <div class="summary-card">
-          <p>Kelly</p>
-          <h3 class="orange" id="total-kelly">R$ 0,00</h3>
+          <p>Itens pendentes</p>
+          <h3 id="qtd-pendentes">0</h3>
         </div>
-
         <div class="summary-card">
-          <p>Pendentes</p>
-          <h3 class="red" id="total-pendentes">0</h3>
+          <p>Itens pagos</p>
+          <h3 id="qtd-pagos">0</h3>
         </div>
       </section>
 
       <section class="panel">
         <div class="panel-header">
           <h2>Nova despesa</h2>
-          <p>Cadastre uma nova conta para aparecer automaticamente na lista</p>
+          <p>Cadastre uma conta para ela aparecer automaticamente na tabela.</p>
         </div>
 
         <form id="expense-form" class="form-grid">
@@ -152,7 +149,7 @@
 
           <div class="field full">
             <label for="observacao">Observação</label>
-            <input type="text" id="observacao" placeholder="Ex: Parcela 3/12" />
+            <input type="text" id="observacao" placeholder="Ex: Cartão / Parcela 12/48" />
           </div>
 
           <div class="full">
@@ -161,160 +158,81 @@
         </form>
       </section>
 
-      <section class="panel panel-main-list">
-        <div class="panel-header filters">
-          <div>
-            <h2>Lista principal</h2>
-            <p>No celular, ela ocupa a área principal da tela para você marcar rápido</p>
-          </div>
-
-          <div class="filter-buttons">
-            <button class="filter-btn active" data-filter="Todos" type="button">Todos</button>
-            <button class="filter-btn" data-filter="Gastos comuns" type="button">Gastos comuns</button>
-            <button class="filter-btn" data-filter="Luan" type="button">Luan</button>
-            <button class="filter-btn" data-filter="Kelly" type="button">Kelly</button>
-          </div>
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Tabela principal</h2>
+          <p>Uma única tabela com tudo listado e atualização automática.</p>
         </div>
 
-        <div class="tools-grid tools-grid-main">
-          <div class="field">
-            <label for="search-input">Buscar</label>
-            <input
-              type="text"
-              id="search-input"
-              placeholder="Ex: condomínio"
-            />
-          </div>
-
+        <div class="filters-grid">
           <div class="field">
             <label for="month-filter">Mês</label>
             <input type="month" id="month-filter" />
           </div>
 
           <div class="field">
-            <label for="status-filter-main">Status</label>
-            <select id="status-filter-main">
+            <label for="search-input">Buscar</label>
+            <input type="text" id="search-input" placeholder="Ex: condomínio, nubank, carro" />
+          </div>
+
+          <div class="field">
+            <label for="status-filter">Status</label>
+            <select id="status-filter">
               <option value="Todos">Todos</option>
               <option value="Pago">Pago</option>
               <option value="Pendente">Pendente</option>
               <option value="Vencido">Vencido</option>
             </select>
           </div>
-
-          <div class="field">
-            <label for="sort-filter-main">Ordenar</label>
-            <select id="sort-filter-main">
-              <option value="vencimento-asc">Vencimento mais próximo</option>
-              <option value="vencimento-desc">Vencimento mais distante</option>
-              <option value="valor-desc">Maior valor</option>
-              <option value="valor-asc">Menor valor</option>
-              <option value="descricao-asc">Descrição A-Z</option>
-              <option value="descricao-desc">Descrição Z-A</option>
-            </select>
-          </div>
         </div>
 
-        <div class="quick-summary-bar">
-          <div class="quick-pill">
-            <span>Itens visíveis</span>
-            <strong id="visible-items-count">0</strong>
-          </div>
-          <div class="quick-pill">
-            <span>Total visível</span>
-            <strong id="visible-total">R$ 0,00</strong>
-          </div>
-          <div class="quick-pill">
-            <span>Pendentes visíveis</span>
-            <strong id="visible-pending">0</strong>
-          </div>
-        </div>
+        <div class="month-header" id="month-header">Mês</div>
 
-        <div class="table-box desktop-table main-table-box">
+        <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Check</th>
-                <th>Status</th>
-                <th>Categoria</th>
+                <th>Pago</th>
                 <th>Descrição</th>
                 <th>Valor</th>
-                <th>Vencimento</th>
-                <th>Observação</th>
-                <th>Criado por</th>
+                <th>Venc.</th>
+                <th>Obs.</th>
+                <th>Status</th>
                 <th>Ações</th>
               </tr>
             </thead>
             <tbody id="main-table-body"></tbody>
           </table>
         </div>
-
-        <div class="mobile-list-wrap">
-          <div class="mobile-list-head">
-            <strong>Checklist</strong>
-            <span>Toque no quadrado para marcar como pago</span>
-          </div>
-          <div id="main-mobile-cards" class="mobile-cards main-mobile-cards"></div>
-        </div>
-      </section>
-
-      <section class="bottom-grid">
-        <div class="panel">
-          <div class="panel-header">
-            <h2>Resumo por pessoa</h2>
-            <p>Visão rápida</p>
-          </div>
-
-          <div class="resume-item">
-            <div>
-              <strong>Luan</strong>
-              <span>Despesas pessoais</span>
-            </div>
-            <strong class="green" id="resumo-luan">R$ 0,00</strong>
-          </div>
-
-          <div class="resume-item">
-            <div>
-              <strong>Kelly</strong>
-              <span>Despesas pessoais</span>
-            </div>
-            <strong class="orange" id="resumo-kelly">R$ 0,00</strong>
-          </div>
-
-          <div class="resume-item">
-            <div>
-              <strong>Gastos comuns</strong>
-              <span>Despesas compartilhadas</span>
-            </div>
-            <strong id="resumo-comum">R$ 0,00</strong>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header ipva-header">
-            <div>
-              <h2>IPVA do carro</h2>
-              <p>Acompanhamento editável em tempo real</p>
-            </div>
-            <button id="edit-ipva-btn" class="btn-light" type="button">Editar IPVA</button>
-          </div>
-
-          <div id="ipva-list"></div>
-        </div>
       </section>
 
       <section class="panel">
-        <div class="panel-header">
-          <h2>Gráfico mensal</h2>
-          <p>Total gasto por mês</p>
+        <div class="panel-header ipva-header">
+          <div>
+            <h2>IPVA do carro</h2>
+            <p>Atualização em tempo real.</p>
+          </div>
+          <button id="edit-ipva-btn" class="btn-light" type="button">Editar IPVA</button>
         </div>
 
-        <div class="chart-box">
-          <canvas id="monthlyChart" aria-label="Gráfico mensal de gastos"></canvas>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Pago</th>
+                <th>Parcela</th>
+                <th>Valor</th>
+                <th>Data</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ipva-table-body"></tbody>
+          </table>
         </div>
       </section>
 
       <footer class="footer">
-        <p>Marque as contas direto na lista principal. O check aparece automaticamente quando o item é pago.</p>
+        <p>Ao marcar como pago, o item atualiza em tempo real para todos os usuários conectados.</p>
       </footer>
     </div>
   </div>
@@ -405,28 +323,6 @@
       const loginBox = document.getElementById("loginBox");
       const appRoot = document.getElementById("appRoot");
 
-      const form = document.getElementById("expense-form");
-      const logoutBtn = document.getElementById("logout-btn");
-      const userEmail = document.getElementById("user-email");
-
-      const mainTableBody = document.getElementById("main-table-body");
-      const mainMobileCards = document.getElementById("main-mobile-cards");
-
-      const totalGeralEl = document.getElementById("total-geral");
-      const totalComumEl = document.getElementById("total-comum");
-      const totalLuanEl = document.getElementById("total-luan");
-      const totalKellyEl = document.getElementById("total-kelly");
-      const totalPendentesEl = document.getElementById("total-pendentes");
-
-      const resumoComumEl = document.getElementById("resumo-comum");
-      const resumoLuanEl = document.getElementById("resumo-luan");
-      const resumoKellyEl = document.getElementById("resumo-kelly");
-
-      const editModal = document.getElementById("edit-modal");
-      const editForm = document.getElementById("edit-form");
-      const closeModalBtn = document.getElementById("close-modal");
-      const cancelEditBtn = document.getElementById("cancel-edit");
-
       const authForm = document.getElementById("auth-form");
       const emailInput = document.getElementById("email");
       const passwordInput = document.getElementById("password");
@@ -435,17 +331,33 @@
       const tabLogin = document.getElementById("tab-login");
       const tabRegister = document.getElementById("tab-register");
 
-      const searchInput = document.getElementById("search-input");
-      const monthFilter = document.getElementById("month-filter");
-      const statusFilterMain = document.getElementById("status-filter-main");
-      const sortFilterMain = document.getElementById("sort-filter-main");
+      const form = document.getElementById("expense-form");
+      const logoutBtn = document.getElementById("logout-btn");
+      const userEmail = document.getElementById("user-email");
       const themeToggle = document.getElementById("theme-toggle");
 
-      const visibleItemsCount = document.getElementById("visible-items-count");
-      const visibleTotal = document.getElementById("visible-total");
-      const visiblePending = document.getElementById("visible-pending");
+      const monthFilter = document.getElementById("month-filter");
+      const searchInput = document.getElementById("search-input");
+      const statusFilter = document.getElementById("status-filter");
+      const monthHeader = document.getElementById("month-header");
 
-      const ipvaList = document.getElementById("ipva-list");
+      const mainTableBody = document.getElementById("main-table-body");
+      const ipvaTableBody = document.getElementById("ipva-table-body");
+
+      const totalGeralEl = document.getElementById("total-geral");
+      const totalPendenteEl = document.getElementById("total-pendente");
+      const totalPagoEl = document.getElementById("total-pago");
+      const qtdPendentesEl = document.getElementById("qtd-pendentes");
+      const qtdPagosEl = document.getElementById("qtd-pagos");
+
+      const alertaVencidas = document.getElementById("alerta-vencidas");
+      const alertaVencidasTexto = document.getElementById("alerta-vencidas-texto");
+
+      const editModal = document.getElementById("edit-modal");
+      const editForm = document.getElementById("edit-form");
+      const closeModalBtn = document.getElementById("close-modal");
+      const cancelEditBtn = document.getElementById("cancel-edit");
+
       const editIpvaBtn = document.getElementById("edit-ipva-btn");
       const ipvaModal = document.getElementById("ipva-modal");
       const closeIpvaModal = document.getElementById("close-ipva-modal");
@@ -453,29 +365,20 @@
       const ipvaFormList = document.getElementById("ipva-form-list");
       const addIpvaRowBtn = document.getElementById("add-ipva-row");
 
-      const monthlyChartCanvas = document.getElementById("monthlyChart");
-
-      const alertaVencidas = document.getElementById("alerta-vencidas");
-      const alertaVencidasTexto = document.getElementById("alerta-vencidas-texto");
-      const verVencidasBtn = document.getElementById("ver-vencidas-btn");
-
       let modo = "login";
-      let filtroAtual = "Todos";
-      let filtroStatusMain = "Todos";
-      let ordenacaoAtual = "vencimento-asc";
       let despesasCache = [];
+      let ipvaData = [];
       let unsubscribe = null;
       let unsubscribeIpva = null;
       let searchTerm = "";
+      let statusTerm = "Todos";
       let monthTerm = "";
       let lastEditedId = null;
-      let monthlyChart = null;
 
-      let ipvaData = [];
       const ipvaPadrao = [
-        { data: "2026-01-30", valor: 772.77, status: "Pago ✅", tipo: "paid" },
-        { data: "2026-03-03", valor: 772.77, status: "Em aberto", tipo: "open" },
-        { data: "2026-04-07", valor: 772.78, status: "Próxima", tipo: "next" }
+        { data: "2026-01-30", valor: 772.77, pago: true },
+        { data: "2026-03-03", valor: 772.77, pago: false },
+        { data: "2026-04-07", valor: 772.78, pago: false }
       ];
 
       function mostrarApp(logado) {
@@ -509,18 +412,9 @@
 
       function formatarDataBR(valor) {
         if (!valor) return "-";
-        if (valor.includes("/")) return valor;
-
-        const date = new Date(valor + "T00:00:00");
-        if (Number.isNaN(date.getTime())) return valor;
-
-        return date.toLocaleDateString("pt-BR");
-      }
-
-      function classeCategoria(categoria) {
-        if (categoria === "Gastos comuns") return "common";
-        if (categoria === "Luan") return "luan";
-        return "kelly";
+        const d = new Date(valor + "T00:00:00");
+        if (Number.isNaN(d.getTime())) return valor;
+        return d.toLocaleDateString("pt-BR");
       }
 
       function getTodayISO() {
@@ -533,14 +427,20 @@
 
       function isVencida(item) {
         if (!item.vencimento || item.pago) return false;
-        if (!item.vencimento.includes("-")) return false;
         return item.vencimento < getTodayISO();
       }
 
-      function getStatusDespesa(item) {
+      function getStatus(item) {
         if (item.pago) return "Pago";
         if (isVencida(item)) return "Vencido";
         return "Pendente";
+      }
+
+      function formatarMesTitulo(yyyyMm) {
+        if (!yyyyMm) return "Todos os meses";
+        const [ano, mes] = yyyyMm.split("-");
+        const d = new Date(Number(ano), Number(mes) - 1, 1);
+        return d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
       }
 
       function escapeHtml(texto) {
@@ -552,60 +452,28 @@
           .replaceAll("'", "&#039;");
       }
 
-      function aplicarFiltros(lista) {
-        let resultado = [...lista];
-
-        if (filtroAtual !== "Todos") {
-          resultado = resultado.filter(item => item.categoria === filtroAtual);
-        }
-
-        if (searchTerm) {
-          const termo = searchTerm.toLowerCase();
-          resultado = resultado.filter(item =>
-            (item.descricao || "").toLowerCase().includes(termo) ||
-            (item.observacao || "").toLowerCase().includes(termo) ||
-            (item.criadoPor || "").toLowerCase().includes(termo)
-          );
-        }
-
-        if (monthTerm) {
-          resultado = resultado.filter(item =>
-            (item.vencimento || "").startsWith(monthTerm)
-          );
-        }
-
-        if (filtroStatusMain !== "Todos") {
-          resultado = resultado.filter(item => getStatusDespesa(item) === filtroStatusMain);
-        }
-
-        resultado.sort((a, b) => {
-          switch (ordenacaoAtual) {
-            case "vencimento-desc":
-              return (b.vencimento || "").localeCompare(a.vencimento || "");
-            case "valor-desc":
-              return Number(b.valor || 0) - Number(a.valor || 0);
-            case "valor-asc":
-              return Number(a.valor || 0) - Number(b.valor || 0);
-            case "descricao-asc":
-              return (a.descricao || "").localeCompare(b.descricao || "");
-            case "descricao-desc":
-              return (b.descricao || "").localeCompare(a.descricao || "");
-            case "vencimento-asc":
-            default:
-              return (a.vencimento || "").localeCompare(b.vencimento || "");
-          }
-        });
-
-        return resultado;
+      function salvarTema(theme) {
+        localStorage.setItem("finance_theme", theme);
+        document.documentElement.setAttribute("data-theme", theme);
+        themeToggle.textContent = theme === "dark" ? "☀️ Tema claro" : "🌙 Tema escuro";
       }
 
-      function atualizarResumoListaVisivel(lista) {
-        const total = lista.reduce((acc, item) => acc + Number(item.valor || 0), 0);
-        const pendentes = lista.filter(item => !item.pago).length;
+      function carregarTema() {
+        salvarTema(localStorage.getItem("finance_theme") || "light");
+      }
 
-        visibleItemsCount.textContent = String(lista.length);
-        visibleTotal.textContent = formatarMoeda(total);
-        visiblePending.textContent = String(pendentes);
+      function traduzirErroAuth(code) {
+        const erros = {
+          "auth/invalid-email": "E-mail inválido.",
+          "auth/missing-password": "Digite a senha.",
+          "auth/weak-password": "A senha deve ter pelo menos 6 caracteres.",
+          "auth/email-already-in-use": "Este e-mail já está em uso.",
+          "auth/user-not-found": "Usuário não encontrado.",
+          "auth/wrong-password": "Senha incorreta.",
+          "auth/invalid-credential": "E-mail ou senha inválidos.",
+          "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde."
+        };
+        return erros[code] || `Erro: ${code}`;
       }
 
       function abrirModalEdicao(item) {
@@ -623,290 +491,9 @@
         editForm.reset();
       }
 
-      function destacarItemEditado(id) {
-        if (!id) return;
-
-        const alvo =
-          document.querySelector(`tr[data-item-id="${id}"]`) ||
-          document.querySelector(`.main-card[data-item-id="${id}"]`);
-
-        if (!alvo) return;
-
-        alvo.classList.add("edited-highlight");
-        alvo.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
-        });
-
-        setTimeout(() => {
-          alvo.classList.remove("edited-highlight");
-        }, 1800);
-      }
-
-      function renderTabelaPrincipal() {
-        mainTableBody.innerHTML = "";
-        mainMobileCards.innerHTML = "";
-
-        const lista = aplicarFiltros(despesasCache);
-        atualizarResumoListaVisivel(lista);
-
-        if (!lista.length) {
-          mainTableBody.innerHTML = `
-            <tr>
-              <td colspan="9">Nenhuma despesa encontrada.</td>
-            </tr>
-          `;
-          mainMobileCards.innerHTML = `<div class="empty-card">Nenhuma despesa encontrada.</div>`;
-          return;
-        }
-
-        lista.forEach((item) => {
-          const vencida = isVencida(item);
-          const status = getStatusDespesa(item);
-
-          const tr = document.createElement("tr");
-          tr.setAttribute("data-item-id", item.id);
-          if (vencida) tr.classList.add("row-overdue");
-          if (item.pago) tr.classList.add("row-paid");
-
-          tr.innerHTML = `
-            <td>
-              <label class="table-check-wrap">
-                <input
-                  type="checkbox"
-                  class="checklist-checkbox"
-                  data-id="${item.id}"
-                  ${item.pago ? "checked" : ""}
-                />
-                <span class="checkmark-box small-check"></span>
-              </label>
-            </td>
-            <td>
-              <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">
-                ${status}
-              </span>
-            </td>
-            <td><span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span></td>
-            <td>${escapeHtml(item.descricao)}</td>
-            <td>${formatarMoeda(item.valor)}</td>
-            <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
-            <td>${escapeHtml(item.observacao || "-")}</td>
-            <td>${escapeHtml(item.criadoPor || "-")}</td>
-            <td>
-              <div class="actions-cell">
-                <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">Editar</button>
-                <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">Excluir</button>
-              </div>
-            </td>
-          `;
-          mainTableBody.appendChild(tr);
-
-          const card = document.createElement("div");
-          card.className = `main-card ${item.pago ? "is-paid" : ""} ${vencida ? "is-overdue" : ""}`;
-          card.setAttribute("data-item-id", item.id);
-          card.innerHTML = `
-            <label class="mobile-compact-row">
-              <input
-                type="checkbox"
-                class="mobile-real-check"
-                data-id="${item.id}"
-                ${item.pago ? "checked" : ""}
-              />
-
-              <div class="mobile-compact-content">
-                <div class="mobile-line-1">
-                  <strong class="mobile-desc">${escapeHtml(item.descricao)}</strong>
-                  <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">${status}</span>
-                </div>
-
-                <div class="mobile-line-2">
-                  <span>${formatarMoeda(item.valor)}</span>
-                  <span>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</span>
-                </div>
-
-                <div class="mobile-line-3">
-                  <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
-                  <span class="mobile-obs">${escapeHtml(item.observacao || "-")}</span>
-                </div>
-              </div>
-            </label>
-
-            <div class="mobile-card-actions">
-              <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">Editar</button>
-              <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">Excluir</button>
-            </div>
-          `;
-          mainMobileCards.appendChild(card);
-        });
-
-        if (lastEditedId) {
-          setTimeout(() => {
-            destacarItemEditado(lastEditedId);
-            lastEditedId = null;
-          }, 150);
-        }
-      }
-
-      function atualizarResumo() {
-        const totalComum = despesasCache
-          .filter(item => item.categoria === "Gastos comuns")
-          .reduce((acc, item) => acc + Number(item.valor || 0), 0);
-
-        const totalLuan = despesasCache
-          .filter(item => item.categoria === "Luan")
-          .reduce((acc, item) => acc + Number(item.valor || 0), 0);
-
-        const totalKelly = despesasCache
-          .filter(item => item.categoria === "Kelly")
-          .reduce((acc, item) => acc + Number(item.valor || 0), 0);
-
-        const totalGeral = totalComum + totalLuan + totalKelly;
-        const pendentes = despesasCache.filter(item => !item.pago).length;
-
-        totalComumEl.textContent = formatarMoeda(totalComum);
-        totalLuanEl.textContent = formatarMoeda(totalLuan);
-        totalKellyEl.textContent = formatarMoeda(totalKelly);
-        totalGeralEl.textContent = formatarMoeda(totalGeral);
-        totalPendentesEl.textContent = String(pendentes);
-
-        resumoComumEl.textContent = formatarMoeda(totalComum);
-        resumoLuanEl.textContent = formatarMoeda(totalLuan);
-        resumoKellyEl.textContent = formatarMoeda(totalKelly);
-      }
-
-      function getMesReferencia(item) {
-        if (item.vencimento && item.vencimento.includes("-")) {
-          return item.vencimento.slice(0, 7);
-        }
-
-        if (item.createdAt && typeof item.createdAt.toDate === "function") {
-          const d = item.createdAt.toDate();
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, "0");
-          return `${y}-${m}`;
-        }
-
-        return null;
-      }
-
-      function getLabelMes(chave) {
-        const [ano, mes] = chave.split("-");
-        const data = new Date(Number(ano), Number(mes) - 1, 1);
-
-        return data.toLocaleDateString("pt-BR", {
-          month: "short",
-          year: "numeric"
-        }).replace(".", "");
-      }
-
-      function renderGraficoMensal() {
-        const agrupado = {};
-
-        despesasCache.forEach(item => {
-          const mes = getMesReferencia(item);
-          if (!mes) return;
-          agrupado[mes] = (agrupado[mes] || 0) + Number(item.valor || 0);
-        });
-
-        const chaves = Object.keys(agrupado).sort();
-        const labels = chaves.map(getLabelMes);
-        const valores = chaves.map(chave => Number(agrupado[chave].toFixed(2)));
-
-        if (monthlyChart) {
-          monthlyChart.destroy();
-        }
-
-        monthlyChart = new Chart(monthlyChartCanvas, {
-          type: "bar",
-          data: {
-            labels,
-            datasets: [{
-              label: "Total do mês",
-              data: valores,
-              borderWidth: 1,
-              borderRadius: 10,
-              maxBarThickness: 56
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: true
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return ` ${formatarMoeda(context.raw || 0)}`;
-                  }
-                }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  callback: function(value) {
-                    return Number(value).toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                      maximumFractionDigits: 0
-                    });
-                  }
-                }
-              }
-            }
-          }
-        });
-      }
-
-      function renderAlertaVencidas() {
-        const vencidas = despesasCache.filter(item => isVencida(item));
-        const total = vencidas.reduce((acc, item) => acc + Number(item.valor || 0), 0);
-
-        if (!vencidas.length) {
-          alertaVencidas.classList.add("hidden");
-          return;
-        }
-
-        alertaVencidas.classList.remove("hidden");
-        alertaVencidasTexto.textContent =
-          `${vencidas.length} conta(s) vencida(s), total de ${formatarMoeda(total)} aguardando pagamento.`;
-      }
-
-      function renderIpva() {
-        ipvaList.innerHTML = "";
-
-        if (!ipvaData.length) {
-          ipvaList.innerHTML = `<div class="empty-card">Nenhuma parcela de IPVA cadastrada.</div>`;
-          return;
-        }
-
-        ipvaData.forEach(item => {
-          const row = document.createElement("div");
-          row.className = "resume-item";
-          row.innerHTML = `
-            <div>
-              <strong>${formatarDataBR(item.data)}</strong>
-              <span>${item.status}</span>
-            </div>
-            <div class="status-box">
-              <strong>${formatarMoeda(item.valor)}</strong>
-              <span class="status ${item.tipo || "next"}">${item.status}</span>
-            </div>
-          `;
-          ipvaList.appendChild(row);
-        });
-      }
-
       function abrirModalIpva() {
         ipvaFormList.innerHTML = "";
-
-        ipvaData.forEach((item) => {
-          adicionarLinhaIpva(item);
-        });
-
+        ipvaData.forEach((item, index) => adicionarLinhaIpva(item, index));
         ipvaModal.classList.remove("hidden");
       }
 
@@ -914,7 +501,7 @@
         ipvaModal.classList.add("hidden");
       }
 
-      function adicionarLinhaIpva(item = { data: "", valor: "", status: "Próxima", tipo: "next" }) {
+      function adicionarLinhaIpva(item = { data: "", valor: "", pago: false }, index = null) {
         const div = document.createElement("div");
         div.className = "ipva-row";
         div.innerHTML = `
@@ -924,38 +511,23 @@
           </div>
           <div class="field">
             <label>Valor</label>
-            <input type="number" step="0.01" class="ipva-valor" value="${item.valor || ""}" inputmode="decimal">
+            <input type="number" step="0.01" class="ipva-valor" value="${item.valor || ""}">
           </div>
           <div class="field">
-            <label>Status</label>
-            <select class="ipva-status">
-              <option value="Pago ✅" ${item.status === "Pago ✅" ? "selected" : ""}>Pago ✅</option>
-              <option value="Em aberto" ${item.status === "Em aberto" ? "selected" : ""}>Em aberto</option>
-              <option value="Próxima" ${item.status === "Próxima" ? "selected" : ""}>Próxima</option>
+            <label>Pago</label>
+            <select class="ipva-pago">
+              <option value="false" ${item.pago ? "" : "selected"}>Não</option>
+              <option value="true" ${item.pago ? "selected" : ""}>Sim</option>
             </select>
           </div>
-          <div class="field remove-ipva-wrap">
+          <div class="field">
             <label>&nbsp;</label>
             <button type="button" class="btn-delete remove-ipva-btn">Remover</button>
           </div>
         `;
 
-        div.querySelector(".remove-ipva-btn").addEventListener("click", () => {
-          div.remove();
-        });
-
+        div.querySelector(".remove-ipva-btn").addEventListener("click", () => div.remove());
         ipvaFormList.appendChild(div);
-      }
-
-      function salvarTema(theme) {
-        localStorage.setItem("finance_theme", theme);
-        document.documentElement.setAttribute("data-theme", theme);
-        themeToggle.textContent = theme === "dark" ? "☀️ Tema claro" : "🌙 Tema escuro";
-      }
-
-      function carregarTema() {
-        const saved = localStorage.getItem("finance_theme") || "light";
-        salvarTema(saved);
       }
 
       async function garantirIpvaInicial() {
@@ -968,6 +540,189 @@
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
         }
+      }
+
+      function aplicarFiltros(lista) {
+        let resultado = [...lista];
+
+        if (monthTerm) {
+          resultado = resultado.filter(item => (item.vencimento || "").startsWith(monthTerm));
+        }
+
+        if (searchTerm) {
+          const termo = searchTerm.toLowerCase();
+          resultado = resultado.filter(item =>
+            (item.descricao || "").toLowerCase().includes(termo) ||
+            (item.observacao || "").toLowerCase().includes(termo) ||
+            (item.categoria || "").toLowerCase().includes(termo)
+          );
+        }
+
+        if (statusTerm !== "Todos") {
+          resultado = resultado.filter(item => getStatus(item) === statusTerm);
+        }
+
+        resultado.sort((a, b) => {
+          const categoriaOrder = {
+            "Gastos comuns": 1,
+            "Luan": 2,
+            "Kelly": 3
+          };
+
+          const catA = categoriaOrder[a.categoria] || 99;
+          const catB = categoriaOrder[b.categoria] || 99;
+
+          if (catA !== catB) return catA - catB;
+          return (a.vencimento || "").localeCompare(b.vencimento || "");
+        });
+
+        return resultado;
+      }
+
+      function renderResumo(lista) {
+        const totalGeral = lista.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+        const totalPago = lista.filter(i => i.pago).reduce((acc, item) => acc + Number(item.valor || 0), 0);
+        const totalPendente = lista.filter(i => !i.pago).reduce((acc, item) => acc + Number(item.valor || 0), 0);
+        const qtdPagos = lista.filter(i => i.pago).length;
+        const qtdPendentes = lista.filter(i => !i.pago).length;
+
+        totalGeralEl.textContent = formatarMoeda(totalGeral);
+        totalPagoEl.textContent = formatarMoeda(totalPago);
+        totalPendenteEl.textContent = formatarMoeda(totalPendente);
+        qtdPagosEl.textContent = String(qtdPagos);
+        qtdPendentesEl.textContent = String(qtdPendentes);
+      }
+
+      function renderAlertaVencidas(lista) {
+        const vencidas = lista.filter(item => isVencida(item));
+        const total = vencidas.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+        if (!vencidas.length) {
+          alertaVencidas.classList.add("hidden");
+          return;
+        }
+
+        alertaVencidas.classList.remove("hidden");
+        alertaVencidasTexto.textContent =
+          `${vencidas.length} conta(s) vencida(s), total de ${formatarMoeda(total)} aguardando pagamento.`;
+      }
+
+      function renderTabelaPrincipal() {
+        mainTableBody.innerHTML = "";
+
+        const lista = aplicarFiltros(despesasCache);
+        renderResumo(lista);
+        renderAlertaVencidas(lista);
+        monthHeader.textContent = formatarMesTitulo(monthTerm);
+
+        if (!lista.length) {
+          mainTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" class="empty-cell">Nenhuma despesa encontrada.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        const grupos = [
+          { nome: "Gastos comuns", itens: lista.filter(i => i.categoria === "Gastos comuns") },
+          { nome: "Luan", itens: lista.filter(i => i.categoria === "Luan") },
+          { nome: "Kelly", itens: lista.filter(i => i.categoria === "Kelly") }
+        ];
+
+        grupos.forEach(grupo => {
+          if (!grupo.itens.length) return;
+
+          const groupRow = document.createElement("tr");
+          groupRow.innerHTML = `<td colspan="7" class="group-row">${grupo.nome}</td>`;
+          mainTableBody.appendChild(groupRow);
+
+          grupo.itens.forEach(item => {
+            const status = getStatus(item);
+
+            const tr = document.createElement("tr");
+            tr.className = item.pago ? "row-paid" : (isVencida(item) ? "row-overdue" : "");
+            tr.setAttribute("data-id", item.id);
+
+            tr.innerHTML = `
+              <td>
+                <input
+                  type="checkbox"
+                  class="pay-check"
+                  data-id="${item.id}"
+                  ${item.pago ? "checked" : ""}
+                />
+              </td>
+              <td>${escapeHtml(item.descricao)}</td>
+              <td class="valor-cell">${formatarMoeda(item.valor)}</td>
+              <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
+              <td>${escapeHtml(item.observacao || "-")}</td>
+              <td>
+                <span class="status-badge ${status === "Pago" ? "paid" : (status === "Vencido" ? "overdue" : "pending")}">
+                  ${status}${status === "Pago" ? " ✅" : ""}
+                </span>
+              </td>
+              <td>
+                <div class="actions-cell">
+                  <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">Editar</button>
+                  <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">Excluir</button>
+                </div>
+              </td>
+            `;
+
+            mainTableBody.appendChild(tr);
+          });
+        });
+
+        if (lastEditedId) {
+          const row = document.querySelector(`tr[data-id="${lastEditedId}"]`);
+          if (row) {
+            row.classList.add("edited-highlight");
+            row.scrollIntoView({ behavior: "smooth", block: "center" });
+            setTimeout(() => row.classList.remove("edited-highlight"), 1800);
+          }
+          lastEditedId = null;
+        }
+      }
+
+      function renderIpva() {
+        ipvaTableBody.innerHTML = "";
+
+        if (!ipvaData.length) {
+          ipvaTableBody.innerHTML = `
+            <tr>
+              <td colspan="5" class="empty-cell">Nenhuma parcela de IPVA cadastrada.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        ipvaData.forEach((item, index) => {
+          const status = item.pago ? "Pago" : "Pendente";
+          const tr = document.createElement("tr");
+          tr.className = item.pago ? "row-paid" : "";
+
+          tr.innerHTML = `
+            <td>
+              <input
+                type="checkbox"
+                class="ipva-check"
+                data-index="${index}"
+                ${item.pago ? "checked" : ""}
+              />
+            </td>
+            <td>${index + 1}</td>
+            <td class="valor-cell">${formatarMoeda(item.valor)}</td>
+            <td>${formatarDataBR(item.data)}</td>
+            <td>
+              <span class="status-badge ${item.pago ? "paid" : "pending"}">
+                ${status}${item.pago ? " ✅" : ""}
+              </span>
+            </td>
+          `;
+
+          ipvaTableBody.appendChild(tr);
+        });
       }
 
       async function salvarDespesa(e) {
@@ -996,7 +751,6 @@
 
           form.reset();
         } catch (error) {
-          console.error(error);
           alert("Erro ao salvar despesa: " + error.message);
         }
       }
@@ -1023,51 +777,47 @@
           lastEditedId = id;
           fecharModalEdicao();
         } catch (error) {
-          console.error(error);
           alert("Erro ao editar despesa: " + error.message);
         }
       }
 
       async function alternarPagamento(id) {
-        try {
-          const item = despesasCache.find(d => d.id === id);
-          if (!item) return;
+        const item = despesasCache.find(d => d.id === id);
+        if (!item) return;
 
+        try {
           await db.collection("despesas").doc(id).update({
             pago: !item.pago
           });
         } catch (error) {
-          console.error(error);
-          alert("Erro ao atualizar status: " + error.message);
+          alert("Erro ao atualizar pagamento: " + error.message);
         }
       }
 
       async function excluirDespesa(id) {
-        const confirmar = confirm("Deseja excluir esta despesa?");
-        if (!confirmar) return;
+        if (!confirm("Deseja excluir esta despesa?")) return;
 
         try {
           await db.collection("despesas").doc(id).delete();
         } catch (error) {
-          console.error(error);
           alert("Erro ao excluir despesa: " + error.message);
         }
       }
 
-      function traduzirErroAuth(code) {
-        const erros = {
-          "auth/invalid-email": "E-mail inválido.",
-          "auth/missing-password": "Digite a senha.",
-          "auth/weak-password": "A senha deve ter pelo menos 6 caracteres.",
-          "auth/email-already-in-use": "Este e-mail já está em uso.",
-          "auth/user-not-found": "Usuário não encontrado.",
-          "auth/wrong-password": "Senha incorreta.",
-          "auth/invalid-credential": "E-mail ou senha inválidos.",
-          "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde.",
-          "auth/api-key-not-valid": "API Key do Firebase inválida."
-        };
+      async function alternarIpva(index) {
+        const novaLista = ipvaData.map((item, i) => ({
+          ...item,
+          pago: i === index ? !item.pago : item.pago
+        }));
 
-        return erros[code] || `Erro: ${code}`;
+        try {
+          await db.collection("configuracoes").doc("ipva_carro").set({
+            parcelas: novaLista,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } catch (error) {
+          alert("Erro ao atualizar IPVA: " + error.message);
+        }
       }
 
       tabLogin.addEventListener("click", () => {
@@ -1085,7 +835,6 @@
 
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
-
         authMessage.textContent = "Processando...";
 
         try {
@@ -1099,7 +848,6 @@
 
           authMessage.textContent = "";
         } catch (error) {
-          console.error(error);
           authMessage.textContent = traduzirErroAuth(error.code || error.message);
         }
       });
@@ -1109,115 +857,12 @@
 
       closeModalBtn.addEventListener("click", fecharModalEdicao);
       cancelEditBtn.addEventListener("click", fecharModalEdicao);
-
       editModal.addEventListener("click", (e) => {
         if (e.target === editModal) fecharModalEdicao();
       });
 
-      mainTableBody.addEventListener("click", async (e) => {
-        const checkbox = e.target.closest(".checklist-checkbox");
-        if (checkbox) {
-          await alternarPagamento(checkbox.dataset.id);
-          return;
-        }
-
-        const btn = e.target.closest("button");
-        if (!btn) return;
-
-        const id = btn.dataset.id;
-        const action = btn.dataset.action;
-
-        if (action === "edit") {
-          const item = despesasCache.find(d => d.id === id);
-          if (item) abrirModalEdicao(item);
-          return;
-        }
-
-        if (action === "delete") {
-          await excluirDespesa(id);
-        }
-      });
-
-      mainMobileCards.addEventListener("click", async (e) => {
-        const realCheck = e.target.closest(".mobile-real-check");
-        if (realCheck) {
-          await alternarPagamento(realCheck.dataset.id);
-          return;
-        }
-
-        const btn = e.target.closest("button");
-        if (!btn) return;
-
-        const id = btn.dataset.id;
-        const action = btn.dataset.action;
-
-        if (action === "edit") {
-          const item = despesasCache.find(d => d.id === id);
-          if (item) abrirModalEdicao(item);
-          return;
-        }
-
-        if (action === "delete") {
-          await excluirDespesa(id);
-        }
-      });
-
-      logoutBtn.addEventListener("click", async () => {
-        try {
-          if (unsubscribe) {
-            unsubscribe();
-            unsubscribe = null;
-          }
-
-          if (unsubscribeIpva) {
-            unsubscribeIpva();
-            unsubscribeIpva = null;
-          }
-
-          await auth.signOut();
-        } catch (error) {
-          console.error(error);
-          alert("Erro ao sair.");
-        }
-      });
-
-      document.querySelectorAll(".filter-btn").forEach((botao) => {
-        botao.addEventListener("click", () => {
-          document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
-          botao.classList.add("active");
-          filtroAtual = botao.dataset.filter;
-          renderTabelaPrincipal();
-        });
-      });
-
-      searchInput.addEventListener("input", () => {
-        searchTerm = searchInput.value.trim();
-        renderTabelaPrincipal();
-      });
-
-      monthFilter.addEventListener("input", () => {
-        monthTerm = monthFilter.value;
-        renderTabelaPrincipal();
-      });
-
-      statusFilterMain.addEventListener("change", () => {
-        filtroStatusMain = statusFilterMain.value;
-        renderTabelaPrincipal();
-      });
-
-      sortFilterMain.addEventListener("change", () => {
-        ordenacaoAtual = sortFilterMain.value;
-        renderTabelaPrincipal();
-      });
-
-      themeToggle.addEventListener("click", () => {
-        const current = document.documentElement.getAttribute("data-theme") || "light";
-        salvarTema(current === "dark" ? "light" : "dark");
-      });
-
       editIpvaBtn.addEventListener("click", abrirModalIpva);
       closeIpvaModal.addEventListener("click", fecharModalIpva);
-
       ipvaModal.addEventListener("click", (e) => {
         if (e.target === ipvaModal) fecharModalIpva();
       });
@@ -1228,56 +873,88 @@
         e.preventDefault();
 
         const rows = [...ipvaFormList.querySelectorAll(".ipva-row")];
-        const novoIpva = rows.map(row => {
-          const data = row.querySelector(".ipva-data").value;
-          const valor = Number(row.querySelector(".ipva-valor").value || 0);
-          const status = row.querySelector(".ipva-status").value;
-
-          let tipo = "next";
-          if (status === "Pago ✅") tipo = "paid";
-          if (status === "Em aberto") tipo = "open";
-          if (status === "Próxima") tipo = "next";
-
-          return { data, valor, status, tipo };
-        }).filter(item => item.data);
+        const parcelas = rows.map(row => ({
+          data: row.querySelector(".ipva-data").value,
+          valor: Number(row.querySelector(".ipva-valor").value || 0),
+          pago: row.querySelector(".ipva-pago").value === "true"
+        })).filter(item => item.data);
 
         try {
           await db.collection("configuracoes").doc("ipva_carro").set({
-            parcelas: novoIpva,
+            parcelas,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
           fecharModalIpva();
         } catch (error) {
-          console.error(error);
           alert("Erro ao salvar IPVA: " + error.message);
         }
       });
 
-      verVencidasBtn.addEventListener("click", () => {
-        filtroStatusMain = "Vencido";
-        statusFilterMain.value = "Vencido";
-
-        document.querySelector(".panel-main-list")?.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-
+      monthFilter.addEventListener("input", () => {
+        monthTerm = monthFilter.value;
         renderTabelaPrincipal();
+      });
+
+      searchInput.addEventListener("input", () => {
+        searchTerm = searchInput.value.trim();
+        renderTabelaPrincipal();
+      });
+
+      statusFilter.addEventListener("change", () => {
+        statusTerm = statusFilter.value;
+        renderTabelaPrincipal();
+      });
+
+      themeToggle.addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-theme") || "light";
+        salvarTema(current === "dark" ? "light" : "dark");
+      });
+
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          if (unsubscribe) unsubscribe();
+          if (unsubscribeIpva) unsubscribeIpva();
+          await auth.signOut();
+        } catch {
+          alert("Erro ao sair.");
+        }
+      });
+
+      mainTableBody.addEventListener("click", async (e) => {
+        const check = e.target.closest(".pay-check");
+        if (check) {
+          await alternarPagamento(check.dataset.id);
+          return;
+        }
+
+        const btn = e.target.closest("button");
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+
+        if (action === "edit") {
+          const item = despesasCache.find(d => d.id === id);
+          if (item) abrirModalEdicao(item);
+        }
+
+        if (action === "delete") {
+          await excluirDespesa(id);
+        }
+      });
+
+      ipvaTableBody.addEventListener("click", async (e) => {
+        const check = e.target.closest(".ipva-check");
+        if (check) {
+          await alternarIpva(Number(check.dataset.index));
+        }
       });
 
       auth.onAuthStateChanged(async (user) => {
         if (!user) {
-          if (unsubscribe) {
-            unsubscribe();
-            unsubscribe = null;
-          }
-
-          if (unsubscribeIpva) {
-            unsubscribeIpva();
-            unsubscribeIpva = null;
-          }
-
+          if (unsubscribe) unsubscribe();
+          if (unsubscribeIpva) unsubscribeIpva();
           mostrarApp(false);
           return;
         }
@@ -1285,20 +962,12 @@
         mostrarApp(true);
         userEmail.textContent = user.email || "Usuário logado";
 
-        if (unsubscribe) {
-          unsubscribe();
-          unsubscribe = null;
-        }
-
-        if (unsubscribeIpva) {
-          unsubscribeIpva();
-          unsubscribeIpva = null;
-        }
+        if (unsubscribe) unsubscribe();
+        if (unsubscribeIpva) unsubscribeIpva();
 
         try {
           await garantirIpvaInicial();
-        } catch (error) {
-          console.error(error);
+        } catch {
           alert("Erro ao preparar IPVA.");
         }
 
@@ -1309,40 +978,37 @@
               id: doc.id,
               ...doc.data()
             }));
-
             renderTabelaPrincipal();
-            atualizarResumo();
-            renderGraficoMensal();
-            renderAlertaVencidas();
           }, (error) => {
-            console.error(error);
-
             if (
               error.code === "failed-precondition" ||
               String(error.message).toLowerCase().includes("index")
             ) {
-              alert("O Firestore precisa de um índice. Abra o link que aparece no console e crie o índice.");
+              alert("O Firestore precisa de um índice. Abra o link no console e crie o índice.");
               return;
             }
 
-            alert("Erro ao carregar dados.");
+            alert("Erro ao carregar despesas.");
           });
 
         unsubscribeIpva = db.collection("configuracoes")
           .doc("ipva_carro")
           .onSnapshot((doc) => {
-            const data = doc.data();
-            ipvaData = data?.parcelas || [];
+            ipvaData = doc.data()?.parcelas || [];
             renderIpva();
-          }, (error) => {
-            console.error(error);
+          }, () => {
             alert("Erro ao carregar IPVA.");
           });
       });
 
       carregarTema();
-      renderIpva();
       atualizarModo();
+
+      const hoje = new Date();
+      const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
+      monthFilter.value = mesAtual;
+      monthTerm = mesAtual;
+      monthHeader.textContent = formatarMesTitulo(mesAtual);
     })();
   </script>
 </body>
