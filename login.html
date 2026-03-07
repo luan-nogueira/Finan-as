@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Financeiro do Casal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="auth-page">
+    <section class="auth-card">
+      <div class="auth-brand">
+        <span class="badge">🔐 Acesso seguro</span>
+        <h1>Financeiro do Casal</h1>
+        <p>Entre com seu e-mail e senha para acessar o painel.</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="tab-login" class="tab-btn active" type="button">Entrar</button>
+        <button id="tab-register" class="tab-btn" type="button">Criar conta</button>
+      </div>
+
+      <form id="auth-form" class="auth-form">
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" placeholder="seuemail@exemplo.com" required />
+        </div>
+
+        <div class="field">
+          <label for="password">Senha</label>
+          <input type="password" id="password" placeholder="Digite sua senha" required minlength="6" />
+        </div>
+
+        <button id="submit-btn" type="submit" class="btn-primary">Entrar</button>
+      </form>
+
+      <p id="auth-message" class="auth-message"></p>
+    </section>
+  </main>
+
+  <script type="module" src="login.js"></script>
+</body>
+</html>
