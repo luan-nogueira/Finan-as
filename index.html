@@ -70,7 +70,7 @@
         <div class="hero-text">
           <span class="badge">💙 Site financeiro do casal</span>
           <h1>Controle Financeiro</h1>
-          <p>Painel para acompanhar gastos, contas pessoais e o IPVA do carro.</p>
+          <p>Painel para acompanhar gastos, vencimentos, pagamentos e o IPVA do carro.</p>
         </div>
 
         <div class="hero-total">
@@ -84,6 +84,17 @@
           </div>
         </div>
       </header>
+
+      <section id="alerta-vencidas" class="alert-panel hidden">
+        <div class="alert-panel-left">
+          <span class="alert-icon">⚠️</span>
+          <div>
+            <h3>Contas vencidas</h3>
+            <p id="alerta-vencidas-texto">Nenhuma conta vencida no momento.</p>
+          </div>
+        </div>
+        <button id="ver-vencidas-btn" type="button" class="btn-light">Ver vencidas</button>
+      </section>
 
       <section class="summary-grid">
         <div class="summary-card">
@@ -150,6 +161,70 @@
         </form>
       </section>
 
+      <section class="calendar-grid">
+        <div class="panel">
+          <div class="panel-header calendar-header">
+            <div>
+              <h2>Calendário de vencimentos</h2>
+              <p>Visualize as contas por dia do mês</p>
+            </div>
+
+            <div class="calendar-controls">
+              <button id="prev-month-btn" type="button" class="btn-light">←</button>
+              <strong id="calendar-title">Mês</strong>
+              <button id="next-month-btn" type="button" class="btn-light">→</button>
+            </div>
+          </div>
+
+          <div class="calendar-legend">
+            <span class="legend-item"><span class="legend-dot legend-paid"></span> Pago</span>
+            <span class="legend-item"><span class="legend-dot legend-pending"></span> Pendente</span>
+            <span class="legend-item"><span class="legend-dot legend-overdue"></span> Vencido</span>
+          </div>
+
+          <div id="calendar-grid" class="calendar-box"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Resumo do mês no calendário</h2>
+            <p>Leitura rápida do período selecionado</p>
+          </div>
+
+          <div class="resume-item">
+            <div>
+              <strong>Pagas no mês</strong>
+              <span>Contas marcadas como pagas</span>
+            </div>
+            <strong class="green" id="calendar-paid-count">0</strong>
+          </div>
+
+          <div class="resume-item">
+            <div>
+              <strong>Pendentes no mês</strong>
+              <span>Contas ainda não pagas</span>
+            </div>
+            <strong class="orange" id="calendar-pending-count">0</strong>
+          </div>
+
+          <div class="resume-item">
+            <div>
+              <strong>Vencidas no mês</strong>
+              <span>Contas atrasadas</span>
+            </div>
+            <strong class="red" id="calendar-overdue-count">0</strong>
+          </div>
+
+          <div class="resume-item">
+            <div>
+              <strong>Total do mês</strong>
+              <span>Soma das contas com vencimento no mês</span>
+            </div>
+            <strong id="calendar-month-total">R$ 0,00</strong>
+          </div>
+        </div>
+      </section>
+
       <section class="panel">
         <div class="panel-header">
           <h2>Gráfico mensal</h2>
@@ -164,8 +239,8 @@
       <section class="panel">
         <div class="panel-header checklist-header">
           <div>
-            <h2>Checklist de pagamentos</h2>
-            <p>Visual rápido do que já foi pago e do que ainda está pendente</p>
+            <h2>Checklist em tabela</h2>
+            <p>Visual rápido do que já foi pago, do que está pendente e do que venceu</p>
           </div>
 
           <div class="checklist-legend">
@@ -177,10 +252,39 @@
               <span class="legend-dot legend-paid"></span>
               Pago
             </span>
+            <span class="legend-item">
+              <span class="legend-dot legend-overdue"></span>
+              Vencido
+            </span>
           </div>
         </div>
 
-        <div id="checklist-list" class="checklist-list"></div>
+        <div class="status-filters">
+          <button class="status-filter-btn active" data-status-filter="Todos" type="button">Todos</button>
+          <button class="status-filter-btn" data-status-filter="Pago" type="button">Pago</button>
+          <button class="status-filter-btn" data-status-filter="Pendente" type="button">Pendente</button>
+          <button class="status-filter-btn" data-status-filter="Vencido" type="button">Vencido</button>
+        </div>
+
+        <div class="table-box">
+          <table>
+            <thead>
+              <tr>
+                <th>Check</th>
+                <th>Status</th>
+                <th>Categoria</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Observação</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="checklist-table-body"></tbody>
+          </table>
+        </div>
+
+        <div id="checklist-mobile-cards" class="mobile-cards"></div>
       </section>
 
       <section class="panel">
@@ -381,7 +485,8 @@
       const userEmail = document.getElementById("user-email");
       const tbody = document.getElementById("tabela-despesas");
       const cardsDespesas = document.getElementById("cards-despesas");
-      const checklistList = document.getElementById("checklist-list");
+      const checklistTableBody = document.getElementById("checklist-table-body");
+      const checklistMobileCards = document.getElementById("checklist-mobile-cards");
 
       const totalGeralEl = document.getElementById("total-geral");
       const totalComumEl = document.getElementById("total-comum");
@@ -421,8 +526,22 @@
 
       const monthlyChartCanvas = document.getElementById("monthlyChart");
 
+      const alertaVencidas = document.getElementById("alerta-vencidas");
+      const alertaVencidasTexto = document.getElementById("alerta-vencidas-texto");
+      const verVencidasBtn = document.getElementById("ver-vencidas-btn");
+
+      const calendarGrid = document.getElementById("calendar-grid");
+      const calendarTitle = document.getElementById("calendar-title");
+      const prevMonthBtn = document.getElementById("prev-month-btn");
+      const nextMonthBtn = document.getElementById("next-month-btn");
+      const calendarPaidCount = document.getElementById("calendar-paid-count");
+      const calendarPendingCount = document.getElementById("calendar-pending-count");
+      const calendarOverdueCount = document.getElementById("calendar-overdue-count");
+      const calendarMonthTotal = document.getElementById("calendar-month-total");
+
       let modo = "login";
       let filtroAtual = "Todos";
+      let filtroStatusChecklist = "Todos";
       let despesasCache = [];
       let unsubscribe = null;
       let unsubscribeIpva = null;
@@ -432,6 +551,7 @@
       let lastEditedId = null;
       let monthlyChart = null;
       const INITIAL_LIMIT = 8;
+      let calendarDate = new Date();
 
       let ipvaData = [];
       const ipvaPadrao = [
@@ -499,6 +619,12 @@
         return item.vencimento < getTodayISO();
       }
 
+      function getStatusDespesa(item) {
+        if (item.pago) return "Pago";
+        if (isVencida(item)) return "Vencido";
+        return "Pendente";
+      }
+
       function aplicarFiltros(lista) {
         let resultado = [...lista];
 
@@ -522,6 +648,11 @@
         }
 
         return resultado;
+      }
+
+      function aplicarFiltroStatusChecklist(lista) {
+        if (filtroStatusChecklist === "Todos") return lista;
+        return lista.filter(item => getStatusDespesa(item) === filtroStatusChecklist);
       }
 
       function getListaVisivel() {
@@ -570,12 +701,12 @@
         const alvo =
           document.querySelector(`tr[data-expense-id="${id}"]`) ||
           document.querySelector(`.expense-card[data-expense-id="${id}"]`) ||
-          document.querySelector(`.checklist-item[data-expense-id="${id}"]`);
+          document.querySelector(`tr[data-checklist-id="${id}"]`) ||
+          document.querySelector(`.checklist-card[data-checklist-id="${id}"]`);
 
         if (!alvo) return;
 
         alvo.classList.add("edited-highlight");
-
         alvo.scrollIntoView({
           behavior: "smooth",
           block: "center"
@@ -605,6 +736,7 @@
 
         lista.forEach((item) => {
           const vencida = isVencida(item);
+          const status = getStatusDespesa(item);
 
           const tr = document.createElement("tr");
           tr.setAttribute("data-expense-id", item.id);
@@ -618,7 +750,7 @@
             <td>${escapeHtml(item.observacao || "-")}</td>
             <td>
               <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">
-                ${item.pago ? "Pago" : (vencida ? "Vencido" : "Pendente")}
+                ${status}
               </span>
             </td>
             <td>${escapeHtml(item.criadoPor || "-")}</td>
@@ -645,7 +777,7 @@
             <div class="expense-card-top">
               <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
               <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">
-                ${item.pago ? "Pago" : (vencida ? "Vencido" : "Pendente")}
+                ${status}
               </span>
             </div>
             <h3>${escapeHtml(item.descricao)}</h3>
@@ -678,60 +810,100 @@
         }
       }
 
-      function renderChecklist() {
-        checklistList.innerHTML = "";
+      function renderChecklistTabela() {
+        checklistTableBody.innerHTML = "";
+        checklistMobileCards.innerHTML = "";
 
-        const lista = aplicarFiltros(despesasCache)
+        const listaBase = aplicarFiltros(despesasCache)
           .sort((a, b) => {
             if (a.pago !== b.pago) return a.pago ? 1 : -1;
             return (a.vencimento || "").localeCompare(b.vencimento || "");
           });
 
+        const lista = aplicarFiltroStatusChecklist(listaBase);
+
         if (!lista.length) {
-          checklistList.innerHTML = `<div class="empty-card">Nenhuma despesa para exibir no checklist.</div>`;
+          checklistTableBody.innerHTML = `
+            <tr>
+              <td colspan="8">Nenhum item encontrado neste status.</td>
+            </tr>
+          `;
+          checklistMobileCards.innerHTML = `<div class="empty-card">Nenhum item encontrado neste status.</div>`;
           return;
         }
 
         lista.forEach(item => {
           const vencida = isVencida(item);
-          const div = document.createElement("div");
-          div.className = `checklist-item ${item.pago ? "is-paid" : ""} ${vencida ? "is-overdue" : ""}`;
-          div.setAttribute("data-expense-id", item.id);
+          const status = getStatusDespesa(item);
 
-          div.innerHTML = `
-            <label class="checklist-main">
+          const tr = document.createElement("tr");
+          tr.setAttribute("data-checklist-id", item.id);
+          if (vencida) tr.classList.add("row-overdue");
+          if (item.pago) tr.classList.add("row-paid");
+
+          tr.innerHTML = `
+            <td>
+              <label class="table-check-wrap">
+                <input
+                  type="checkbox"
+                  class="checklist-checkbox"
+                  data-id="${item.id}"
+                  ${item.pago ? "checked" : ""}
+                />
+                <span class="checkmark-box small-check"></span>
+              </label>
+            </td>
+            <td>
+              <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">
+                ${status}
+              </span>
+            </td>
+            <td><span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span></td>
+            <td>${escapeHtml(item.descricao)}</td>
+            <td>${formatarMoeda(item.valor)}</td>
+            <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
+            <td>${escapeHtml(item.observacao || "-")}</td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">Editar</button>
+                <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">Excluir</button>
+              </div>
+            </td>
+          `;
+
+          checklistTableBody.appendChild(tr);
+
+          const card = document.createElement("div");
+          card.className = `checklist-card ${item.pago ? "is-paid" : ""} ${vencida ? "is-overdue" : ""}`;
+          card.setAttribute("data-checklist-id", item.id);
+          card.innerHTML = `
+            <div class="expense-card-top">
+              <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
+              <span class="status-row ${item.pago ? "status-pago" : (vencida ? "status-vencido" : "status-pendente")}">${status}</span>
+            </div>
+
+            <h3>${escapeHtml(item.descricao)}</h3>
+            <p><strong>Valor:</strong> ${formatarMoeda(item.valor)}</p>
+            <p><strong>Vencimento:</strong> ${escapeHtml(formatarDataBR(item.vencimento || "-"))}</p>
+            <p><strong>Obs:</strong> ${escapeHtml(item.observacao || "-")}</p>
+
+            <label class="mobile-check-label">
               <input
                 type="checkbox"
                 class="checklist-checkbox"
                 data-id="${item.id}"
                 ${item.pago ? "checked" : ""}
               />
-              <span class="checkmark-box"></span>
-
-              <div class="checklist-content">
-                <div class="checklist-top">
-                  <div class="checklist-title-wrap">
-                    <strong class="checklist-title">${escapeHtml(item.descricao)}</strong>
-                    <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
-                  </div>
-                  <strong class="checklist-value">${formatarMoeda(item.valor)}</strong>
-                </div>
-
-                <div class="checklist-meta">
-                  <span><strong>Vencimento:</strong> ${escapeHtml(formatarDataBR(item.vencimento || "-"))}</span>
-                  <span><strong>Status:</strong> ${item.pago ? "Pago" : (vencida ? "Vencido" : "Pendente")}</span>
-                  <span><strong>Obs:</strong> ${escapeHtml(item.observacao || "-")}</span>
-                </div>
-              </div>
+              <span>${item.pago ? "Já foi pago" : "Marcar como pago"}</span>
             </label>
 
-            <div class="checklist-actions">
+            <div class="actions-cell">
               <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">Editar</button>
               <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">Excluir</button>
             </div>
           `;
 
-          checklistList.appendChild(div);
+          checklistMobileCards.appendChild(card);
         });
       }
 
@@ -793,7 +965,6 @@
         despesasCache.forEach(item => {
           const mes = getMesReferencia(item);
           if (!mes) return;
-
           agrupado[mes] = (agrupado[mes] || 0) + Number(item.valor || 0);
         });
 
@@ -848,6 +1019,112 @@
             }
           }
         });
+      }
+
+      function renderAlertaVencidas() {
+        const vencidas = despesasCache.filter(item => isVencida(item));
+        const total = vencidas.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+        if (!vencidas.length) {
+          alertaVencidas.classList.add("hidden");
+          return;
+        }
+
+        alertaVencidas.classList.remove("hidden");
+        alertaVencidasTexto.textContent =
+          `${vencidas.length} conta(s) vencida(s), total de ${formatarMoeda(total)} aguardando pagamento.`;
+      }
+
+      function formatarTituloMes(data) {
+        return data.toLocaleDateString("pt-BR", {
+          month: "long",
+          year: "numeric"
+        });
+      }
+
+      function renderCalendario() {
+        const ano = calendarDate.getFullYear();
+        const mes = calendarDate.getMonth();
+        const primeiroDia = new Date(ano, mes, 1);
+        const ultimoDia = new Date(ano, mes + 1, 0);
+        const diasNoMes = ultimoDia.getDate();
+        const inicioSemana = primeiroDia.getDay();
+        const offset = inicioSemana === 0 ? 6 : inicioSemana - 1;
+
+        calendarTitle.textContent = formatarTituloMes(primeiroDia);
+
+        const nomesDias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+        let html = "";
+
+        nomesDias.forEach(nome => {
+          html += `<div class="calendar-weekday">${nome}</div>`;
+        });
+
+        for (let i = 0; i < offset; i++) {
+          html += `<div class="calendar-day empty"></div>`;
+        }
+
+        let paidCount = 0;
+        let pendingCount = 0;
+        let overdueCount = 0;
+        let totalMes = 0;
+
+        for (let dia = 1; dia <= diasNoMes; dia++) {
+          const dayISO = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+          const itensDia = despesasCache.filter(item => item.vencimento === dayISO);
+
+          const paidItems = itensDia.filter(item => item.pago);
+          const overdueItems = itensDia.filter(item => isVencida(item));
+          const pendingItems = itensDia.filter(item => !item.pago && !isVencida(item));
+
+          paidCount += paidItems.length;
+          overdueCount += overdueItems.length;
+          pendingCount += pendingItems.length;
+          totalMes += itensDia.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+          const classes = ["calendar-day"];
+          if (itensDia.length) classes.push("has-items");
+          if (overdueItems.length) classes.push("day-overdue");
+          else if (pendingItems.length) classes.push("day-pending");
+          else if (paidItems.length) classes.push("day-paid");
+
+          const bullets = [
+            paidItems.length ? `<span class="mini-badge paid-badge">Pago: ${paidItems.length}</span>` : "",
+            pendingItems.length ? `<span class="mini-badge pending-badge">Pend: ${pendingItems.length}</span>` : "",
+            overdueItems.length ? `<span class="mini-badge overdue-badge">Venc: ${overdueItems.length}</span>` : ""
+          ].join("");
+
+          const listaInterna = itensDia.slice(0, 3).map(item => {
+            const status = getStatusDespesa(item);
+            return `
+              <div class="calendar-item-line ${status === "Pago" ? "calendar-item-paid" : (status === "Vencido" ? "calendar-item-overdue" : "calendar-item-pending")}">
+                <span>${escapeHtml(item.descricao)}</span>
+                <strong>${formatarMoeda(item.valor)}</strong>
+              </div>
+            `;
+          }).join("");
+
+          const mais = itensDia.length > 3
+            ? `<div class="calendar-more">+ ${itensDia.length - 3} item(ns)</div>`
+            : "";
+
+          html += `
+            <div class="${classes.join(" ")}">
+              <div class="calendar-day-number">${dia}</div>
+              <div class="calendar-badges">${bullets}</div>
+              <div class="calendar-items">
+                ${listaInterna}
+                ${mais}
+              </div>
+            </div>
+          `;
+        }
+
+        calendarGrid.innerHTML = html;
+        calendarPaidCount.textContent = String(paidCount);
+        calendarPendingCount.textContent = String(pendingCount);
+        calendarOverdueCount.textContent = String(overdueCount);
+        calendarMonthTotal.textContent = formatarMoeda(totalMes);
       }
 
       function renderIpva() {
@@ -1090,7 +1367,7 @@
         if (e.target === editModal) fecharModalEdicao();
       });
 
-      [tbody, cardsDespesas, checklistList].forEach(container => {
+      [tbody, cardsDespesas, checklistTableBody, checklistMobileCards].forEach(container => {
         container.addEventListener("click", async (e) => {
           const checkbox = e.target.closest(".checklist-checkbox");
           if (checkbox) {
@@ -1147,7 +1424,16 @@
           filtroAtual = botao.dataset.filter;
           expanded = false;
           renderTabela();
-          renderChecklist();
+          renderChecklistTabela();
+        });
+      });
+
+      document.querySelectorAll(".status-filter-btn").forEach((botao) => {
+        botao.addEventListener("click", () => {
+          document.querySelectorAll(".status-filter-btn").forEach((b) => b.classList.remove("active"));
+          botao.classList.add("active");
+          filtroStatusChecklist = botao.dataset.statusFilter;
+          renderChecklistTabela();
         });
       });
 
@@ -1155,14 +1441,14 @@
         searchTerm = searchInput.value.trim();
         expanded = false;
         renderTabela();
-        renderChecklist();
+        renderChecklistTabela();
       });
 
       monthFilter.addEventListener("input", () => {
         monthTerm = monthFilter.value;
         expanded = false;
         renderTabela();
-        renderChecklist();
+        renderChecklistTabela();
       });
 
       toggleMoreBtn.addEventListener("click", () => {
@@ -1213,6 +1499,30 @@
         }
       });
 
+      verVencidasBtn.addEventListener("click", () => {
+        filtroStatusChecklist = "Vencido";
+        document.querySelectorAll(".status-filter-btn").forEach((b) => {
+          b.classList.toggle("active", b.dataset.statusFilter === "Vencido");
+        });
+
+        document.querySelector(".status-filters")?.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+
+        renderChecklistTabela();
+      });
+
+      prevMonthBtn.addEventListener("click", () => {
+        calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
+        renderCalendario();
+      });
+
+      nextMonthBtn.addEventListener("click", () => {
+        calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
+        renderCalendario();
+      });
+
       auth.onAuthStateChanged(async (user) => {
         if (!user) {
           if (unsubscribe) {
@@ -1258,9 +1568,11 @@
             }));
 
             renderTabela();
-            renderChecklist();
+            renderChecklistTabela();
             atualizarResumo();
             renderGraficoMensal();
+            renderAlertaVencidas();
+            renderCalendario();
           }, (error) => {
             console.error(error);
 
@@ -1289,6 +1601,7 @@
 
       carregarTema();
       renderIpva();
+      renderCalendario();
       atualizarModo();
     })();
   </script>
