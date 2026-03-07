@@ -6,14 +6,12 @@
   <title>Financeiro do Casal</title>
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Firebase Compat -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-  <!-- LOGIN -->
   <section class="auth-page" id="loginBox">
     <div class="auth-card">
       <div class="panel-header">
@@ -47,7 +45,6 @@
     </div>
   </section>
 
-  <!-- APP -->
   <div id="appRoot" style="display:none;">
     <div class="container">
       <header class="hero">
@@ -242,7 +239,6 @@
     </div>
   </div>
 
-  <!-- MODAL EDIÇÃO -->
   <div id="edit-modal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -293,12 +289,12 @@
   <script>
     (() => {
       const firebaseConfig = {
-        apiKey: "COLE_SUA_API_KEY_AQUI",
-        authDomain: "SEU_PROJETO.firebaseapp.com",
-        projectId: "SEU_PROJECT_ID",
-        storageBucket: "SEU_PROJETO.firebasestorage.app",
-        messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-        appId: "SEU_APP_ID"
+        apiKey: "AIzaSyAA9oMvrsKbsixFBgJ5MlZuHdriVBcG4hA",
+        authDomain: "financas-4f348.firebaseapp.com",
+        projectId: "financas-4f348",
+        storageBucket: "financas-4f348.firebasestorage.app",
+        messagingSenderId: "521022969270",
+        appId: "1:521022969270:web:aa68de175296674d35dd17"
       };
 
       if (!firebase.apps.length) {
@@ -605,7 +601,7 @@
           "auth/wrong-password": "Senha incorreta.",
           "auth/invalid-credential": "E-mail ou senha inválidos.",
           "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde.",
-          "auth/api-key-not-valid.-please-pass-a-valid-api-key.": "API Key do Firebase inválida."
+          "auth/api-key-not-valid": "API Key do Firebase inválida."
         };
 
         return erros[code] || `Erro: ${code}`;
