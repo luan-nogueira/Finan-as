@@ -42,6 +42,11 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
+html,
+body {
+  min-height: 100%;
+}
+
 body {
   background: linear-gradient(180deg, var(--bg) 0%, var(--card-2) 40%, var(--bg) 100%);
   color: var(--text);
@@ -369,7 +374,6 @@ tbody tr:hover {
 .btn-primary,
 .btn-secondary,
 .btn-light {
-  border: none;
   cursor: pointer;
   font-weight: bold;
 }
@@ -383,11 +387,13 @@ tbody tr:hover {
 .btn-primary {
   background: var(--primary);
   color: white;
+  border: none;
 }
 
 .btn-secondary {
   background: var(--primary-dark);
   color: white;
+  border: none;
 }
 
 .btn-light {
@@ -399,16 +405,19 @@ tbody tr:hover {
 .btn-toggle {
   background: rgba(29, 78, 216, 0.12);
   color: #1d4ed8;
+  border: none;
 }
 
 .btn-edit {
   background: rgba(109, 40, 217, 0.14);
   color: var(--purple);
+  border: none;
 }
 
 .btn-delete {
   background: rgba(220, 38, 38, 0.12);
   color: #991b1b;
+  border: none;
 }
 
 .footer {
@@ -457,10 +466,13 @@ tbody tr:hover {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.45);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
   padding: 20px;
   z-index: 999;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal.hidden {
@@ -475,6 +487,7 @@ tbody tr:hover {
   box-shadow: var(--shadow);
   padding: 24px;
   border: 1px solid var(--border);
+  margin: auto 0;
 }
 
 .modal-header {
@@ -652,6 +665,21 @@ tbody tr:hover {
   .summary-card h3,
   .hero-total h2 {
     font-size: 1.45rem;
+  }
+
+  .modal {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .modal-content {
+    padding: 16px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .ipva-form {
+    gap: 10px;
   }
 
   .ipva-row {
