@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
   />
   <title>Financeiro do Casal</title>
   <link rel="stylesheet" href="style.css" />
@@ -1042,6 +1042,10 @@
         });
       }
 
+      function isMobileCalendar() {
+        return window.innerWidth < 768;
+      }
+
       function renderCalendario() {
         const ano = calendarDate.getFullYear();
         const mes = calendarDate.getMonth();
@@ -1050,18 +1054,22 @@
         const diasNoMes = ultimoDia.getDate();
         const inicioSemana = primeiroDia.getDay();
         const offset = inicioSemana === 0 ? 6 : inicioSemana - 1;
+        const mobileMode = isMobileCalendar();
 
         calendarTitle.textContent = formatarTituloMes(primeiroDia);
+        calendarGrid.classList.toggle("calendar-mobile-bank", mobileMode);
 
         const nomesDias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
         let html = "";
 
-        nomesDias.forEach(nome => {
-          html += `<div class="calendar-weekday">${nome}</div>`;
-        });
+        if (!mobileMode) {
+          nomesDias.forEach(nome => {
+            html += `<div class="calendar-weekday">${nome}</div>`;
+          });
 
-        for (let i = 0; i < offset; i++) {
-          html += `<div class="calendar-day empty"></div>`;
+          for (let i = 0; i < offset; i++) {
+            html += `<div class="calendar-day empty"></div>`;
+          }
         }
 
         let paidCount = 0;
@@ -1087,30 +1095,53 @@
           if (overdueItems.length) classes.push("day-overdue");
           else if (pendingItems.length) classes.push("day-pending");
           else if (paidItems.length) classes.push("day-paid");
+          if (mobileMode) classes.push("calendar-day-mobile");
 
           const bullets = [
-            paidItems.length ? `<span class="mini-badge paid-badge">Pago: ${paidItems.length}</span>` : "",
-            pendingItems.length ? `<span class="mini-badge pending-badge">Pend: ${pendingItems.length}</span>` : "",
-            overdueItems.length ? `<span class="mini-badge overdue-badge">Venc: ${overdueItems.length}</span>` : ""
+            paidItems.length ? `<span class="mini-badge paid-badge">${mobileMode ? `🟢 ${paidItems.length}` : `Pago: ${paidItems.length}`}</span>` : "",
+            pendingItems.length ? `<span class="mini-badge pending-badge">${mobileMode ? `🟡 ${pendingItems.length}` : `Pend: ${pendingItems.length}`}</span>` : "",
+            overdueItems.length ? `<span class="mini-badge overdue-badge">${mobileMode ? `🔴 ${overdueItems.length}` : `Venc: ${overdueItems.length}`}</span>` : ""
           ].join("");
 
-          const listaInterna = itensDia.slice(0, 3).map(item => {
-            const status = getStatusDespesa(item);
-            return `
-              <div class="calendar-item-line ${status === "Pago" ? "calendar-item-paid" : (status === "Vencido" ? "calendar-item-overdue" : "calendar-item-pending")}">
-                <span>${escapeHtml(item.descricao)}</span>
-                <strong>${formatarMoeda(item.valor)}</strong>
-              </div>
-            `;
-          }).join("");
+          let listaInterna = "";
+          let mais = "";
 
-          const mais = itensDia.length > 3
-            ? `<div class="calendar-more">+ ${itensDia.length - 3} item(ns)</div>`
-            : "";
+          if (mobileMode) {
+            if (itensDia.length > 0) {
+              const primeiroItem = itensDia[0];
+              listaInterna = `
+                <div class="calendar-mobile-line">
+                  <span class="calendar-mobile-desc">${escapeHtml(primeiroItem.descricao)}</span>
+                  <strong>${formatarMoeda(primeiroItem.valor)}</strong>
+                </div>
+              `;
+            }
+
+            if (itensDia.length > 1) {
+              mais = `<div class="calendar-mobile-more">+${itensDia.length - 1}</div>`;
+            }
+          } else {
+            listaInterna = itensDia.slice(0, 3).map(item => {
+              const status = getStatusDespesa(item);
+              return `
+                <div class="calendar-item-line ${status === "Pago" ? "calendar-item-paid" : (status === "Vencido" ? "calendar-item-overdue" : "calendar-item-pending")}">
+                  <span>${escapeHtml(item.descricao)}</span>
+                  <strong>${formatarMoeda(item.valor)}</strong>
+                </div>
+              `;
+            }).join("");
+
+            mais = itensDia.length > 3
+              ? `<div class="calendar-more">+ ${itensDia.length - 3} item(ns)</div>`
+              : "";
+          }
 
           html += `
             <div class="${classes.join(" ")}">
-              <div class="calendar-day-number">${dia}</div>
+              <div class="calendar-day-head">
+                <div class="calendar-day-number">${dia}</div>
+                ${mobileMode && itensDia.length ? `<div class="calendar-mobile-total">${formatarMoeda(itensDia.reduce((acc, item) => acc + Number(item.valor || 0), 0))}</div>` : ""}
+              </div>
               <div class="calendar-badges">${bullets}</div>
               <div class="calendar-items">
                 ${listaInterna}
@@ -1520,6 +1551,10 @@
 
       nextMonthBtn.addEventListener("click", () => {
         calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
+        renderCalendario();
+      });
+
+      window.addEventListener("resize", () => {
         renderCalendario();
       });
 
