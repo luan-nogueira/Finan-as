@@ -74,14 +74,8 @@ body {
   gap: 10px;
 }
 
-.hero-total p {
-  font-size: 15px;
-  margin-bottom: 10px;
-}
-
 .hero-total h2 {
   font-size: 2rem;
-  margin-bottom: 8px;
 }
 
 .hero-total span {
@@ -120,17 +114,9 @@ body {
   font-size: 1.7rem;
 }
 
-.green {
-  color: var(--green);
-}
-
-.orange {
-  color: var(--orange);
-}
-
-.red {
-  color: var(--red);
-}
+.green { color: var(--green); }
+.orange { color: var(--orange); }
+.red { color: var(--red); }
 
 .panel {
   padding: 22px;
@@ -399,7 +385,6 @@ tbody tr:hover {
   padding-bottom: 20px;
 }
 
-/* Login */
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -434,7 +419,6 @@ tbody tr:hover {
   min-height: 20px;
 }
 
-/* Modal */
 .modal {
   position: fixed;
   inset: 0;
