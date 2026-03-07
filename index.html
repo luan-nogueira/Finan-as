@@ -219,7 +219,7 @@
           <div class="panel-header ipva-header">
             <div>
               <h2>IPVA do carro</h2>
-              <p>Acompanhamento editável</p>
+              <p>Acompanhamento editável em tempo real</p>
             </div>
             <button id="edit-ipva-btn" class="btn-light" type="button">Editar IPVA</button>
           </div>
@@ -366,11 +366,14 @@
       let filtroAtual = "Todos";
       let despesasCache = [];
       let unsubscribe = null;
+      let unsubscribeIpva = null;
       let searchTerm = "";
       let monthTerm = "";
       let expanded = false;
       const INITIAL_LIMIT = 8;
-      let ipvaData = [
+
+      let ipvaData = [];
+      const ipvaPadrao = [
         { data: "2026-01-30", valor: 772.77, status: "Pago ✅", tipo: "paid" },
         { data: "2026-03-03", valor: 772.77, status: "Em aberto", tipo: "open" },
         { data: "2026-04-07", valor: 772.78, status: "Próxima", tipo: "next" }
@@ -612,6 +615,11 @@
       function renderIpva() {
         ipvaList.innerHTML = "";
 
+        if (!ipvaData.length) {
+          ipvaList.innerHTML = `<div class="empty-card">Nenhuma parcela de IPVA cadastrada.</div>`;
+          return;
+        }
+
         ipvaData.forEach(item => {
           const row = document.createElement("div");
           row.className = "resume-item";
@@ -685,6 +693,18 @@
       function carregarTema() {
         const saved = localStorage.getItem("finance_theme") || "light";
         salvarTema(saved);
+      }
+
+      async function garantirIpvaInicial() {
+        const ref = db.collection("configuracoes").doc("ipva_carro");
+        const snap = await ref.get();
+
+        if (!snap.exists) {
+          await ref.set({
+            parcelas: ipvaPadrao,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
       }
 
       async function salvarDespesa(e) {
@@ -861,6 +881,12 @@
             unsubscribe();
             unsubscribe = null;
           }
+
+          if (unsubscribeIpva) {
+            unsubscribeIpva();
+            unsubscribeIpva = null;
+          }
+
           await auth.signOut();
         } catch (error) {
           console.error(error);
@@ -908,11 +934,11 @@
 
       addIpvaRowBtn.addEventListener("click", () => adicionarLinhaIpva());
 
-      ipvaForm.addEventListener("submit", (e) => {
+      ipvaForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const rows = [...ipvaFormList.querySelectorAll(".ipva-row")];
-        ipvaData = rows.map(row => {
+        const novoIpva = rows.map(row => {
           const data = row.querySelector(".ipva-data").value;
           const valor = Number(row.querySelector(".ipva-valor").value || 0);
           const status = row.querySelector(".ipva-status").value;
@@ -925,17 +951,31 @@
           return { data, valor, status, tipo };
         }).filter(item => item.data);
 
-        localStorage.setItem("finance_ipva_data", JSON.stringify(ipvaData));
-        renderIpva();
-        fecharModalIpva();
+        try {
+          await db.collection("configuracoes").doc("ipva_carro").set({
+            parcelas: novoIpva,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          fecharModalIpva();
+        } catch (error) {
+          console.error(error);
+          alert("Erro ao salvar IPVA: " + error.message);
+        }
       });
 
-      auth.onAuthStateChanged((user) => {
+      auth.onAuthStateChanged(async (user) => {
         if (!user) {
           if (unsubscribe) {
             unsubscribe();
             unsubscribe = null;
           }
+
+          if (unsubscribeIpva) {
+            unsubscribeIpva();
+            unsubscribeIpva = null;
+          }
+
           mostrarApp(false);
           return;
         }
@@ -946,6 +986,18 @@
         if (unsubscribe) {
           unsubscribe();
           unsubscribe = null;
+        }
+
+        if (unsubscribeIpva) {
+          unsubscribeIpva();
+          unsubscribeIpva = null;
+        }
+
+        try {
+          await garantirIpvaInicial();
+        } catch (error) {
+          console.error(error);
+          alert("Erro ao preparar IPVA.");
         }
 
         unsubscribe = db.collection("despesas")
@@ -971,14 +1023,18 @@
 
             alert("Erro ao carregar dados.");
           });
-      });
 
-      const savedIpva = localStorage.getItem("finance_ipva_data");
-      if (savedIpva) {
-        try {
-          ipvaData = JSON.parse(savedIpva);
-        } catch (_) {}
-      }
+        unsubscribeIpva = db.collection("configuracoes")
+          .doc("ipva_carro")
+          .onSnapshot((doc) => {
+            const data = doc.data();
+            ipvaData = data?.parcelas || [];
+            renderIpva();
+          }, (error) => {
+            console.error(error);
+            alert("Erro ao carregar IPVA.");
+          });
+      });
 
       carregarTema();
       renderIpva();
