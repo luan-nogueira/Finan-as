@@ -9,6 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -129,6 +130,39 @@
             <button type="submit" class="btn-primary">Salvar despesa</button>
           </div>
         </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Gráfico mensal</h2>
+          <p>Total gasto por mês, no estilo visão de fatura</p>
+        </div>
+
+        <div class="chart-box">
+          <canvas id="monthlyChart"></canvas>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header checklist-header">
+          <div>
+            <h2>Checklist de pagamentos</h2>
+            <p>Visual rápido do que já foi pago e do que ainda está pendente</p>
+          </div>
+
+          <div class="checklist-legend">
+            <span class="legend-item">
+              <span class="legend-dot legend-pending"></span>
+              Pendente
+            </span>
+            <span class="legend-item">
+              <span class="legend-dot legend-paid"></span>
+              Pago
+            </span>
+          </div>
+        </div>
+
+        <div id="checklist-list" class="checklist-list"></div>
       </section>
 
       <section class="panel">
@@ -325,6 +359,7 @@
       const userEmail = document.getElementById("user-email");
       const tbody = document.getElementById("tabela-despesas");
       const cardsDespesas = document.getElementById("cards-despesas");
+      const checklistList = document.getElementById("checklist-list");
 
       const totalGeralEl = document.getElementById("total-geral");
       const totalComumEl = document.getElementById("total-comum");
@@ -362,6 +397,8 @@
       const ipvaFormList = document.getElementById("ipva-form-list");
       const addIpvaRowBtn = document.getElementById("add-ipva-row");
 
+      const monthlyChartCanvas = document.getElementById("monthlyChart");
+
       let modo = "login";
       let filtroAtual = "Todos";
       let despesasCache = [];
@@ -370,6 +407,8 @@
       let searchTerm = "";
       let monthTerm = "";
       let expanded = false;
+      let lastEditedId = null;
+      let monthlyChart = null;
       const INITIAL_LIMIT = 8;
 
       let ipvaData = [];
@@ -503,6 +542,28 @@
         editForm.reset();
       }
 
+      function destacarDespesaEditada(id) {
+        if (!id) return;
+
+        const alvo =
+          document.querySelector(`tr[data-expense-id="${id}"]`) ||
+          document.querySelector(`.expense-card[data-expense-id="${id}"]`) ||
+          document.querySelector(`.checklist-item[data-expense-id="${id}"]`);
+
+        if (!alvo) return;
+
+        alvo.classList.add("edited-highlight");
+
+        alvo.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+
+        setTimeout(() => {
+          alvo.classList.remove("edited-highlight");
+        }, 1800);
+      }
+
       function renderTabela() {
         tbody.innerHTML = "";
         cardsDespesas.innerHTML = "";
@@ -522,7 +583,9 @@
 
         lista.forEach((item) => {
           const vencida = isVencida(item);
+
           const tr = document.createElement("tr");
+          tr.setAttribute("data-expense-id", item.id);
           if (vencida) tr.classList.add("row-overdue");
 
           tr.innerHTML = `
@@ -555,6 +618,7 @@
 
           const card = document.createElement("div");
           card.className = `expense-card ${vencida ? "expense-card-overdue" : ""}`;
+          card.setAttribute("data-expense-id", item.id);
           card.innerHTML = `
             <div class="expense-card-top">
               <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
@@ -583,6 +647,70 @@
         });
 
         atualizarBotaoVerMais();
+
+        if (lastEditedId) {
+          setTimeout(() => {
+            destacarDespesaEditada(lastEditedId);
+            lastEditedId = null;
+          }, 150);
+        }
+      }
+
+      function renderChecklist() {
+        checklistList.innerHTML = "";
+
+        const lista = aplicarFiltros(despesasCache)
+          .sort((a, b) => {
+            if (a.pago !== b.pago) return a.pago ? 1 : -1;
+            return (a.vencimento || "").localeCompare(b.vencimento || "");
+          });
+
+        if (!lista.length) {
+          checklistList.innerHTML = `<div class="empty-card">Nenhuma despesa para exibir no checklist.</div>`;
+          return;
+        }
+
+        lista.forEach(item => {
+          const vencida = isVencida(item);
+          const div = document.createElement("div");
+          div.className = `checklist-item ${item.pago ? "is-paid" : ""} ${vencida ? "is-overdue" : ""}`;
+          div.setAttribute("data-expense-id", item.id);
+
+          div.innerHTML = `
+            <label class="checklist-main">
+              <input
+                type="checkbox"
+                class="checklist-checkbox"
+                data-id="${item.id}"
+                ${item.pago ? "checked" : ""}
+              />
+              <span class="checkmark-box"></span>
+
+              <div class="checklist-content">
+                <div class="checklist-top">
+                  <div class="checklist-title-wrap">
+                    <strong class="checklist-title">${escapeHtml(item.descricao)}</strong>
+                    <span class="tag ${classeCategoria(item.categoria)}">${escapeHtml(item.categoria)}</span>
+                  </div>
+                  <strong class="checklist-value">${formatarMoeda(item.valor)}</strong>
+                </div>
+
+                <div class="checklist-meta">
+                  <span><strong>Vencimento:</strong> ${escapeHtml(formatarDataBR(item.vencimento || "-"))}</span>
+                  <span><strong>Status:</strong> ${item.pago ? "Pago" : (vencida ? "Vencido" : "Pendente")}</span>
+                  <span><strong>Obs:</strong> ${escapeHtml(item.observacao || "-")}</span>
+                </div>
+              </div>
+            </label>
+
+            <div class="checklist-actions">
+              <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">Editar</button>
+              <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">Excluir</button>
+            </div>
+          `;
+
+          checklistList.appendChild(div);
+        });
       }
 
       function atualizarResumo() {
@@ -610,6 +738,94 @@
         resumoComumEl.textContent = formatarMoeda(totalComum);
         resumoLuanEl.textContent = formatarMoeda(totalLuan);
         resumoKellyEl.textContent = formatarMoeda(totalKelly);
+      }
+
+      function getMesReferencia(item) {
+        if (item.vencimento && item.vencimento.includes("-")) {
+          return item.vencimento.slice(0, 7);
+        }
+
+        if (item.createdAt && typeof item.createdAt.toDate === "function") {
+          const d = item.createdAt.toDate();
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, "0");
+          return `${y}-${m}`;
+        }
+
+        return null;
+      }
+
+      function getLabelMes(chave) {
+        const [ano, mes] = chave.split("-");
+        const data = new Date(Number(ano), Number(mes) - 1, 1);
+
+        return data.toLocaleDateString("pt-BR", {
+          month: "short",
+          year: "numeric"
+        }).replace(".", "");
+      }
+
+      function renderGraficoMensal() {
+        const agrupado = {};
+
+        despesasCache.forEach(item => {
+          const mes = getMesReferencia(item);
+          if (!mes) return;
+
+          agrupado[mes] = (agrupado[mes] || 0) + Number(item.valor || 0);
+        });
+
+        const chaves = Object.keys(agrupado).sort();
+        const labels = chaves.map(getLabelMes);
+        const valores = chaves.map(chave => Number(agrupado[chave].toFixed(2)));
+
+        if (monthlyChart) {
+          monthlyChart.destroy();
+        }
+
+        monthlyChart = new Chart(monthlyChartCanvas, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [{
+              label: "Total do mês",
+              data: valores,
+              borderWidth: 1,
+              borderRadius: 10,
+              maxBarThickness: 56
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return ` ${formatarMoeda(context.raw || 0)}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return Number(value).toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                      maximumFractionDigits: 0
+                    });
+                  }
+                }
+              }
+            }
+          }
+        });
       }
 
       function renderIpva() {
@@ -757,6 +973,8 @@
             observacao
           });
 
+          expanded = true;
+          lastEditedId = id;
           fecharModalEdicao();
         } catch (error) {
           console.error(error);
@@ -850,8 +1068,14 @@
         if (e.target === editModal) fecharModalEdicao();
       });
 
-      [tbody, cardsDespesas].forEach(container => {
+      [tbody, cardsDespesas, checklistList].forEach(container => {
         container.addEventListener("click", async (e) => {
+          const checkbox = e.target.closest(".checklist-checkbox");
+          if (checkbox) {
+            await alternarPagamento(checkbox.dataset.id);
+            return;
+          }
+
           const btn = e.target.closest("button");
           if (!btn) return;
 
@@ -901,6 +1125,7 @@
           filtroAtual = botao.dataset.filter;
           expanded = false;
           renderTabela();
+          renderChecklist();
         });
       });
 
@@ -908,12 +1133,14 @@
         searchTerm = searchInput.value.trim();
         expanded = false;
         renderTabela();
+        renderChecklist();
       });
 
       monthFilter.addEventListener("input", () => {
         monthTerm = monthFilter.value;
         expanded = false;
         renderTabela();
+        renderChecklist();
       });
 
       toggleMoreBtn.addEventListener("click", () => {
@@ -1009,7 +1236,9 @@
             }));
 
             renderTabela();
+            renderChecklist();
             atualizarResumo();
+            renderGraficoMensal();
           }, (error) => {
             console.error(error);
 
