@@ -1031,6 +1031,81 @@ tbody tr:hover {
   font-weight: bold;
 }
 
+.calendar-toggle-panel {
+  padding: 14px;
+}
+
+.calendar-shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.calendar-shortcut-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.calendar-shortcut-left h2 {
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.calendar-shortcut-left p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.calendar-icon-btn {
+  width: 54px;
+  min-width: 54px;
+  height: 54px;
+  min-height: 54px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card-2);
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.calendar-shortcut-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.calendar-shortcut-summary span {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.calendar-shortcut-summary small {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.calendar-wrapper.hidden {
+  display: none;
+}
+
+.calendar-wrapper {
+  margin-top: 16px;
+}
+
+.calendar-inner-panel {
+  margin-bottom: 0;
+}
+
 @keyframes flashEdited {
   0% {
     transform: scale(1);
@@ -1059,6 +1134,30 @@ tr.edited-highlight td {
 .checklist-card.edited-highlight,
 .expense-card.edited-highlight {
   border-color: rgba(29, 78, 216, 0.45);
+}
+
+@media (max-width: 767px) {
+  .calendar-shortcut {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .calendar-shortcut-summary {
+    align-items: flex-start;
+  }
+
+  .calendar-icon-btn {
+    width: 50px;
+    min-width: 50px;
+    height: 50px;
+    min-height: 50px;
+    font-size: 22px;
+    border-radius: 14px;
+  }
+
+  .calendar-wrapper {
+    margin-top: 12px;
+  }
 }
 
 @media (min-width: 640px) {
