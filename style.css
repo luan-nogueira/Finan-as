@@ -467,11 +467,8 @@ th {
   padding: 14px;
 }
 
-.auth-switch {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
+.auth-form {
+  grid-template-columns: 1fr;
 }
 
 .auth-message {
@@ -565,7 +562,6 @@ th {
   background: rgba(29, 78, 216, 0.08);
 }
 
-/* celular: esconder observação para caber sem rolagem */
 @media (max-width: 767px) {
   #main-table th:nth-child(5),
   #main-table td:nth-child(5) {
@@ -587,14 +583,12 @@ th {
   }
 
   .hero-actions,
-  .auth-switch,
   .modal-actions {
     flex-direction: row;
     flex-wrap: wrap;
   }
 
   .hero-actions button,
-  .auth-switch button,
   .modal-actions button {
     width: auto;
   }
