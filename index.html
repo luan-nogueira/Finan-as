@@ -110,47 +110,60 @@
         </div>
       </section>
 
-      <section class="panel">
-        <div class="panel-header">
-          <h2>Nova despesa</h2>
-          <p>Cadastre uma conta para ela aparecer automaticamente na tabela.</p>
+      <section class="panel collapsible-panel">
+        <button
+          id="toggle-expense-form"
+          type="button"
+          class="collapse-toggle-btn"
+          aria-expanded="false"
+          aria-controls="expense-form-wrapper"
+        >
+          <span>➕ Nova despesa</span>
+          <span id="expense-toggle-icon">▼</span>
+        </button>
+
+        <div id="expense-form-wrapper" class="collapsible-content hidden">
+          <div class="panel-header collapsible-header">
+            <h2>Nova despesa</h2>
+            <p>Cadastre uma conta para ela aparecer automaticamente na tabela.</p>
+          </div>
+
+          <form id="expense-form" class="form-grid">
+            <div class="field">
+              <label for="descricao">Descrição</label>
+              <input type="text" id="descricao" placeholder="Ex: Condomínio" required />
+            </div>
+
+            <div class="field">
+              <label for="categoria">Categoria</label>
+              <select id="categoria" required>
+                <option value="">Selecione</option>
+                <option value="Gastos comuns">Gastos comuns</option>
+                <option value="Luan">Luan</option>
+                <option value="Kelly">Kelly</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="valor">Valor</label>
+              <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required inputmode="decimal" />
+            </div>
+
+            <div class="field">
+              <label for="vencimento">Vencimento</label>
+              <input type="date" id="vencimento" />
+            </div>
+
+            <div class="field full">
+              <label for="observacao">Observação</label>
+              <input type="text" id="observacao" placeholder="Ex: Cartão / Parcela 12/48" />
+            </div>
+
+            <div class="full">
+              <button type="submit" class="btn-primary">Salvar despesa</button>
+            </div>
+          </form>
         </div>
-
-        <form id="expense-form" class="form-grid">
-          <div class="field">
-            <label for="descricao">Descrição</label>
-            <input type="text" id="descricao" placeholder="Ex: Condomínio" required />
-          </div>
-
-          <div class="field">
-            <label for="categoria">Categoria</label>
-            <select id="categoria" required>
-              <option value="">Selecione</option>
-              <option value="Gastos comuns">Gastos comuns</option>
-              <option value="Luan">Luan</option>
-              <option value="Kelly">Kelly</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="valor">Valor</label>
-            <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required inputmode="decimal" />
-          </div>
-
-          <div class="field">
-            <label for="vencimento">Vencimento</label>
-            <input type="date" id="vencimento" />
-          </div>
-
-          <div class="field full">
-            <label for="observacao">Observação</label>
-            <input type="text" id="observacao" placeholder="Ex: Cartão / Parcela 12/48" />
-          </div>
-
-          <div class="full">
-            <button type="submit" class="btn-primary">Salvar despesa</button>
-          </div>
-        </form>
       </section>
 
       <section class="panel">
@@ -159,7 +172,7 @@
           <p>Uma única tabela com tudo listado e atualização automática.</p>
         </div>
 
-        <div class="filters-grid">
+        <div class="filters-grid filters-grid-two">
           <div class="field">
             <label for="month-filter">Mês</label>
             <input type="month" id="month-filter" />
@@ -168,16 +181,6 @@
           <div class="field">
             <label for="search-input">Buscar</label>
             <input type="text" id="search-input" placeholder="Ex: condomínio, nubank, carro" />
-          </div>
-
-          <div class="field">
-            <label for="status-filter">Status</label>
-            <select id="status-filter">
-              <option value="Todos">Todos</option>
-              <option value="Pago">Pago</option>
-              <option value="Pendente">Pendente</option>
-              <option value="Vencido">Vencido</option>
-            </select>
           </div>
         </div>
 
@@ -321,7 +324,6 @@
       const authForm = document.getElementById("auth-form");
       const emailInput = document.getElementById("email");
       const passwordInput = document.getElementById("password");
-      const submitBtn = document.getElementById("submit-btn");
       const authMessage = document.getElementById("auth-message");
 
       const form = document.getElementById("expense-form");
@@ -329,9 +331,12 @@
       const userEmail = document.getElementById("user-email");
       const themeToggle = document.getElementById("theme-toggle");
 
+      const toggleExpenseFormBtn = document.getElementById("toggle-expense-form");
+      const expenseFormWrapper = document.getElementById("expense-form-wrapper");
+      const expenseToggleIcon = document.getElementById("expense-toggle-icon");
+
       const monthFilter = document.getElementById("month-filter");
       const searchInput = document.getElementById("search-input");
-      const statusFilter = document.getElementById("status-filter");
       const monthHeader = document.getElementById("month-header");
 
       const mainTableBody = document.getElementById("main-table-body");
@@ -363,7 +368,6 @@
       let unsubscribe = null;
       let unsubscribeIpva = null;
       let searchTerm = "";
-      let statusTerm = "Todos";
       let monthTerm = "";
       let lastEditedId = null;
 
@@ -449,6 +453,13 @@
         return erros[code] || `Erro: ${code}`;
       }
 
+      function alternarFormularioDespesa() {
+        const aberto = !expenseFormWrapper.classList.contains("hidden");
+        expenseFormWrapper.classList.toggle("hidden");
+        toggleExpenseFormBtn.setAttribute("aria-expanded", String(!aberto));
+        expenseToggleIcon.textContent = aberto ? "▼" : "▲";
+      }
+
       function abrirModalEdicao(item) {
         document.getElementById("edit-id").value = item.id;
         document.getElementById("edit-descricao").value = item.descricao || "";
@@ -529,10 +540,6 @@
             (item.observacao || "").toLowerCase().includes(termo) ||
             (item.categoria || "").toLowerCase().includes(termo)
           );
-        }
-
-        if (statusTerm !== "Todos") {
-          resultado = resultado.filter(item => getStatus(item) === statusTerm);
         }
 
         resultado.sort((a, b) => {
@@ -722,6 +729,9 @@
           });
 
           form.reset();
+          expenseFormWrapper.classList.add("hidden");
+          toggleExpenseFormBtn.setAttribute("aria-expanded", "false");
+          expenseToggleIcon.textContent = "▼";
         } catch (error) {
           alert("Erro ao salvar despesa: " + error.message);
         }
@@ -809,6 +819,8 @@
         }
       });
 
+      toggleExpenseFormBtn.addEventListener("click", alternarFormularioDespesa);
+
       form.addEventListener("submit", salvarDespesa);
       editForm.addEventListener("submit", salvarEdicao);
 
@@ -866,11 +878,6 @@
 
       searchInput.addEventListener("input", () => {
         searchTerm = searchInput.value.trim();
-        renderTabelaPrincipal();
-      });
-
-      statusFilter.addEventListener("change", () => {
-        statusTerm = statusFilter.value;
         renderTabelaPrincipal();
       });
 
