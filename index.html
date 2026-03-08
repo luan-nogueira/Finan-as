@@ -189,16 +189,16 @@
         <div class="month-header" id="month-header">Mês</div>
 
         <div class="table-wrap">
-          <table>
+          <table id="main-table">
             <thead>
               <tr>
-                <th>Pago</th>
-                <th>Descrição</th>
-                <th>Valor</th>
-                <th>Venc.</th>
-                <th>Obs.</th>
-                <th>Status</th>
-                <th>Ações</th>
+                <th class="col-check">Pg</th>
+                <th class="col-desc">Descrição</th>
+                <th class="col-value">Valor</th>
+                <th class="col-date">Venc.</th>
+                <th class="col-obs">Obs.</th>
+                <th class="col-status">Status</th>
+                <th class="col-actions">Ações</th>
               </tr>
             </thead>
             <tbody id="main-table-body"></tbody>
@@ -216,14 +216,14 @@
         </div>
 
         <div class="table-wrap">
-          <table>
+          <table id="ipva-table">
             <thead>
               <tr>
-                <th>Pago</th>
-                <th>Parcela</th>
-                <th>Valor</th>
-                <th>Data</th>
-                <th>Status</th>
+                <th class="col-check">Pg</th>
+                <th class="col-small">Parc.</th>
+                <th class="col-value">Valor</th>
+                <th class="col-date">Data</th>
+                <th class="col-status">Status</th>
               </tr>
             </thead>
             <tbody id="ipva-table-body"></tbody>
@@ -664,8 +664,8 @@
               </td>
               <td>
                 <div class="actions-cell">
-                  <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button">Editar</button>
-                  <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button">Excluir</button>
+                  <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button" title="Editar" aria-label="Editar">✏</button>
+                  <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button" title="Excluir" aria-label="Excluir">🗑</button>
                 </div>
               </td>
             `;
@@ -745,7 +745,6 @@
             observacao,
             pago: false,
             uid: auth.currentUser.uid,
-            criadoPor: auth.currentUser.email || "",
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
