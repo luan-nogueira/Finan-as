@@ -154,6 +154,16 @@
               <input type="date" id="vencimento" />
             </div>
 
+            <div class="field">
+              <label for="parcela-atual">Parcela atual</label>
+              <input type="number" id="parcela-atual" min="1" placeholder="Ex: 12" />
+            </div>
+
+            <div class="field">
+              <label for="parcela-total">Total de parcelas</label>
+              <input type="number" id="parcela-total" min="1" placeholder="Ex: 48" />
+            </div>
+
             <div class="field full">
               <label for="observacao">Observação</label>
               <input type="text" id="observacao" placeholder="Ex: Cartão / Parcela 12/48" />
@@ -267,6 +277,16 @@
         <div class="field">
           <label for="edit-vencimento">Vencimento</label>
           <input type="date" id="edit-vencimento" />
+        </div>
+
+        <div class="field">
+          <label for="edit-parcela-atual">Parcela atual</label>
+          <input type="number" id="edit-parcela-atual" min="1" />
+        </div>
+
+        <div class="field">
+          <label for="edit-parcela-total">Total de parcelas</label>
+          <input type="number" id="edit-parcela-total" min="1" />
         </div>
 
         <div class="field full">
@@ -415,6 +435,24 @@
         return "Pendente";
       }
 
+      function getTextoParcelas(item) {
+        const atual = Number(item.parcelaAtual || 0);
+        const total = Number(item.parcelaTotal || 0);
+
+        if (!atual || !total) return "-";
+        return `${atual}/${total}`;
+      }
+
+      function getParcelasRestantes(item) {
+        const atual = Number(item.parcelaAtual || 0);
+        const total = Number(item.parcelaTotal || 0);
+
+        if (!atual || !total) return "-";
+
+        const faltam = total - atual;
+        return faltam > 0 ? `Faltam ${faltam}` : "Última parcela";
+      }
+
       function formatarMesTitulo(yyyyMm) {
         if (!yyyyMm) return "Todos os meses";
         const [ano, mes] = yyyyMm.split("-");
@@ -467,6 +505,8 @@
         document.getElementById("edit-valor").value = Number(item.valor || 0);
         document.getElementById("edit-vencimento").value = item.vencimento || "";
         document.getElementById("edit-observacao").value = item.observacao || "";
+        document.getElementById("edit-parcela-atual").value = item.parcelaAtual || "";
+        document.getElementById("edit-parcela-total").value = item.parcelaTotal || "";
         editModal.classList.remove("hidden");
       }
 
@@ -633,7 +673,13 @@
                   ${item.pago ? "checked" : ""}
                 />
               </td>
-              <td>${escapeHtml(item.descricao)}</td>
+              <td>
+                <div>${escapeHtml(item.descricao)}</div>
+                <div class="parcelas-info">
+                  <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
+                  <small>${escapeHtml(getParcelasRestantes(item))}</small>
+                </div>
+              </td>
               <td class="valor-cell">${formatarMoeda(item.valor)}</td>
               <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
               <td>${escapeHtml(item.observacao || "-")}</td>
@@ -713,6 +759,8 @@
         const valor = Number(document.getElementById("valor").value);
         const vencimento = document.getElementById("vencimento").value.trim();
         const observacao = document.getElementById("observacao").value.trim();
+        const parcelaAtual = Number(document.getElementById("parcela-atual").value || 0);
+        const parcelaTotal = Number(document.getElementById("parcela-total").value || 0);
 
         if (!auth.currentUser) return;
 
@@ -723,6 +771,8 @@
             valor,
             vencimento,
             observacao,
+            parcelaAtual: parcelaAtual || null,
+            parcelaTotal: parcelaTotal || null,
             pago: false,
             uid: auth.currentUser.uid,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -746,6 +796,8 @@
         const valor = Number(document.getElementById("edit-valor").value);
         const vencimento = document.getElementById("edit-vencimento").value.trim();
         const observacao = document.getElementById("edit-observacao").value.trim();
+        const parcelaAtual = Number(document.getElementById("edit-parcela-atual").value || 0);
+        const parcelaTotal = Number(document.getElementById("edit-parcela-total").value || 0);
 
         try {
           await db.collection("despesas").doc(id).update({
@@ -753,7 +805,9 @@
             categoria,
             valor,
             vencimento,
-            observacao
+            observacao,
+            parcelaAtual: parcelaAtual || null,
+            parcelaTotal: parcelaTotal || null
           });
 
           lastEditedId = id;
