@@ -63,28 +63,28 @@ textarea {
 }
 
 .container {
-  width: min(1180px, calc(100% - 16px));
-  margin: 10px auto 24px;
+  width: min(1180px, calc(100% - 12px));
+  margin: 8px auto 20px;
 }
 
 .hero {
   background: var(--hero-bg);
   color: #fff;
-  border-radius: 18px;
-  padding: 14px;
+  border-radius: 16px;
+  padding: 12px;
   box-shadow: var(--shadow);
   display: grid;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .badge {
   display: inline-block;
   background: rgba(255, 255, 255, 0.14);
-  padding: 5px 9px;
+  padding: 4px 8px;
   border-radius: 999px;
-  margin-bottom: 8px;
-  font-size: 10px;
+  margin-bottom: 6px;
+  font-size: 9px;
 }
 
 .badge-login {
@@ -93,26 +93,27 @@ textarea {
 }
 
 .hero h1 {
-  font-size: 1.15rem;
-  margin-bottom: 6px;
+  font-size: 1.02rem;
+  margin-bottom: 4px;
+  line-height: 1.15;
 }
 
 .hero p {
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 11px;
+  line-height: 1.3;
   color: rgba(255, 255, 255, 0.92);
 }
 
 .hero-side {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .hero-total-box {
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 10px;
 }
 
 .hero-total-box span,
@@ -121,17 +122,18 @@ textarea {
 }
 
 .hero-total-box span {
-  font-size: 12px;
-  margin-bottom: 4px;
+  font-size: 11px;
+  margin-bottom: 3px;
 }
 
 .hero-total-box strong {
-  font-size: 1.3rem;
+  font-size: 1.12rem;
+  line-height: 1.1;
 }
 
 .hero-total-box small {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.85);
   word-break: break-word;
 }
@@ -139,14 +141,14 @@ textarea {
 .hero-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .summary-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  margin-bottom: 12px;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .summary-card,
@@ -154,65 +156,67 @@ textarea {
 .auth-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: var(--shadow);
 }
 
 .summary-card {
-  padding: 12px;
+  padding: 10px;
 }
 
 .summary-card p {
   color: var(--muted);
-  font-size: 11px;
-  margin-bottom: 6px;
+  font-size: 10px;
+  margin-bottom: 4px;
 }
 
 .summary-card h3 {
-  font-size: 1rem;
+  font-size: 0.92rem;
+  line-height: 1.1;
 }
 
 .panel {
-  padding: 12px;
-  margin-bottom: 12px;
-}
-
-.panel-header {
+  padding: 10px;
   margin-bottom: 10px;
 }
 
+.panel-header {
+  margin-bottom: 8px;
+}
+
 .panel-header h2 {
-  font-size: 1rem;
-  margin-bottom: 4px;
+  font-size: 0.95rem;
+  margin-bottom: 3px;
+  line-height: 1.15;
 }
 
 .panel-header p {
   color: var(--muted);
-  font-size: 11px;
-  line-height: 1.3;
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .ipva-header {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .form-grid,
 .filters-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 6px;
 }
 
 .field {
   display: grid;
-  gap: 5px;
+  gap: 4px;
 }
 
 .field label {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .full {
@@ -223,12 +227,13 @@ input,
 select,
 button {
   width: 100%;
-  min-height: 40px;
-  padding: 10px 12px;
-  border-radius: 10px;
+  min-height: 36px;
+  padding: 8px 9px;
+  border-radius: 9px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
+  font-size: 11px;
 }
 
 input:focus,
@@ -277,45 +282,77 @@ select:focus {
 .actions-cell {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 4px;
 }
 
 .table-wrap {
   width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--card);
-  -webkit-overflow-scrolling: touch;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 700px;
+  table-layout: fixed;
 }
 
 th,
 td {
-  padding: 10px 8px;
+  padding: 7px 4px;
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: middle;
-  font-size: 12px;
+  font-size: 9px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 th {
   background: var(--card-2);
   color: var(--muted);
   text-transform: uppercase;
-  font-size: 10px;
-  letter-spacing: 0.02em;
+  font-size: 8px;
+  letter-spacing: 0.01em;
+}
+
+#main-table .col-check,
+#ipva-table .col-check {
+  width: 34px;
+  text-align: center;
+}
+
+#main-table .col-value,
+#ipva-table .col-value {
+  width: 70px;
+}
+
+#main-table .col-date,
+#ipva-table .col-date {
+  width: 54px;
+}
+
+#main-table .col-status,
+#ipva-table .col-status {
+  width: 56px;
+}
+
+#main-table .col-actions {
+  width: 52px;
+}
+
+#ipva-table .col-small {
+  width: 42px;
 }
 
 .group-row {
   background: var(--card-2);
   font-weight: bold;
   color: var(--primary);
+  font-size: 9px;
 }
 
 .row-paid {
@@ -327,17 +364,18 @@ th {
 }
 
 .valor-cell {
-  white-space: nowrap;
+  white-space: normal;
   font-weight: bold;
 }
 
 .status-badge {
   display: inline-block;
-  padding: 5px 8px;
+  padding: 3px 5px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: bold;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.05;
 }
 
 .status-badge.paid {
@@ -357,32 +395,33 @@ th {
 
 .pay-check,
 .ipva-check {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   accent-color: var(--green);
   cursor: pointer;
 }
 
 .month-header {
-  margin-bottom: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
+  margin-bottom: 8px;
+  padding: 8px 9px;
+  border-radius: 9px;
   background: var(--card-2);
   border: 1px solid var(--border);
   text-transform: capitalize;
   font-weight: bold;
   color: var(--primary);
+  font-size: 10px;
 }
 
 .alert-panel {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   background: var(--alert-bg);
   border: 1px solid var(--alert-border);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 10px;
+  padding: 10px;
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
 }
 
 .alert-panel.hidden {
@@ -391,17 +430,28 @@ th {
 
 .alert-panel-left {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .alert-icon {
-  font-size: 18px;
+  font-size: 16px;
+}
+
+.alert-panel h3 {
+  font-size: 0.88rem;
+  margin-bottom: 2px;
+}
+
+.alert-panel p {
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .empty-cell {
   text-align: center;
   color: var(--muted);
-  padding: 16px;
+  padding: 14px;
+  font-size: 10px;
 }
 
 .auth-page {
@@ -451,9 +501,9 @@ th {
   width: 100%;
   max-width: 760px;
   background: var(--card);
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: var(--shadow);
-  padding: 12px;
+  padding: 10px;
   border: 1px solid var(--border);
 }
 
@@ -462,19 +512,23 @@ th {
   justify-content: space-between;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+}
+
+.modal-header h2 {
+  font-size: 0.96rem;
 }
 
 .modal-close {
   width: auto;
-  min-width: 36px;
-  min-height: 36px;
-  padding: 4px 10px;
-  border-radius: 9px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 4px 9px;
+  border-radius: 8px;
   border: none;
   background: var(--card-2);
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
 }
 
@@ -493,76 +547,43 @@ th {
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
-  padding: 10px;
+  padding: 9px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--card-2);
 }
 
 .footer {
   text-align: center;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
   padding-bottom: 12px;
+  line-height: 1.25;
 }
 
 .edited-highlight td {
   background: rgba(29, 78, 216, 0.08);
 }
 
+/* celular: esconder observação para caber sem rolagem */
 @media (max-width: 767px) {
-  th,
-  td {
-    font-size: 11px;
-    padding: 8px 6px;
-  }
-
-  th:nth-child(5),
-  td:nth-child(5) {
+  #main-table th:nth-child(5),
+  #main-table td:nth-child(5) {
     display: none;
   }
 
-  th:last-child,
-  td:last-child {
-    position: sticky;
-    right: 0;
-    z-index: 3;
-    background: var(--card);
-    min-width: 110px;
-    box-shadow: -6px 0 8px rgba(0, 0, 0, 0.05);
-  }
-
-  th:last-child {
-    background: var(--card-2);
-    z-index: 4;
-  }
-
-  .actions-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .action-btn {
-    width: 100%;
-    min-height: 28px;
-    font-size: 10px;
-    padding: 6px 8px;
-  }
-
-  .status-badge {
-    font-size: 9px;
-    padding: 4px 6px;
+  #main-table .col-actions {
+    width: 44px;
   }
 }
 
 @media (min-width: 640px) {
   .container {
-    width: min(1180px, calc(100% - 24px));
+    width: min(1180px, calc(100% - 20px));
   }
 
   .summary-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .hero-actions,
@@ -581,6 +602,28 @@ th {
   .actions-cell {
     display: flex;
     flex-wrap: wrap;
+  }
+
+  .action-btn {
+    width: auto;
+    min-width: 30px;
+  }
+
+  th,
+  td {
+    font-size: 10px;
+  }
+
+  th {
+    font-size: 9px;
+  }
+
+  .status-badge {
+    font-size: 9px;
+  }
+
+  .container {
+    margin: 10px auto 24px;
   }
 }
 
@@ -627,5 +670,100 @@ th {
   .summary-card,
   .auth-card {
     padding: 20px;
+  }
+
+  .panel-header h2 {
+    font-size: 1rem;
+  }
+
+  .panel-header p,
+  .field label,
+  .month-header,
+  .footer {
+    font-size: 11px;
+  }
+
+  input,
+  select,
+  button {
+    min-height: 40px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 720px;
+  }
+
+  th,
+  td {
+    padding: 10px 8px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  th {
+    font-size: 10px;
+  }
+
+  #main-table .col-check,
+  #ipva-table .col-check {
+    width: 46px;
+  }
+
+  #main-table .col-value,
+  #ipva-table .col-value {
+    width: 100px;
+  }
+
+  #main-table .col-date,
+  #ipva-table .col-date {
+    width: 84px;
+  }
+
+  #main-table .col-status,
+  #ipva-table .col-status {
+    width: 100px;
+  }
+
+  #main-table .col-actions {
+    width: 92px;
+  }
+
+  #ipva-table .col-small {
+    width: 60px;
+  }
+
+  .status-badge {
+    padding: 5px 8px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .pay-check,
+  .ipva-check {
+    width: 18px;
+    height: 18px;
+  }
+
+  #main-table th:nth-child(5),
+  #main-table td:nth-child(5) {
+    display: table-cell;
+  }
+
+  .actions-cell {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .action-btn {
+    min-height: 30px;
+    padding: 6px 8px;
+    font-size: 11px;
   }
 }
