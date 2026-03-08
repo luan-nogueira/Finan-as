@@ -53,11 +53,6 @@
         </div>
       </form>
 
-      <div class="auth-switch">
-        <button id="tab-login" type="button" class="btn-light auth-switch-btn">Modo login</button>
-        <button id="tab-register" type="button" class="btn-secondary auth-switch-btn">Criar conta</button>
-      </div>
-
       <p id="auth-message" class="auth-message"></p>
     </div>
   </section>
@@ -328,8 +323,6 @@
       const passwordInput = document.getElementById("password");
       const submitBtn = document.getElementById("submit-btn");
       const authMessage = document.getElementById("auth-message");
-      const tabLogin = document.getElementById("tab-login");
-      const tabRegister = document.getElementById("tab-register");
 
       const form = document.getElementById("expense-form");
       const logoutBtn = document.getElementById("logout-btn");
@@ -365,7 +358,6 @@
       const ipvaFormList = document.getElementById("ipva-form-list");
       const addIpvaRowBtn = document.getElementById("add-ipva-row");
 
-      let modo = "login";
       let despesasCache = [];
       let ipvaData = [];
       let unsubscribe = null;
@@ -384,23 +376,6 @@
       function mostrarApp(logado) {
         loginBox.style.display = logado ? "none" : "grid";
         appRoot.style.display = logado ? "block" : "none";
-      }
-
-      function atualizarModo() {
-        if (modo === "login") {
-          submitBtn.textContent = "Entrar";
-          tabLogin.classList.remove("btn-secondary");
-          tabLogin.classList.add("btn-light");
-          tabRegister.classList.remove("btn-light");
-          tabRegister.classList.add("btn-secondary");
-        } else {
-          submitBtn.textContent = "Criar conta";
-          tabRegister.classList.remove("btn-secondary");
-          tabRegister.classList.add("btn-light");
-          tabLogin.classList.remove("btn-light");
-          tabLogin.classList.add("btn-secondary");
-        }
-        authMessage.textContent = "";
       }
 
       function formatarMoeda(valor) {
@@ -466,8 +441,6 @@
         const erros = {
           "auth/invalid-email": "E-mail inválido.",
           "auth/missing-password": "Digite a senha.",
-          "auth/weak-password": "A senha deve ter pelo menos 6 caracteres.",
-          "auth/email-already-in-use": "Este e-mail já está em uso.",
           "auth/user-not-found": "Usuário não encontrado.",
           "auth/wrong-password": "Senha incorreta.",
           "auth/invalid-credential": "E-mail ou senha inválidos.",
@@ -820,16 +793,6 @@
         }
       }
 
-      tabLogin.addEventListener("click", () => {
-        modo = "login";
-        atualizarModo();
-      });
-
-      tabRegister.addEventListener("click", () => {
-        modo = "register";
-        atualizarModo();
-      });
-
       authForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -839,13 +802,7 @@
 
         try {
           await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-          if (modo === "login") {
-            await auth.signInWithEmailAndPassword(email, password);
-          } else {
-            await auth.createUserWithEmailAndPassword(email, password);
-          }
-
+          await auth.signInWithEmailAndPassword(email, password);
           authMessage.textContent = "";
         } catch (error) {
           authMessage.textContent = traduzirErroAuth(error.code || error.message);
@@ -1018,7 +975,6 @@
       });
 
       carregarTema();
-      atualizarModo();
 
       const hoje = new Date();
       const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
