@@ -12,6 +12,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -173,6 +174,30 @@
               <button type="submit" class="btn-primary">Salvar despesa</button>
             </div>
           </form>
+        </div>
+      </section>
+
+      <section class="panel collapsible-panel">
+        <button
+          id="toggle-chart-panel"
+          type="button"
+          class="collapse-toggle-btn"
+          aria-expanded="false"
+          aria-controls="chart-panel-wrapper"
+        >
+          <span>📊 Ver gráfico</span>
+          <span id="chart-toggle-icon">▼</span>
+        </button>
+
+        <div id="chart-panel-wrapper" class="collapsible-content hidden">
+          <div class="panel-header collapsible-header">
+            <h2>Gráfico financeiro</h2>
+            <p>Resumo visual do que está visível na tabela.</p>
+          </div>
+
+          <div class="chart-box">
+            <canvas id="finance-chart"></canvas>
+          </div>
         </div>
       </section>
 
@@ -355,6 +380,11 @@
       const expenseFormWrapper = document.getElementById("expense-form-wrapper");
       const expenseToggleIcon = document.getElementById("expense-toggle-icon");
 
+      const toggleChartPanelBtn = document.getElementById("toggle-chart-panel");
+      const chartPanelWrapper = document.getElementById("chart-panel-wrapper");
+      const chartToggleIcon = document.getElementById("chart-toggle-icon");
+      const financeChartCanvas = document.getElementById("finance-chart");
+
       const monthFilter = document.getElementById("month-filter");
       const searchInput = document.getElementById("search-input");
       const monthHeader = document.getElementById("month-header");
@@ -390,6 +420,7 @@
       let searchTerm = "";
       let monthTerm = "";
       let lastEditedId = null;
+      let financeChart = null;
 
       const ipvaPadrao = [
         { data: "2026-01-30", valor: 772.77, pago: true },
@@ -498,6 +529,19 @@
         expenseToggleIcon.textContent = aberto ? "▼" : "▲";
       }
 
+      function alternarPainelGrafico() {
+        const aberto = !chartPanelWrapper.classList.contains("hidden");
+        chartPanelWrapper.classList.toggle("hidden");
+        toggleChartPanelBtn.setAttribute("aria-expanded", String(!aberto));
+        chartToggleIcon.textContent = aberto ? "▼" : "▲";
+
+        if (!aberto) {
+          setTimeout(() => {
+            renderGrafico(aplicarFiltros(despesasCache));
+          }, 50);
+        }
+      }
+
       function abrirModalEdicao(item) {
         document.getElementById("edit-id").value = item.id;
         document.getElementById("edit-descricao").value = item.descricao || "";
@@ -566,11 +610,67 @@
         }
       }
 
+      function ajustarDataParaMes(dataOriginal, yyyyMm) {
+        if (!dataOriginal || !yyyyMm) return dataOriginal || "";
+
+        const [, , diaStr] = dataOriginal.split("-");
+        const [ano, mes] = yyyyMm.split("-").map(Number);
+        const diaOriginal = Number(diaStr || 1);
+
+        const ultimoDia = new Date(ano, mes, 0).getDate();
+        const diaFinal = Math.min(diaOriginal, ultimoDia);
+
+        return `${ano}-${String(mes).padStart(2, "0")}-${String(diaFinal).padStart(2, "0")}`;
+      }
+
+      function criarRecorrenciaGastoComum(item, yyyyMm) {
+        const novaData = ajustarDataParaMes(item.vencimento, yyyyMm);
+
+        return {
+          ...item,
+          id: `${item.id}__${yyyyMm}`,
+          origemId: item.id,
+          vencimento: novaData,
+          pago: false,
+          recorrenteMesFuturo: true
+        };
+      }
+
       function aplicarFiltros(lista) {
-        let resultado = [...lista];
+        let resultado = [];
 
         if (monthTerm) {
-          resultado = resultado.filter(item => (item.vencimento || "").startsWith(monthTerm));
+          lista.forEach(item => {
+            const vencimentoMes = (item.vencimento || "").slice(0, 7);
+
+            if (item.categoria === "Gastos comuns" && item.vencimento) {
+              if (vencimentoMes <= monthTerm) {
+                if (vencimentoMes === monthTerm) {
+                  resultado.push({
+                    ...item,
+                    origemId: item.id,
+                    recorrenteMesFuturo: false
+                  });
+                } else {
+                  resultado.push(criarRecorrenciaGastoComum(item, monthTerm));
+                }
+              }
+            } else {
+              if ((item.vencimento || "").startsWith(monthTerm)) {
+                resultado.push({
+                  ...item,
+                  origemId: item.id,
+                  recorrenteMesFuturo: false
+                });
+              }
+            }
+          });
+        } else {
+          resultado = lista.map(item => ({
+            ...item,
+            origemId: item.id,
+            recorrenteMesFuturo: false
+          }));
         }
 
         if (searchTerm) {
@@ -627,12 +727,115 @@
           `${vencidas.length} conta(s) vencida(s), total de ${formatarMoeda(total)} aguardando pagamento.`;
       }
 
+      function renderGrafico(lista) {
+        if (!financeChartCanvas || typeof Chart === "undefined") return;
+
+        const totais = {
+          "Gastos comuns": { pago: 0, pendente: 0 },
+          "Luan": { pago: 0, pendente: 0 },
+          "Kelly": { pago: 0, pendente: 0 }
+        };
+
+        lista.forEach(item => {
+          const categoria = item.categoria || "Gastos comuns";
+          if (!totais[categoria]) {
+            totais[categoria] = { pago: 0, pendente: 0 };
+          }
+
+          if (item.pago) {
+            totais[categoria].pago += Number(item.valor || 0);
+          } else {
+            totais[categoria].pendente += Number(item.valor || 0);
+          }
+        });
+
+        const labels = Object.keys(totais);
+        const dadosPago = labels.map(label => totais[label].pago);
+        const dadosPendente = labels.map(label => totais[label].pendente);
+
+        if (financeChart) {
+          financeChart.destroy();
+        }
+
+        const corTexto = getComputedStyle(document.documentElement).getPropertyValue("--text").trim() || "#1f2937";
+
+        financeChart = new Chart(financeChartCanvas, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Pago",
+                data: dadosPago,
+                backgroundColor: "rgba(34, 197, 94, 0.7)",
+                borderColor: "rgba(34, 197, 94, 1)",
+                borderWidth: 1,
+                borderRadius: 8
+              },
+              {
+                label: "Pendente",
+                data: dadosPendente,
+                backgroundColor: "rgba(245, 158, 11, 0.7)",
+                borderColor: "rgba(245, 158, 11, 1)",
+                borderWidth: 1,
+                borderRadius: 8
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: "index",
+              intersect: false
+            },
+            plugins: {
+              legend: {
+                labels: {
+                  color: corTexto
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label(context) {
+                    return `${context.dataset.label}: ${formatarMoeda(context.raw || 0)}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: corTexto
+                },
+                grid: {
+                  color: "rgba(148, 163, 184, 0.15)"
+                }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: corTexto,
+                  callback(value) {
+                    return formatarMoeda(value);
+                  }
+                },
+                grid: {
+                  color: "rgba(148, 163, 184, 0.15)"
+                }
+              }
+            }
+          }
+        });
+      }
+
       function renderTabelaPrincipal() {
         mainTableBody.innerHTML = "";
 
         const lista = aplicarFiltros(despesasCache);
         renderResumo(lista);
         renderAlertaVencidas(lista);
+        renderGrafico(lista);
         monthHeader.textContent = formatarMesTitulo(monthTerm);
 
         if (!lista.length) {
@@ -659,18 +862,21 @@
 
           grupo.itens.forEach(item => {
             const status = getStatus(item);
+            const idReal = item.origemId || item.id;
+            const ehRecorrenteFuturo = Boolean(item.recorrenteMesFuturo);
 
             const tr = document.createElement("tr");
             tr.className = item.pago ? "row-paid" : (isVencida(item) ? "row-overdue" : "");
-            tr.setAttribute("data-id", item.id);
+            tr.setAttribute("data-id", idReal);
 
             tr.innerHTML = `
               <td>
                 <input
                   type="checkbox"
                   class="pay-check"
-                  data-id="${item.id}"
+                  data-id="${idReal}"
                   ${item.pago ? "checked" : ""}
+                  ${ehRecorrenteFuturo ? 'disabled title="Pagamento da recorrência futura bloqueado para não alterar o item original."' : ""}
                 />
               </td>
               <td>
@@ -678,6 +884,7 @@
                 <div class="parcelas-info">
                   <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
                   <small>${escapeHtml(getParcelasRestantes(item))}</small>
+                  ${ehRecorrenteFuturo ? '<span class="recorrente-badge">Recorrente do mês</span>' : ""}
                 </div>
               </td>
               <td class="valor-cell">${formatarMoeda(item.valor)}</td>
@@ -690,8 +897,8 @@
               </td>
               <td>
                 <div class="actions-cell">
-                  <button class="action-btn btn-edit" data-id="${item.id}" data-action="edit" type="button" title="Editar" aria-label="Editar">✏</button>
-                  <button class="action-btn btn-delete" data-id="${item.id}" data-action="delete" type="button" title="Excluir" aria-label="Excluir">🗑</button>
+                  <button class="action-btn btn-edit" data-id="${idReal}" data-action="edit" type="button" title="Editar" aria-label="Editar">✏</button>
+                  <button class="action-btn btn-delete" data-id="${idReal}" data-action="delete" type="button" title="Excluir" aria-label="Excluir">🗑</button>
                 </div>
               </td>
             `;
@@ -874,6 +1081,7 @@
       });
 
       toggleExpenseFormBtn.addEventListener("click", alternarFormularioDespesa);
+      toggleChartPanelBtn.addEventListener("click", alternarPainelGrafico);
 
       form.addEventListener("submit", salvarDespesa);
       editForm.addEventListener("submit", salvarEdicao);
@@ -938,6 +1146,7 @@
       themeToggle.addEventListener("click", () => {
         const current = document.documentElement.getAttribute("data-theme") || "light";
         salvarTema(current === "dark" ? "light" : "dark");
+        renderGrafico(aplicarFiltros(despesasCache));
       });
 
       logoutBtn.addEventListener("click", async () => {
@@ -953,6 +1162,7 @@
       mainTableBody.addEventListener("click", async (e) => {
         const check = e.target.closest(".pay-check");
         if (check) {
+          if (check.disabled) return;
           await alternarPagamento(check.dataset.id);
           return;
         }
