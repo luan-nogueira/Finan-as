@@ -609,6 +609,36 @@ th {
   line-height: 1.15;
 }
 
+.recorrente-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: bold;
+  background: rgba(29, 78, 216, 0.1);
+  color: var(--primary);
+}
+
+.pay-check[disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.chart-box {
+  width: 100%;
+  min-height: 260px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-2);
+}
+
+.chart-box canvas {
+  width: 100% !important;
+  height: 280px !important;
+}
+
 @media (max-width: 767px) {
   #main-table th:nth-child(5),
   #main-table td:nth-child(5) {
@@ -818,5 +848,18 @@ th {
 
   .parcelas-info small {
     font-size: 11px;
+  }
+
+  .chart-box {
+    min-height: 340px;
+    padding: 16px;
+  }
+
+  .chart-box canvas {
+    height: 320px !important;
+  }
+
+  .recorrente-badge {
+    font-size: 9px;
   }
 }
