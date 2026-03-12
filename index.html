@@ -18,13 +18,10 @@
 
   <section class="auth-page" id="loginBox">
     <div class="auth-card">
-      <div class="auth-card-top">
-        <div class="auth-mark">💳</div>
-        <div class="panel-header auth-header">
-          <span class="badge badge-login">🔐 Área de login</span>
-          <h2>Entrar no sistema</h2>
-          <p>Acesse o painel financeiro com seu e-mail e senha.</p>
-        </div>
+      <div class="panel-header">
+        <span class="badge badge-login">🔐 Área de login</span>
+        <h2>Entrar no sistema</h2>
+        <p>Acesse o painel financeiro com seu e-mail e senha.</p>
       </div>
 
       <form id="auth-form" class="form-grid auth-form">
@@ -65,7 +62,7 @@
     <div class="container">
 
       <header class="hero">
-        <div class="hero-content">
+        <div>
           <span class="badge">💙 Financeiro do casal</span>
           <h1>Tabela simples de gastos</h1>
           <p>Marque os itens pagos e o site atualiza automaticamente em tempo real.</p>
@@ -97,34 +94,19 @@
 
       <section class="summary-grid">
         <div class="summary-card">
-          <div class="summary-top">
-            <p>Total pendente</p>
-            <span class="summary-icon orange">⏳</span>
-          </div>
+          <p>Total pendente</p>
           <h3 id="total-pendente">R$ 0,00</h3>
         </div>
-
         <div class="summary-card">
-          <div class="summary-top">
-            <p>Total pago</p>
-            <span class="summary-icon green">✅</span>
-          </div>
+          <p>Total pago</p>
           <h3 id="total-pago">R$ 0,00</h3>
         </div>
-
         <div class="summary-card">
-          <div class="summary-top">
-            <p>Itens pendentes</p>
-            <span class="summary-icon orange">📌</span>
-          </div>
+          <p>Itens pendentes</p>
           <h3 id="qtd-pendentes">0</h3>
         </div>
-
         <div class="summary-card">
-          <div class="summary-top">
-            <p>Itens pagos</p>
-            <span class="summary-icon blue">💙</span>
-          </div>
+          <p>Itens pagos</p>
           <h3 id="qtd-pagos">0</h3>
         </div>
       </section>
@@ -933,7 +915,7 @@
                 />
               </td>
               <td>
-                <div class="table-desc">${escapeHtml(item.descricao)}</div>
+                <div>${escapeHtml(item.descricao)}</div>
                 <div class="parcelas-info">
                   <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
                   <small>${escapeHtml(getParcelasRestantes(item))}</small>
