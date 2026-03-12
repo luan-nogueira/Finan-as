@@ -473,7 +473,6 @@
       function getTextoParcelas(item) {
         const atual = Number(item.parcelaAtual || 0);
         const total = Number(item.parcelaTotal || 0);
-
         if (!atual || !total) return "-";
         return `${atual}/${total}`;
       }
@@ -481,9 +480,7 @@
       function getParcelasRestantes(item) {
         const atual = Number(item.parcelaAtual || 0);
         const total = Number(item.parcelaTotal || 0);
-
         if (!atual || !total) return "-";
-
         const faltam = total - atual;
         return faltam > 0 ? `Faltam ${faltam}` : "Última parcela";
       }
