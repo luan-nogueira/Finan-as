@@ -416,7 +416,7 @@ html[data-theme="dark"] .btn-delete {
 table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 th,
@@ -435,6 +435,12 @@ th {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+td {
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 tr:last-child td {
@@ -647,13 +653,13 @@ html[data-theme="dark"] .btn-delete.action-btn {
   padding: 8px 0 22px;
 }
 
-.col-check { width: 56px; }
-.col-desc { width: 28%; }
+.col-check { width: 70px; }
+.col-desc { width: 42%; }
 .col-value { width: 120px; }
-.col-date { width: 110px; }
+.col-date { width: 120px; }
 .col-obs { width: 20%; }
 .col-status { width: 110px; }
-.col-actions { width: 92px; }
+.col-actions { width: 130px; }
 .col-small { width: 80px; }
 
 input[type="checkbox"] {
@@ -754,7 +760,7 @@ input[type="checkbox"] {
   }
 
   table {
-    table-layout: fixed;
+    table-layout: auto;
   }
 
   th,
@@ -767,11 +773,11 @@ input[type="checkbox"] {
     font-size: 11px;
   }
 
-  .col-check { width: 48px; }
+  .col-check { width: 52px; }
   .col-desc { width: auto; }
-  .col-value { width: 88px; }
-  .col-date { width: 80px; }
-  .col-actions { width: 74px; }
+  .col-value { width: 92px; }
+  .col-date { width: 92px; }
+  .col-actions { width: 92px; }
 
   .col-obs,
   .col-status,
@@ -787,7 +793,8 @@ input[type="checkbox"] {
   }
 
   .valor-cell {
-    font-size: 12px;
+    font-size: 11px;
+    white-space: nowrap;
   }
 
   .actions-cell {
@@ -801,10 +808,19 @@ input[type="checkbox"] {
     padding: 0;
   }
 
-  .status-badge {
-    min-width: 70px;
-    padding: 6px 8px;
-    font-size: 11px;
+  .descricao-cell-text,
+  td:nth-child(2) div:first-child {
+    word-break: break-word;
+    line-height: 1.2;
+  }
+
+  td:nth-child(2) {
+    min-width: 0;
+  }
+
+  td:nth-child(3),
+  td:nth-child(4) {
+    white-space: nowrap;
   }
 
   input[type="checkbox"] {
