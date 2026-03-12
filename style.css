@@ -1,7 +1,7 @@
 :root {
   --bg: #edf3fb;
   --bg-soft: #f6f9fe;
-  --card: rgba(255, 255, 255, 0.88);
+  --card: rgba(255, 255, 255, 0.92);
   --card-2: #f8fbff;
   --card-3: #eef4ff;
   --text: #152033;
@@ -47,7 +47,7 @@
 :root[data-theme="dark"] {
   --bg: #07101d;
   --bg-soft: #0c1727;
-  --card: rgba(15, 23, 42, 0.9);
+  --card: rgba(15, 23, 42, 0.92);
   --card-2: #111b2e;
   --card-3: #182336;
   --text: #e5e7eb;
@@ -134,21 +134,20 @@ textarea {
 
 .hero::before {
   content: "";
-  position: absolute;
   right: -50px;
   bottom: -50px;
+  position: absolute;
   width: 190px;
   height: 190px;
   background: rgba(255,255,255,0.08);
   border-radius: 999px;
-  filter: blur(2px);
 }
 
 .hero::after {
   content: "";
-  position: absolute;
   left: -35px;
   top: -35px;
+  position: absolute;
   width: 120px;
   height: 120px;
   background: rgba(255,255,255,0.06);
@@ -173,7 +172,6 @@ textarea {
   font-weight: 800;
   letter-spacing: 0.02em;
   backdrop-filter: blur(8px);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .badge-login {
@@ -207,7 +205,6 @@ textarea {
   border-radius: 18px;
   padding: 14px;
   backdrop-filter: blur(14px);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .hero-total-box span,
@@ -317,11 +314,7 @@ textarea {
 .panel {
   padding: 14px;
   margin-bottom: 16px;
-  transition: box-shadow var(--transition), border-color var(--transition), transform var(--transition);
-}
-
-.panel:hover {
-  border-color: rgba(37, 99, 235, 0.16);
+  transition: box-shadow var(--transition), border-color var(--transition);
 }
 
 .panel-header {
@@ -379,7 +372,7 @@ textarea {
   padding: 11px 13px;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.72);
+  background: rgba(255,255,255,0.75);
   color: var(--text);
   font-size: 12px;
   transition:
@@ -400,12 +393,6 @@ input::placeholder,
 textarea::placeholder {
   color: var(--muted);
   opacity: 0.82;
-}
-
-input:hover,
-select:hover,
-textarea:hover {
-  border-color: rgba(37, 99, 235, 0.28);
 }
 
 input:focus,
@@ -437,23 +424,12 @@ button {
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.3);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
 }
 
 .btn-secondary {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   color: #fff;
   border: none;
-  box-shadow: var(--shadow-xs);
-}
-
-.btn-secondary:hover {
-  transform: translateY(-1px);
-  opacity: 0.98;
 }
 
 .btn-light {
@@ -462,19 +438,10 @@ button {
   border: 1px solid var(--border);
 }
 
-.btn-light:hover {
-  background: var(--bg-soft);
-  transform: translateY(-1px);
-}
-
 .btn-edit {
   background: rgba(37, 99, 235, 0.10);
   color: var(--primary);
   border: 1px solid rgba(37, 99, 235, 0.12);
-}
-
-.btn-edit:hover {
-  background: rgba(37, 99, 235, 0.16);
 }
 
 .btn-delete {
@@ -487,18 +454,14 @@ button {
   color: #fecaca;
 }
 
-.btn-delete:hover {
-  background: rgba(220, 38, 38, 0.18);
-}
-
 .actions-cell {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 5px;
+  gap: 6px;
 }
 
 .action-btn {
-  min-height: 34px;
+  min-height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -511,7 +474,6 @@ button {
   border: 1px solid var(--border);
   border-radius: 18px;
   background: var(--card);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 table {
@@ -522,7 +484,7 @@ table {
 
 th,
 td {
-  padding: 10px 7px;
+  padding: 10px 8px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
   text-align: left;
   vertical-align: middle;
@@ -530,14 +492,6 @@ td {
   line-height: 1.25;
   overflow-wrap: anywhere;
   word-break: break-word;
-}
-
-tbody tr {
-  transition: background var(--transition);
-}
-
-tbody tr:hover td {
-  background: rgba(37, 99, 235, 0.035);
 }
 
 th {
@@ -611,7 +565,6 @@ th {
   border-radius: 999px;
   font-size: 8px;
   font-weight: 800;
-  white-space: normal;
   line-height: 1.05;
   border: 1px solid transparent;
 }
@@ -619,7 +572,6 @@ th {
 .status-badge.paid {
   background: var(--green-soft);
   color: #166534;
-  border-color: rgba(22, 163, 74, 0.12);
 }
 
 :root[data-theme="dark"] .status-badge.paid {
@@ -629,7 +581,6 @@ th {
 .status-badge.pending {
   background: var(--orange-soft);
   color: #92400e;
-  border-color: rgba(217, 119, 6, 0.12);
 }
 
 :root[data-theme="dark"] .status-badge.pending {
@@ -639,7 +590,6 @@ th {
 .status-badge.overdue {
   background: var(--red-soft);
   color: #991b1b;
-  border-color: rgba(220, 38, 38, 0.12);
 }
 
 :root[data-theme="dark"] .status-badge.overdue {
@@ -648,8 +598,8 @@ th {
 
 .pay-check,
 .ipva-check {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   accent-color: var(--green);
   cursor: pointer;
 }
@@ -676,7 +626,6 @@ th {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  box-shadow: var(--shadow-xs);
 }
 
 .alert-panel.hidden {
@@ -757,7 +706,6 @@ th {
   color: #fff;
   font-size: 24px;
   margin-bottom: 12px;
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
 }
 
 .auth-header h2 {
@@ -840,10 +788,6 @@ th {
   line-height: 1;
 }
 
-.modal-close:hover {
-  transform: rotate(90deg);
-}
-
 .modal-actions {
   display: flex;
   flex-direction: column;
@@ -895,12 +839,6 @@ th {
   min-height: 48px;
   padding: 13px 15px;
   box-shadow: var(--shadow-xs);
-}
-
-.collapse-toggle-btn:hover {
-  transform: translateY(-1px);
-  border-color: rgba(37, 99, 235, 0.22);
-  box-shadow: var(--shadow-sm);
 }
 
 .collapsible-content.hidden {
@@ -958,7 +896,6 @@ th {
   border: 1px solid var(--border);
   border-radius: 18px;
   background: linear-gradient(180deg, var(--card-2) 0%, var(--card-3) 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .chart-box canvas {
@@ -966,18 +903,175 @@ th {
   height: 280px !important;
 }
 
+/* MOBILE PRINCIPAL */
 @media (max-width: 767px) {
-  #main-table th:nth-child(5),
-  #main-table td:nth-child(5) {
+  .container {
+    width: calc(100% - 12px);
+    margin: 8px auto 24px;
+  }
+
+  .hero {
+    border-radius: 22px;
+    padding: 16px;
+  }
+
+  .hero h1 {
+    font-size: 1.28rem;
+  }
+
+  .hero-total-box strong {
+    font-size: 1.5rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .panel,
+  .summary-card,
+  .auth-card {
+    border-radius: 18px;
+  }
+
+  .table-wrap {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  #main-table {
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+  }
+
+  #main-table thead {
     display: none;
   }
 
-  #main-table .col-actions {
-    width: 48px;
+  #main-table tbody,
+  #main-table tr,
+  #main-table td {
+    display: block;
+    width: 100%;
   }
 
-  .hero-actions button {
-    min-height: 44px;
+  #main-table tr {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: var(--shadow-sm);
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+
+  #main-table tr.group-row,
+  #main-table .group-row {
+    display: block;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 2px 2px 6px;
+    margin-bottom: 0;
+    color: var(--primary);
+    font-size: 0.95rem;
+    font-weight: 800;
+  }
+
+  #main-table .group-row td {
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  #main-table td {
+    border-bottom: none;
+    padding: 7px 0;
+    text-align: left;
+  }
+
+  #main-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  #main-table td:first-child::before {
+    margin-bottom: 6px;
+  }
+
+  #main-table td:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  #main-table td:first-child::before {
+    content: "Pago";
+    margin-right: 0;
+  }
+
+  #main-table td[data-label="Descrição"] {
+    padding-top: 2px;
+  }
+
+  .table-desc {
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .parcelas-info small {
+    font-size: 11px;
+  }
+
+  #main-table td[data-label="Ações"] .actions-cell {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  #main-table td[data-label="Ações"] .action-btn {
+    min-height: 42px;
+    font-size: 14px;
+  }
+
+  #main-table td[data-label="Valor"] {
+    font-size: 15px;
+  }
+
+  #main-table td[data-label="Valor"] .valor-cell,
+  #main-table .valor-cell {
+    font-size: 15px;
+  }
+
+  #ipva-table {
+    min-width: 100%;
+  }
+
+  #ipva-table th,
+  #ipva-table td {
+    font-size: 11px;
+  }
+
+  .chart-box {
+    padding: 10px;
+    min-height: 250px;
+  }
+
+  .chart-box canvas {
+    height: 240px !important;
+  }
+
+  .hero-actions button,
+  .modal-actions button {
+    width: 100%;
   }
 }
 
@@ -999,33 +1093,6 @@ th {
   .hero-actions button,
   .modal-actions button {
     width: auto;
-  }
-
-  .actions-cell {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .action-btn {
-    width: auto;
-    min-width: 36px;
-  }
-
-  th,
-  td {
-    font-size: 11px;
-  }
-
-  th {
-    font-size: 9px;
-  }
-
-  .status-badge {
-    font-size: 9px;
-  }
-
-  .parcelas-info small {
-    font-size: 10px;
   }
 }
 
@@ -1116,15 +1183,52 @@ th {
 
   .table-wrap {
     overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--card);
   }
 
-  table {
+  #main-table {
+    border-collapse: collapse;
+    border-spacing: 0;
     min-width: 780px;
+  }
+
+  #main-table thead {
+    display: table-header-group;
+  }
+
+  #main-table tbody,
+  #main-table tr {
+    display: table-row;
+  }
+
+  #main-table td,
+  #main-table th {
+    display: table-cell;
+    width: auto;
+    padding: 13px 10px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  }
+
+  #main-table td::before {
+    display: none;
+  }
+
+  #main-table tr {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 0;
+  }
+
+  #main-table .group-row {
+    display: table-cell;
   }
 
   th,
   td {
-    padding: 13px 10px;
     font-size: 12px;
     line-height: 1.28;
   }
@@ -1171,11 +1275,6 @@ th {
   .ipva-check {
     width: 18px;
     height: 18px;
-  }
-
-  #main-table th:nth-child(5),
-  #main-table td:nth-child(5) {
-    display: table-cell;
   }
 
   .actions-cell {
