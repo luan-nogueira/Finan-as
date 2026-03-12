@@ -490,8 +490,8 @@ td {
   vertical-align: middle;
   font-size: 10px;
   line-height: 1.25;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 th {
@@ -505,6 +505,8 @@ th {
 
 .table-desc {
   font-weight: 700;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 #main-table .col-check,
@@ -867,6 +869,7 @@ th {
   color: var(--muted);
   font-size: 9px;
   line-height: 1.22;
+  word-break: normal;
 }
 
 .recorrente-badge {
@@ -903,7 +906,7 @@ th {
   height: 280px !important;
 }
 
-/* MOBILE PRINCIPAL */
+/* MOBILE */
 @media (max-width: 767px) {
   .container {
     width: calc(100% - 12px);
@@ -941,100 +944,125 @@ th {
   }
 
   #main-table {
+    width: 100%;
     min-width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 10px;
+    display: block;
   }
 
   #main-table thead {
     display: none;
   }
 
-  #main-table tbody,
-  #main-table tr,
-  #main-table td {
+  #main-table tbody {
     display: block;
     width: 100%;
   }
 
   #main-table tr {
+    display: block;
+    width: 100%;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 18px;
     box-shadow: var(--shadow-sm);
     padding: 12px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
-  #main-table tr.group-row,
   #main-table .group-row {
     display: block;
     background: transparent;
     border: none;
     box-shadow: none;
     padding: 2px 2px 6px;
-    margin-bottom: 0;
+    margin: 6px 0 2px;
     color: var(--primary);
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 800;
   }
 
   #main-table .group-row td {
+    display: block;
     padding: 0;
     border: none;
     background: transparent;
   }
 
   #main-table td {
-    border-bottom: none;
-    padding: 7px 0;
-    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 0;
+    border: none;
+    text-align: right;
   }
 
   #main-table td::before {
     content: attr(data-label);
-    display: block;
+    flex: 0 0 96px;
+    text-align: left;
     font-size: 10px;
     font-weight: 800;
     color: var(--muted);
-    margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-  }
-
-  #main-table td:first-child::before {
-    margin-bottom: 6px;
-  }
-
-  #main-table td:first-child {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  #main-table td:first-child::before {
-    content: "Pago";
-    margin-right: 0;
+    white-space: nowrap;
   }
 
   #main-table td[data-label="Descrição"] {
-    padding-top: 2px;
+    display: block;
+    text-align: left;
+    padding-top: 4px;
+  }
+
+  #main-table td[data-label="Descrição"]::before {
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  #main-table td[data-label="Pago"] {
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    text-align: left;
+  }
+
+  #main-table td[data-label="Pago"]::before {
+    flex: none;
   }
 
   .table-desc {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 800;
-    line-height: 1.25;
+    line-height: 1.3;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .parcelas-info {
+    margin-top: 6px;
   }
 
   .parcelas-info small {
     font-size: 11px;
   }
 
+  #main-table td[data-label="Ações"] {
+    display: block;
+    text-align: left;
+  }
+
+  #main-table td[data-label="Ações"]::before {
+    display: block;
+    margin-bottom: 8px;
+  }
+
   #main-table td[data-label="Ações"] .actions-cell {
+    display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin-top: 4px;
   }
 
   #main-table td[data-label="Ações"] .action-btn {
@@ -1042,13 +1070,11 @@ th {
     font-size: 14px;
   }
 
-  #main-table td[data-label="Valor"] {
-    font-size: 15px;
-  }
-
-  #main-table td[data-label="Valor"] .valor-cell,
-  #main-table .valor-cell {
-    font-size: 15px;
+  #main-table td[data-label="Valor"],
+  #main-table td[data-label="Vencimento"],
+  #main-table td[data-label="Observação"],
+  #main-table td[data-label="Status"] {
+    font-size: 14px;
   }
 
   #ipva-table {
@@ -1189,18 +1215,27 @@ th {
   }
 
   #main-table {
-    border-collapse: collapse;
-    border-spacing: 0;
+    display: table;
     min-width: 780px;
+    border-collapse: collapse;
+    table-layout: fixed;
   }
 
   #main-table thead {
     display: table-header-group;
   }
 
-  #main-table tbody,
+  #main-table tbody {
+    display: table-row-group;
+  }
+
   #main-table tr {
     display: table-row;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
   }
 
   #main-table td,
@@ -1209,22 +1244,11 @@ th {
     width: auto;
     padding: 13px 10px;
     border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    text-align: left;
   }
 
   #main-table td::before {
     display: none;
-  }
-
-  #main-table tr {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-    margin-bottom: 0;
-  }
-
-  #main-table .group-row {
-    display: table-cell;
   }
 
   th,
