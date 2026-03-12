@@ -147,10 +147,8 @@
             </div>
 
             <div class="field">
-              <label for="categoria">Categoria</label>
-              <select id="categoria" required>
-                <option value="Gastos fixos">Gastos fixos</option>
-              </select>
+              <label for="categoria-preview">Categoria automática</label>
+              <input type="text" id="categoria-preview" value="Será definida automaticamente" readonly />
             </div>
 
             <div class="field">
@@ -297,6 +295,7 @@
           <label for="edit-categoria">Categoria</label>
           <select id="edit-categoria" required>
             <option value="Gastos fixos">Gastos fixos</option>
+            <option value="Gastos comuns">Gastos comuns</option>
           </select>
         </div>
 
@@ -395,6 +394,8 @@
       const searchInput = document.getElementById("search-input");
       const monthHeader = document.getElementById("month-header");
 
+      const categoriaPreview = document.getElementById("categoria-preview");
+
       const mainTableBody = document.getElementById("main-table-body");
       const ipvaTableBody = document.getElementById("ipva-table-body");
 
@@ -429,12 +430,46 @@
       let financeChart = null;
 
       const CATEGORIA_FIXA = "Gastos fixos";
+      const CATEGORIA_COMUM = "Gastos comuns";
+
+      const GASTOS_FIXOS = [
+        "Condomínio",
+        "Internet",
+        "Gás",
+        "Carro",
+        "Cartão mercado pago",
+        "Vivo",
+        "Claro",
+        "Faculdade",
+        "Personal"
+      ];
 
       const ipvaPadrao = [
         { data: "2026-01-30", valor: 772.77, pago: true },
         { data: "2026-03-03", valor: 772.77, pago: false },
         { data: "2026-04-07", valor: 772.78, pago: false }
       ];
+
+      function normalizarTexto(texto) {
+        return String(texto || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .trim()
+          .toLowerCase();
+      }
+
+      function definirCategoriaAutomatica(descricao) {
+        const desc = normalizarTexto(descricao);
+        const ehFixo = GASTOS_FIXOS.some(item => normalizarTexto(item) === desc);
+        return ehFixo ? CATEGORIA_FIXA : CATEGORIA_COMUM;
+      }
+
+      function atualizarPreviewCategoria() {
+        const descricao = document.getElementById("descricao").value.trim();
+        categoriaPreview.value = descricao
+          ? definirCategoriaAutomatica(descricao)
+          : "Será definida automaticamente";
+      }
 
       function mostrarApp(logado) {
         loginBox.style.display = logado ? "none" : "grid";
@@ -561,7 +596,7 @@
       function abrirModalEdicao(item) {
         document.getElementById("edit-id").value = item.id;
         document.getElementById("edit-descricao").value = item.descricao || "";
-        document.getElementById("edit-categoria").value = CATEGORIA_FIXA;
+        document.getElementById("edit-categoria").value = item.categoria || definirCategoriaAutomatica(item.descricao);
         document.getElementById("edit-valor").value = Number(item.valor || 0);
         document.getElementById("edit-vencimento").value = item.vencimento || "";
         document.getElementById("edit-observacao").value = item.observacao || "";
@@ -647,6 +682,10 @@
         return getMesesIgnorados(item).includes(yyyyMm);
       }
 
+      function isGastoFixo(item) {
+        return (item.categoria || definirCategoriaAutomatica(item.descricao)) === CATEGORIA_FIXA;
+      }
+
       function criarInstanciaMes(item, yyyyMm, recorrenteMesFuturo = false) {
         return {
           ...item,
@@ -661,7 +700,7 @@
       function normalizarCategoria(item) {
         return {
           ...item,
-          categoria: CATEGORIA_FIXA
+          categoria: item.categoria || definirCategoriaAutomatica(item.descricao)
         };
       }
 
@@ -675,10 +714,18 @@
 
             const mesOriginal = getMesFromDate(item.vencimento);
 
-            if (mesOriginal <= monthTerm && !mesEstaIgnorado(item, monthTerm)) {
-              resultado.push(
-                criarInstanciaMes(item, monthTerm, mesOriginal !== monthTerm)
-              );
+            if (isGastoFixo(item)) {
+              if (mesOriginal <= monthTerm && !mesEstaIgnorado(item, monthTerm)) {
+                resultado.push(
+                  criarInstanciaMes(item, monthTerm, mesOriginal !== monthTerm)
+                );
+              }
+            } else {
+              if (mesOriginal === monthTerm && !mesEstaIgnorado(item, monthTerm)) {
+                resultado.push(
+                  criarInstanciaMes(item, monthTerm, false)
+                );
+              }
             }
           });
         } else {
@@ -692,11 +739,24 @@
           const termo = searchTerm.toLowerCase();
           resultado = resultado.filter(item =>
             (item.descricao || "").toLowerCase().includes(termo) ||
-            (item.observacao || "").toLowerCase().includes(termo)
+            (item.observacao || "").toLowerCase().includes(termo) ||
+            (item.categoria || "").toLowerCase().includes(termo)
           );
         }
 
-        resultado.sort((a, b) => (a.vencimento || "").localeCompare(b.vencimento || ""));
+        resultado.sort((a, b) => {
+          const ordem = {
+            [CATEGORIA_FIXA]: 1,
+            [CATEGORIA_COMUM]: 2
+          };
+
+          const catA = ordem[a.categoria] || 99;
+          const catB = ordem[b.categoria] || 99;
+
+          if (catA !== catB) return catA - catB;
+          return (a.vencimento || "").localeCompare(b.vencimento || "");
+        });
+
         return resultado;
       }
 
@@ -709,26 +769,37 @@
           if (!item.vencimento) return;
 
           const mesOriginal = getMesFromDate(item.vencimento);
-          const inicio = new Date(`${mesOriginal}-01T00:00:00`);
-          const fim = new Date();
-          fim.setMonth(fim.getMonth() + 11);
 
-          const cursor = new Date(inicio);
+          if (isGastoFixo(item)) {
+            const inicio = new Date(`${mesOriginal}-01T00:00:00`);
+            const fim = new Date();
+            fim.setMonth(fim.getMonth() + 11);
 
-          while (cursor <= fim) {
-            const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+            const cursor = new Date(inicio);
 
-            if (!mesEstaIgnorado(item, yyyyMm)) {
-              const instancia = criarInstanciaMes(item, yyyyMm, yyyyMm !== mesOriginal);
+            while (cursor <= fim) {
+              const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
 
-              if (!mapaMeses.has(yyyyMm)) {
-                mapaMeses.set(yyyyMm, []);
+              if (!mesEstaIgnorado(item, yyyyMm)) {
+                const instancia = criarInstanciaMes(item, yyyyMm, yyyyMm !== mesOriginal);
+
+                if (!mapaMeses.has(yyyyMm)) {
+                  mapaMeses.set(yyyyMm, []);
+                }
+
+                mapaMeses.get(yyyyMm).push(instancia);
               }
 
-              mapaMeses.get(yyyyMm).push(instancia);
+              cursor.setMonth(cursor.getMonth() + 1);
+            }
+          } else {
+            if (mesEstaIgnorado(item, mesOriginal)) return;
+
+            if (!mapaMeses.has(mesOriginal)) {
+              mapaMeses.set(mesOriginal, []);
             }
 
-            cursor.setMonth(cursor.getMonth() + 1);
+            mapaMeses.get(mesOriginal).push(criarInstanciaMes(item, mesOriginal, false));
           }
         });
 
@@ -863,56 +934,65 @@
           return;
         }
 
-        const groupRow = document.createElement("tr");
-        groupRow.innerHTML = `<td colspan="7" class="group-row">${CATEGORIA_FIXA}</td>`;
-        mainTableBody.appendChild(groupRow);
+        const grupos = [
+          { nome: CATEGORIA_FIXA, itens: lista.filter(i => i.categoria === CATEGORIA_FIXA) },
+          { nome: CATEGORIA_COMUM, itens: lista.filter(i => i.categoria === CATEGORIA_COMUM) }
+        ];
 
-        lista.forEach(item => {
-          const status = getStatus(item);
-          const idReal = item.origemId || item.id;
-          const ehRecorrenteFuturo = Boolean(item.recorrenteMesFuturo);
-          const mesReferencia = item.mesReferencia || getMesFromDate(item.vencimento);
+        grupos.forEach(grupo => {
+          if (!grupo.itens.length) return;
 
-          const tr = document.createElement("tr");
-          tr.className = item.pago ? "row-paid" : (isVencida(item) ? "row-overdue" : "");
-          tr.setAttribute("data-id", idReal);
+          const groupRow = document.createElement("tr");
+          groupRow.innerHTML = `<td colspan="7" class="group-row">${grupo.nome}</td>`;
+          mainTableBody.appendChild(groupRow);
 
-          tr.innerHTML = `
-            <td>
-              <input
-                type="checkbox"
-                class="pay-check"
-                data-id="${idReal}"
-                data-mes="${mesReferencia}"
-                ${item.pago ? "checked" : ""}
-                ${ehRecorrenteFuturo ? 'disabled title="Pagamento da recorrência futura bloqueado para não alterar o item original."' : ""}
-              />
-            </td>
-            <td>
-              <div>${escapeHtml(item.descricao)}</div>
-              <div class="parcelas-info">
-                <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
-                <small>${escapeHtml(getParcelasRestantes(item))}</small>
-                ${ehRecorrenteFuturo ? '<span class="recorrente-badge">Recorrente do mês</span>' : ""}
-              </div>
-            </td>
-            <td class="valor-cell">${formatarMoeda(item.valor)}</td>
-            <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
-            <td class="obs-cell">${escapeHtml(item.observacao || "-")}</td>
-            <td class="status-cell">
-              <span class="status-badge ${status === "Pago" ? "paid" : (status === "Vencido" ? "overdue" : "pending")}">
-                ${status}${status === "Pago" ? " ✅" : ""}
-              </span>
-            </td>
-            <td>
-              <div class="actions-cell">
-                <button class="action-btn btn-edit" data-id="${idReal}" data-action="edit" type="button" title="Editar" aria-label="Editar">✏</button>
-                <button class="action-btn btn-delete" data-id="${idReal}" data-mes="${mesReferencia}" data-action="delete" type="button" title="Excluir" aria-label="Excluir">🗑</button>
-              </div>
-            </td>
-          `;
+          grupo.itens.forEach(item => {
+            const status = getStatus(item);
+            const idReal = item.origemId || item.id;
+            const ehRecorrenteFuturo = Boolean(item.recorrenteMesFuturo);
+            const mesReferencia = item.mesReferencia || getMesFromDate(item.vencimento);
 
-          mainTableBody.appendChild(tr);
+            const tr = document.createElement("tr");
+            tr.className = item.pago ? "row-paid" : (isVencida(item) ? "row-overdue" : "");
+            tr.setAttribute("data-id", idReal);
+
+            tr.innerHTML = `
+              <td>
+                <input
+                  type="checkbox"
+                  class="pay-check"
+                  data-id="${idReal}"
+                  data-mes="${mesReferencia}"
+                  ${item.pago ? "checked" : ""}
+                  ${ehRecorrenteFuturo ? 'disabled title="Pagamento da recorrência futura bloqueado para não alterar o item original."' : ""}
+                />
+              </td>
+              <td>
+                <div>${escapeHtml(item.descricao)}</div>
+                <div class="parcelas-info">
+                  <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
+                  <small>${escapeHtml(getParcelasRestantes(item))}</small>
+                  ${ehRecorrenteFuturo ? '<span class="recorrente-badge">Recorrente do mês</span>' : ""}
+                </div>
+              </td>
+              <td class="valor-cell">${formatarMoeda(item.valor)}</td>
+              <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
+              <td class="obs-cell">${escapeHtml(item.observacao || "-")}</td>
+              <td class="status-cell">
+                <span class="status-badge ${status === "Pago" ? "paid" : (status === "Vencido" ? "overdue" : "pending")}">
+                  ${status}${status === "Pago" ? " ✅" : ""}
+                </span>
+              </td>
+              <td>
+                <div class="actions-cell">
+                  <button class="action-btn btn-edit" data-id="${idReal}" data-action="edit" type="button" title="Editar" aria-label="Editar">✏</button>
+                  <button class="action-btn btn-delete" data-id="${idReal}" data-mes="${mesReferencia}" data-action="delete" type="button" title="Excluir" aria-label="Excluir">🗑</button>
+                </div>
+              </td>
+            `;
+
+            mainTableBody.appendChild(tr);
+          });
         });
 
         if (lastEditedId) {
@@ -975,13 +1055,14 @@
         const observacao = document.getElementById("observacao").value.trim();
         const parcelaAtual = Number(document.getElementById("parcela-atual").value || 0);
         const parcelaTotal = Number(document.getElementById("parcela-total").value || 0);
+        const categoria = definirCategoriaAutomatica(descricao);
 
         if (!auth.currentUser) return;
 
         try {
           await db.collection("despesas").add({
             descricao,
-            categoria: CATEGORIA_FIXA,
+            categoria,
             valor,
             vencimento,
             observacao,
@@ -994,7 +1075,7 @@
           });
 
           form.reset();
-          document.getElementById("categoria").value = CATEGORIA_FIXA;
+          categoriaPreview.value = "Será definida automaticamente";
           expenseFormWrapper.classList.add("hidden");
           toggleExpenseFormBtn.setAttribute("aria-expanded", "false");
           expenseToggleIcon.textContent = "▼";
@@ -1008,6 +1089,7 @@
 
         const id = document.getElementById("edit-id").value;
         const descricao = document.getElementById("edit-descricao").value.trim();
+        const categoria = document.getElementById("edit-categoria").value;
         const valor = Number(document.getElementById("edit-valor").value);
         const vencimento = document.getElementById("edit-vencimento").value.trim();
         const observacao = document.getElementById("edit-observacao").value.trim();
@@ -1017,7 +1099,7 @@
         try {
           await db.collection("despesas").doc(id).update({
             descricao,
-            categoria: CATEGORIA_FIXA,
+            categoria,
             valor,
             vencimento,
             observacao,
@@ -1050,36 +1132,46 @@
         if (!item) return;
 
         try {
-          const excluirApenasMes = confirm(
-            `Deseja excluir "${item.descricao}" apenas de ${formatarMesTitulo(mesReferencia)}?\n\n` +
-            `Clique em OK para excluir só deste mês.\n` +
-            `Clique em Cancelar para escolher excluir de todos os meses.`
-          );
+          const itemNormalizado = normalizarCategoria(item);
 
-          if (excluirApenasMes) {
-            const mesesIgnorados = getMesesIgnorados(item);
+          if (isGastoFixo(itemNormalizado)) {
+            const excluirApenasMes = confirm(
+              `Deseja excluir "${item.descricao}" apenas de ${formatarMesTitulo(mesReferencia)}?\n\n` +
+              `Clique em OK para excluir só deste mês.\n` +
+              `Clique em Cancelar para escolher excluir de todos os meses.`
+            );
 
-            if (!mesReferencia) {
-              alert("Não foi possível identificar o mês da linha.");
+            if (excluirApenasMes) {
+              const mesesIgnorados = getMesesIgnorados(item);
+
+              if (!mesReferencia) {
+                alert("Não foi possível identificar o mês da linha.");
+                return;
+              }
+
+              if (!mesesIgnorados.includes(mesReferencia)) {
+                mesesIgnorados.push(mesReferencia);
+              }
+
+              await db.collection("despesas").doc(id).update({
+                mesesIgnorados
+              });
+
               return;
             }
 
-            if (!mesesIgnorados.includes(mesReferencia)) {
-              mesesIgnorados.push(mesReferencia);
-            }
+            const excluirTodos = confirm(
+              `Deseja excluir "${item.descricao}" de TODOS os meses?\n\nEssa ação apaga o item definitivamente.`
+            );
 
-            await db.collection("despesas").doc(id).update({
-              mesesIgnorados
-            });
+            if (!excluirTodos) return;
 
+            await db.collection("despesas").doc(id).delete();
             return;
           }
 
-          const excluirTodos = confirm(
-            `Deseja excluir "${item.descricao}" de TODOS os meses?\n\nEssa ação apaga o item definitivamente.`
-          );
-
-          if (!excluirTodos) return;
+          const confirmarExclusao = confirm(`Deseja excluir "${item.descricao}"?`);
+          if (!confirmarExclusao) return;
 
           await db.collection("despesas").doc(id).delete();
         } catch (error) {
@@ -1119,6 +1211,8 @@
           authMessage.textContent = traduzirErroAuth(error.code || error.message);
         }
       });
+
+      document.getElementById("descricao").addEventListener("input", atualizarPreviewCategoria);
 
       toggleExpenseFormBtn.addEventListener("click", alternarFormularioDespesa);
       toggleChartPanelBtn.addEventListener("click", alternarPainelGrafico);
@@ -1294,8 +1388,7 @@
       monthFilter.value = mesAtual;
       monthTerm = mesAtual;
       monthHeader.textContent = formatarMesTitulo(mesAtual);
-      document.getElementById("categoria").value = CATEGORIA_FIXA;
-      document.getElementById("edit-categoria").value = CATEGORIA_FIXA;
+      atualizarPreviewCategoria();
     })();
   </script>
 </body>
