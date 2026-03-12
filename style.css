@@ -297,7 +297,6 @@ table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  min-width: 720px;
 }
 
 th,
@@ -640,36 +639,176 @@ th {
   height: 280px !important;
 }
 
-/* MOBILE: mantém tabela tradicional */
+/* ===== CELULAR ===== */
 @media (max-width: 767px) {
+  .container {
+    width: min(100%, calc(100% - 10px));
+    margin: 6px auto 16px;
+  }
+
+  .panel,
+  .summary-card,
+  .auth-card {
+    padding: 8px;
+  }
+
   .table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
   }
 
-  table {
-    min-width: 720px;
+  #main-table,
+  #ipva-table {
+    min-width: 100%;
+    width: 100%;
+    table-layout: fixed;
   }
 
+  #main-table th,
+  #main-table td,
+  #ipva-table th,
+  #ipva-table td {
+    padding: 6px 3px;
+    font-size: 8px;
+    line-height: 1.1;
+  }
+
+  #main-table th {
+    font-size: 7px;
+  }
+
+  #ipva-table th {
+    font-size: 7px;
+  }
+
+  /* Esconde colunas menos importantes na tabela principal */
   #main-table th:nth-child(5),
-  #main-table td:nth-child(5) {
-    display: table-cell;
+  #main-table td:nth-child(5),
+  #main-table th:nth-child(6),
+  #main-table td:nth-child(6) {
+    display: none;
+  }
+
+  #main-table .col-check {
+    width: 32px;
+  }
+
+  #main-table .col-value {
+    width: 66px;
+  }
+
+  #main-table .col-date {
+    width: 52px;
   }
 
   #main-table .col-actions {
-    width: 72px;
+    width: 52px;
+  }
+
+  #main-table .col-desc {
+    width: auto;
   }
 
   .actions-cell {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
+    grid-template-columns: 1fr;
+    gap: 3px;
   }
 
   .action-btn {
-    min-height: 28px;
-    padding: 4px 6px;
+    min-height: 24px;
+    padding: 4px;
+    font-size: 9px;
+    border-radius: 7px;
+  }
+
+  .status-badge {
+    font-size: 7px;
+    padding: 2px 4px;
+  }
+
+  .pay-check,
+  .ipva-check {
+    width: 13px;
+    height: 13px;
+  }
+
+  .parcelas-info {
+    gap: 1px;
+    margin-top: 3px;
+  }
+
+  .parcelas-info small {
+    font-size: 8px;
+    line-height: 1.1;
+  }
+
+  .group-row {
+    font-size: 8px;
+  }
+
+  .month-header {
+    font-size: 9px;
+    padding: 7px 8px;
+  }
+
+  .chart-box {
+    min-height: 220px;
+    padding: 8px;
+  }
+
+  .chart-box canvas {
+    height: 220px !important;
+  }
+
+  .hero {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .hero h1 {
+    font-size: 0.95rem;
+  }
+
+  .hero p {
     font-size: 10px;
+  }
+
+  .hero-total-box strong {
+    font-size: 1rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .summary-card p {
+    font-size: 9px;
+  }
+
+  .summary-card h3 {
+    font-size: 0.85rem;
+  }
+
+  /* IPVA sem arrastar também */
+  #ipva-table .col-check {
+    width: 28px;
+  }
+
+  #ipva-table .col-small {
+    width: 36px;
+  }
+
+  #ipva-table .col-value {
+    width: 66px;
+  }
+
+  #ipva-table .col-date {
+    width: 54px;
+  }
+
+  #ipva-table .col-status {
+    width: 54px;
   }
 }
 
@@ -853,7 +992,9 @@ th {
   }
 
   #main-table th:nth-child(5),
-  #main-table td:nth-child(5) {
+  #main-table td:nth-child(5),
+  #main-table th:nth-child(6),
+  #main-table td:nth-child(6) {
     display: table-cell;
   }
 
