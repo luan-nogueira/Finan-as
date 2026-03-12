@@ -138,7 +138,7 @@
                 <option value="Internet"></option>
                 <option value="Gás"></option>
                 <option value="Carro"></option>
-                <option value="Cartão mercado pago"></option>
+                <option value="Mercado pago"></option>
                 <option value="Vivo"></option>
                 <option value="Claro"></option>
                 <option value="Faculdade"></option>
@@ -437,15 +437,43 @@
         "Internet",
         "Gás",
         "Carro",
-        "Cartão mercado pago",
+        "Mercado pago",
         "Vivo",
         "Claro",
         "Faculdade",
         "Personal"
       ];
 
+      const DESPESAS_INICIAIS = [
+        { descricao: "Condomínio", valor: 390.00, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Internet", valor: 80.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Luz", valor: null, vencimento: "2026-02-27", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Gás", valor: 53.99, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Carro", valor: 1500.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: 12, parcelaTotal: 48, pago: false },
+        { descricao: "Mercado pago", valor: 1640.00, vencimento: "2026-03-22", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+
+        { descricao: "Riachuelo", valor: 301.00, vencimento: "2026-03-13", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão Carrefour", valor: 405.00, vencimento: "2026-03-21", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão Renner", valor: 476.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "C&A", valor: 96.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão Nubank", valor: 81.74, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão Santander", valor: 22.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão BB", valor: 2076.81, vencimento: "2026-03-09", observacao: "R$ 300,00 mãe", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Vivo", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Mercado pago", valor: 108.64, vencimento: "2026-03-12", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Claro", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão preto", valor: 153.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão inter", valor: 189.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão Nubank", valor: 184.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Reneg. Itaú", valor: 70.00, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Reneg. Casas Bahia", valor: 100.00, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: 10, parcelaTotal: 10, pago: false },
+        { descricao: "Faculdade", valor: 570.00, vencimento: "", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Coren", valor: null, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão caixa", valor: null, vencimento: "2026-03-24", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false }
+      ];
+
       const ipvaPadrao = [
-        { data: "2026-01-30", valor: 772.77, pago: true },
+        { data: "2026-01-30", valor: 772.77, pago: false },
         { data: "2026-03-03", valor: 772.77, pago: false },
         { data: "2026-04-07", valor: 772.78, pago: false }
       ];
@@ -476,11 +504,20 @@
         appRoot.style.display = logado ? "block" : "none";
       }
 
+      function valorNumerico(valor) {
+        return Number(valor || 0);
+      }
+
       function formatarMoeda(valor) {
         return Number(valor || 0).toLocaleString("pt-BR", {
           style: "currency",
           currency: "BRL"
         });
+      }
+
+      function formatarMoedaTabela(valor) {
+        if (valor === null || valor === undefined || valor === "") return "-";
+        return formatarMoeda(valor);
       }
 
       function formatarDataBR(valor) {
@@ -597,7 +634,7 @@
         document.getElementById("edit-id").value = item.id;
         document.getElementById("edit-descricao").value = item.descricao || "";
         document.getElementById("edit-categoria").value = item.categoria || definirCategoriaAutomatica(item.descricao);
-        document.getElementById("edit-valor").value = Number(item.valor || 0);
+        document.getElementById("edit-valor").value = item.valor ?? "";
         document.getElementById("edit-vencimento").value = item.vencimento || "";
         document.getElementById("edit-observacao").value = item.observacao || "";
         document.getElementById("edit-parcela-atual").value = item.parcelaAtual || "";
@@ -661,6 +698,32 @@
         }
       }
 
+      async function garantirDespesasIniciais() {
+        const snap = await db.collection("despesas").limit(1).get();
+        if (!snap.empty) return;
+
+        const batch = db.batch();
+
+        DESPESAS_INICIAIS.forEach((item, index) => {
+          const ref = db.collection("despesas").doc();
+          batch.set(ref, {
+            descricao: item.descricao,
+            categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
+            valor: item.valor ?? null,
+            vencimento: item.vencimento || "",
+            observacao: item.observacao || "",
+            parcelaAtual: item.parcelaAtual || null,
+            parcelaTotal: item.parcelaTotal || null,
+            mesesIgnorados: [],
+            pago: Boolean(item.pago),
+            seedOrder: index,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+
+        await batch.commit();
+      }
+
       function ajustarDataParaMes(dataOriginal, yyyyMm) {
         if (!dataOriginal || !yyyyMm) return dataOriginal || "";
 
@@ -710,11 +773,27 @@
         if (monthTerm) {
           lista.forEach(itemBase => {
             const item = normalizarCategoria(itemBase);
-            if (!item.vencimento) return;
+            if (!item.vencimento) {
+              if (!searchTerm && item.categoria === CATEGORIA_COMUM) return;
+              if (!searchTerm && item.categoria === CATEGORIA_FIXA) return;
+            }
 
             const mesOriginal = getMesFromDate(item.vencimento);
 
             if (isGastoFixo(item)) {
+              if (!item.vencimento) {
+                if (!monthTerm) return;
+                resultado.push({
+                  ...item,
+                  origemId: item.id,
+                  mesReferencia: monthTerm,
+                  vencimento: "",
+                  recorrenteMesFuturo: true,
+                  pago: false
+                });
+                return;
+              }
+
               if (mesOriginal <= monthTerm && !mesEstaIgnorado(item, monthTerm)) {
                 resultado.push(
                   criarInstanciaMes(item, monthTerm, mesOriginal !== monthTerm)
@@ -731,8 +810,21 @@
         } else {
           resultado = lista
             .map(normalizarCategoria)
-            .filter(item => item.vencimento && !mesEstaIgnorado(item, getMesFromDate(item.vencimento)))
-            .map(item => criarInstanciaMes(item, getMesFromDate(item.vencimento), false));
+            .filter(item => {
+              if (!item.vencimento) return true;
+              return !mesEstaIgnorado(item, getMesFromDate(item.vencimento));
+            })
+            .map(item => {
+              if (!item.vencimento) {
+                return {
+                  ...item,
+                  origemId: item.id,
+                  mesReferencia: "",
+                  recorrenteMesFuturo: false
+                };
+              }
+              return criarInstanciaMes(item, getMesFromDate(item.vencimento), false);
+            });
         }
 
         if (searchTerm) {
@@ -754,7 +846,7 @@
           const catB = ordem[b.categoria] || 99;
 
           if (catA !== catB) return catA - catB;
-          return (a.vencimento || "").localeCompare(b.vencimento || "");
+          return (a.vencimento || "9999-99-99").localeCompare(b.vencimento || "9999-99-99");
         });
 
         return resultado;
@@ -807,9 +899,9 @@
       }
 
       function renderResumo(lista) {
-        const totalGeral = lista.reduce((acc, item) => acc + Number(item.valor || 0), 0);
-        const totalPago = lista.filter(i => i.pago).reduce((acc, item) => acc + Number(item.valor || 0), 0);
-        const totalPendente = lista.filter(i => !i.pago).reduce((acc, item) => acc + Number(item.valor || 0), 0);
+        const totalGeral = lista.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+        const totalPago = lista.filter(i => i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+        const totalPendente = lista.filter(i => !i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
         const qtdPagos = lista.filter(i => i.pago).length;
         const qtdPendentes = lista.filter(i => !i.pago).length;
 
@@ -822,7 +914,7 @@
 
       function renderAlertaVencidas(lista) {
         const vencidas = lista.filter(item => isVencida(item));
-        const total = vencidas.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+        const total = vencidas.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
 
         if (!vencidas.length) {
           alertaVencidas.classList.add("hidden");
@@ -843,7 +935,7 @@
         const labels = mesesOrdenados.map(formatarMesCurto);
         const totais = mesesOrdenados.map(mes => {
           const itens = mapaMeses.get(mes) || [];
-          return itens.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+          return itens.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
         });
 
         if (financeChart) {
@@ -968,14 +1060,14 @@
                 />
               </td>
               <td>
-                <div>${escapeHtml(item.descricao)}</div>
+                <div class="descricao-cell-text">${escapeHtml(item.descricao)}</div>
                 <div class="parcelas-info">
                   <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
                   <small>${escapeHtml(getParcelasRestantes(item))}</small>
                   ${ehRecorrenteFuturo ? '<span class="recorrente-badge">Recorrente do mês</span>' : ""}
                 </div>
               </td>
-              <td class="valor-cell">${formatarMoeda(item.valor)}</td>
+              <td class="valor-cell">${formatarMoedaTabela(item.valor)}</td>
               <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
               <td class="obs-cell">${escapeHtml(item.observacao || "-")}</td>
               <td class="status-cell">
@@ -1033,7 +1125,7 @@
               />
             </td>
             <td>${index + 1}</td>
-            <td class="valor-cell">${formatarMoeda(item.valor)}</td>
+            <td class="valor-cell">${formatarMoedaTabela(item.valor)}</td>
             <td>${formatarDataBR(item.data)}</td>
             <td>
               <span class="status-badge ${item.pago ? "paid" : "pending"}">
@@ -1050,7 +1142,8 @@
         e.preventDefault();
 
         const descricao = document.getElementById("descricao").value.trim();
-        const valor = Number(document.getElementById("valor").value);
+        const valorDigitado = document.getElementById("valor").value;
+        const valor = valorDigitado === "" ? null : Number(valorDigitado);
         const vencimento = document.getElementById("vencimento").value.trim();
         const observacao = document.getElementById("observacao").value.trim();
         const parcelaAtual = Number(document.getElementById("parcela-atual").value || 0);
@@ -1090,7 +1183,8 @@
         const id = document.getElementById("edit-id").value;
         const descricao = document.getElementById("edit-descricao").value.trim();
         const categoria = document.getElementById("edit-categoria").value;
-        const valor = Number(document.getElementById("edit-valor").value);
+        const valorDigitado = document.getElementById("edit-valor").value;
+        const valor = valorDigitado === "" ? null : Number(valorDigitado);
         const vencimento = document.getElementById("edit-vencimento").value.trim();
         const observacao = document.getElementById("edit-observacao").value.trim();
         const parcelaAtual = Number(document.getElementById("edit-parcela-atual").value || 0);
@@ -1341,8 +1435,9 @@
 
         try {
           await garantirIpvaInicial();
+          await garantirDespesasIniciais();
         } catch {
-          alert("Erro ao preparar IPVA.");
+          alert("Erro ao preparar dados iniciais.");
         }
 
         unsubscribe = db.collection("despesas")
