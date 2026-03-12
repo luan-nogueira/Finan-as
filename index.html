@@ -65,7 +65,7 @@
         <div>
           <span class="badge">💙 Financeiro do casal</span>
           <h1>Tabela simples de gastos</h1>
-          <p>Marque os itens pagos e o site atualiza automaticamente em tempo real.</p>
+          <p>Fixos, cartões e outros organizados em uma única tabela com atualização em tempo real.</p>
         </div>
 
         <div class="hero-side">
@@ -126,7 +126,7 @@
         <div id="expense-form-wrapper" class="collapsible-content hidden">
           <div class="panel-header collapsible-header">
             <h2>Nova despesa</h2>
-            <p>Cadastre uma conta para ela aparecer automaticamente na tabela.</p>
+            <p>A categoria principal é automática, e a visualização organiza em Fixos, Cartões e Outros.</p>
           </div>
 
           <form id="expense-form" class="form-grid">
@@ -161,8 +161,13 @@
             </div>
 
             <div class="field">
-              <label for="categoria-preview">Categoria automática</label>
+              <label for="categoria-preview">Categoria principal</label>
               <input type="text" id="categoria-preview" value="Será definida automaticamente" readonly />
+            </div>
+
+            <div class="field">
+              <label for="tipo-preview">Grupo na tabela</label>
+              <input type="text" id="tipo-preview" value="Será definido automaticamente" readonly />
             </div>
 
             <div class="field">
@@ -187,7 +192,7 @@
 
             <div class="field full">
               <label for="observacao">Observação</label>
-              <input type="text" id="observacao" placeholder="Ex: Cartão / Parcela 12/48" />
+              <input type="text" id="observacao" placeholder="Ex: 300$ mãe / Parcela 12/48" />
             </div>
 
             <div class="full">
@@ -224,7 +229,7 @@
       <section class="panel">
         <div class="panel-header">
           <h2>Tabela principal</h2>
-          <p>Uma única tabela com tudo listado e atualização automática.</p>
+          <p>Organizada automaticamente em Fixos, Cartões e Outros.</p>
         </div>
 
         <div class="filters-grid filters-grid-two">
@@ -235,7 +240,7 @@
 
           <div class="field">
             <label for="search-input">Buscar</label>
-            <input type="text" id="search-input" placeholder="Ex: condomínio, mercado pago, carro" />
+            <input type="text" id="search-input" placeholder="Ex: condomínio, mercado pago, cartão" />
           </div>
         </div>
 
@@ -306,7 +311,7 @@
         </div>
 
         <div class="field">
-          <label for="edit-categoria">Categoria</label>
+          <label for="edit-categoria">Categoria principal</label>
           <select id="edit-categoria" required>
             <option value="Gastos fixos">Gastos fixos</option>
             <option value="Gastos comuns">Gastos comuns</option>
@@ -408,6 +413,7 @@
       const searchInput = document.getElementById("search-input");
       const monthHeader = document.getElementById("month-header");
       const categoriaPreview = document.getElementById("categoria-preview");
+      const tipoPreview = document.getElementById("tipo-preview");
 
       const mainTableBody = document.getElementById("main-table-body");
       const ipvaTableBody = document.getElementById("ipva-table-body");
@@ -462,18 +468,20 @@
         { descricao: "Internet", valor: 80.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Luz", valor: null, vencimento: "2026-02-27", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Gás", valor: 53.99, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Carro", valor: 1500.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: 12, parcelaTotal: 48, pago: false },
-        { descricao: "Mercado pago", valor: 1640.00, vencimento: "2026-03-22", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
-
         { descricao: "Riachuelo", valor: 301.00, vencimento: "2026-03-13", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Cartão Carrefour", valor: 405.00, vencimento: "2026-03-21", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Cartão Renner", valor: 476.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "C&A", valor: 96.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Carro", valor: 1500.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: 12, parcelaTotal: 48, pago: false },
+        { descricao: "Mercado pago", valor: 1640.00, vencimento: "2026-03-22", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão caixa", valor: null, vencimento: "2026-03-24", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
+
         { descricao: "Cartão Nubank", valor: 81.74, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Cartão Santander", valor: 22.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Cartão BB", valor: 2076.81, vencimento: "2026-03-09", observacao: "300$ mãe", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Vivo", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Mercado pago", valor: 108.64, vencimento: "2026-03-12", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+
         { descricao: "Claro", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Cartão preto", valor: 153.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Cartão inter", valor: 189.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
@@ -481,12 +489,11 @@
         { descricao: "Reneg. Itaú", valor: 70.00, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
         { descricao: "Reneg. Casas Bahia", valor: 100.00, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: 10, parcelaTotal: 10, pago: false },
         { descricao: "Faculdade", valor: 570.00, vencimento: "", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Coren", valor: null, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Cartão caixa", valor: null, vencimento: "2026-03-24", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false }
+        { descricao: "Coren", valor: null, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false }
       ];
 
       const ipvaPadrao = [
-        { data: "2026-01-30", valor: 772.77, pago: false },
+        { data: "2026-01-30", valor: 772.77, pago: true },
         { data: "2026-03-03", valor: 772.77, pago: false },
         { data: "2026-04-07", valor: 772.78, pago: false }
       ];
@@ -505,11 +512,25 @@
         return ehFixo ? CATEGORIA_FIXA : CATEGORIA_COMUM;
       }
 
+      function getGrupoVisual(item) {
+        const desc = normalizarTexto(item.descricao);
+        if ((item.categoria || "") === CATEGORIA_FIXA) return "Fixos";
+        if (desc.includes("cartao") || desc.includes("cartão")) return "Cartões";
+        return "Outros";
+      }
+
       function atualizarPreviewCategoria() {
         const descricao = document.getElementById("descricao").value.trim();
-        categoriaPreview.value = descricao
-          ? definirCategoriaAutomatica(descricao)
-          : "Será definida automaticamente";
+        if (!descricao) {
+          categoriaPreview.value = "Será definida automaticamente";
+          tipoPreview.value = "Será definido automaticamente";
+          return;
+        }
+
+        const categoria = definirCategoriaAutomatica(descricao);
+        const grupo = getGrupoVisual({ descricao, categoria });
+        categoriaPreview.value = categoria;
+        tipoPreview.value = grupo;
       }
 
       function mostrarApp(logado) {
@@ -694,7 +715,6 @@
             <button type="button" class="btn-delete remove-ipva-btn">Remover</button>
           </div>
         `;
-
         div.querySelector(".remove-ipva-btn").addEventListener("click", () => div.remove());
         ipvaFormList.appendChild(div);
       }
@@ -716,7 +736,6 @@
         if (!snap.empty) return;
 
         const batch = db.batch();
-
         DESPESAS_INICIAIS.forEach((item) => {
           const ref = db.collection("despesas").doc();
           batch.set(ref, {
@@ -742,7 +761,6 @@
         const [, , diaStr] = dataOriginal.split("-");
         const [ano, mes] = yyyyMm.split("-").map(Number);
         const diaOriginal = Number(diaStr || 1);
-
         const ultimoDia = new Date(ano, mes, 0).getDate();
         const diaFinal = Math.min(diaOriginal, ultimoDia);
 
@@ -766,7 +784,7 @@
           ...item,
           origemId: item.id,
           mesReferencia: yyyyMm,
-          vencimento: ajustarDataParaMes(item.vencimento, yyyyMm),
+          vencimento: item.vencimento ? ajustarDataParaMes(item.vencimento, yyyyMm) : "",
           recorrenteMesFuturo,
           pago: recorrenteMesFuturo ? false : Boolean(item.pago)
         };
@@ -795,6 +813,13 @@
                   recorrenteMesFuturo: true,
                   pago: false
                 });
+              } else {
+                resultado.push({
+                  ...item,
+                  origemId: item.id,
+                  mesReferencia: monthTerm,
+                  recorrenteMesFuturo: false
+                });
               }
               return;
             }
@@ -803,15 +828,11 @@
 
             if (isGastoFixo(item)) {
               if (mesOriginal <= monthTerm && !mesEstaIgnorado(item, monthTerm)) {
-                resultado.push(
-                  criarInstanciaMes(item, monthTerm, mesOriginal !== monthTerm)
-                );
+                resultado.push(criarInstanciaMes(item, monthTerm, mesOriginal !== monthTerm));
               }
             } else {
               if (mesOriginal === monthTerm && !mesEstaIgnorado(item, monthTerm)) {
-                resultado.push(
-                  criarInstanciaMes(item, monthTerm, false)
-                );
+                resultado.push(criarInstanciaMes(item, monthTerm, false));
               }
             }
           });
@@ -845,15 +866,16 @@
         }
 
         resultado.sort((a, b) => {
-          const ordem = {
-            [CATEGORIA_FIXA]: 1,
-            [CATEGORIA_COMUM]: 2
+          const ordemGrupo = {
+            "Fixos": 1,
+            "Cartões": 2,
+            "Outros": 3
           };
 
-          const catA = ordem[a.categoria] || 99;
-          const catB = ordem[b.categoria] || 99;
+          const grupoA = ordemGrupo[getGrupoVisual(a)] || 99;
+          const grupoB = ordemGrupo[getGrupoVisual(b)] || 99;
+          if (grupoA !== grupoB) return grupoA - grupoB;
 
-          if (catA !== catB) return catA - catB;
           return (a.vencimento || "9999-99-99").localeCompare(b.vencimento || "9999-99-99");
         });
 
@@ -879,26 +901,15 @@
 
             while (cursor <= fim) {
               const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-
               if (!mesEstaIgnorado(item, yyyyMm)) {
-                if (!mapaMeses.has(yyyyMm)) {
-                  mapaMeses.set(yyyyMm, []);
-                }
-
-                mapaMeses.get(yyyyMm).push(
-                  criarInstanciaMes(item, yyyyMm, yyyyMm !== mesOriginal)
-                );
+                if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
+                mapaMeses.get(yyyyMm).push(criarInstanciaMes(item, yyyyMm, yyyyMm !== mesOriginal));
               }
-
               cursor.setMonth(cursor.getMonth() + 1);
             }
           } else {
             if (mesEstaIgnorado(item, mesOriginal)) return;
-
-            if (!mapaMeses.has(mesOriginal)) {
-              mapaMeses.set(mesOriginal, []);
-            }
-
+            if (!mapaMeses.has(mesOriginal)) mapaMeses.set(mesOriginal, []);
             mapaMeses.get(mesOriginal).push(criarInstanciaMes(item, mesOriginal, false));
           }
         });
@@ -946,9 +957,7 @@
           return itens.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
         });
 
-        if (financeChart) {
-          financeChart.destroy();
-        }
+        if (financeChart) financeChart.destroy();
 
         const corTexto = getComputedStyle(document.documentElement).getPropertyValue("--text").trim() || "#1f2937";
 
@@ -979,9 +988,7 @@
             },
             plugins: {
               legend: {
-                labels: {
-                  color: corTexto
-                }
+                labels: { color: corTexto }
               },
               tooltip: {
                 callbacks: {
@@ -993,12 +1000,8 @@
             },
             scales: {
               x: {
-                ticks: {
-                  color: corTexto
-                },
-                grid: {
-                  color: "rgba(148, 163, 184, 0.15)"
-                }
+                ticks: { color: corTexto },
+                grid: { color: "rgba(148, 163, 184, 0.15)" }
               },
               y: {
                 beginAtZero: true,
@@ -1008,9 +1011,7 @@
                     return formatarMoeda(value);
                   }
                 },
-                grid: {
-                  color: "rgba(148, 163, 184, 0.15)"
-                }
+                grid: { color: "rgba(148, 163, 184, 0.15)" }
               }
             }
           }
@@ -1035,8 +1036,9 @@
         }
 
         const grupos = [
-          { nome: CATEGORIA_FIXA, itens: lista.filter(i => i.categoria === CATEGORIA_FIXA) },
-          { nome: CATEGORIA_COMUM, itens: lista.filter(i => i.categoria === CATEGORIA_COMUM) }
+          { nome: "Fixos", itens: lista.filter(i => getGrupoVisual(i) === "Fixos") },
+          { nome: "Cartões", itens: lista.filter(i => getGrupoVisual(i) === "Cartões") },
+          { nome: "Outros", itens: lista.filter(i => getGrupoVisual(i) === "Outros") }
         ];
 
         grupos.forEach(grupo => {
@@ -1177,6 +1179,7 @@
 
           form.reset();
           categoriaPreview.value = "Será definida automaticamente";
+          tipoPreview.value = "Será definido automaticamente";
           expenseFormWrapper.classList.add("hidden");
           toggleExpenseFormBtn.setAttribute("aria-expanded", "false");
           expenseToggleIcon.textContent = "▼";
@@ -1238,9 +1241,7 @@
 
           if (isGastoFixo(itemNormalizado)) {
             const excluirApenasMes = confirm(
-              `Deseja excluir "${item.descricao}" apenas de ${formatarMesTitulo(mesReferencia)}?\n\n` +
-              `Clique em OK para excluir só deste mês.\n` +
-              `Clique em Cancelar para escolher excluir de todos os meses.`
+              `Deseja excluir "${item.descricao}" apenas de ${formatarMesTitulo(mesReferencia)}?\n\nClique em OK para excluir só deste mês.\nClique em Cancelar para escolher excluir de todos os meses.`
             );
 
             if (excluirApenasMes) {
@@ -1255,10 +1256,7 @@
                 mesesIgnorados.push(mesReferencia);
               }
 
-              await db.collection("despesas").doc(id).update({
-                mesesIgnorados
-              });
-
+              await db.collection("despesas").doc(id).update({ mesesIgnorados });
               return;
             }
 
@@ -1340,7 +1338,6 @@
         e.preventDefault();
 
         const rows = [...ipvaFormList.querySelectorAll(".ipva-row")];
-
         const parcelas = rows.map(row => {
           const dataInput = row.querySelector(".ipva-data");
           const valorInput = row.querySelector(".ipva-valor");
