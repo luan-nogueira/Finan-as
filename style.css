@@ -287,7 +287,7 @@ select:focus {
 
 .table-wrap {
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--card);
@@ -297,6 +297,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  min-width: 720px;
 }
 
 th,
@@ -639,14 +640,36 @@ th {
   height: 280px !important;
 }
 
+/* MOBILE: mantém tabela tradicional */
 @media (max-width: 767px) {
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 720px;
+  }
+
   #main-table th:nth-child(5),
   #main-table td:nth-child(5) {
-    display: none;
+    display: table-cell;
   }
 
   #main-table .col-actions {
-    width: 44px;
+    width: 72px;
+  }
+
+  .actions-cell {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+
+  .action-btn {
+    min-height: 28px;
+    padding: 4px 6px;
+    font-size: 10px;
   }
 }
 
