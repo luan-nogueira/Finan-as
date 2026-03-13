@@ -218,7 +218,7 @@
         <div id="chart-panel-wrapper" class="collapsible-content hidden">
           <div class="panel-header collapsible-header">
             <h2>Gráfico mensal</h2>
-            <p>Total de gastos agrupado por mês.</p>
+            <p>Total, pago e pendente por mês.</p>
           </div>
 
           <div class="chart-box">
@@ -1053,45 +1053,119 @@
         const mesesOrdenados = [...mapaMeses.keys()].sort((a, b) => a.localeCompare(b));
 
         const labels = mesesOrdenados.map(formatarMesCurto);
-        const totais = mesesOrdenados.map(mes => {
+        const totais = [];
+        const pagos = [];
+        const pendentes = [];
+
+        mesesOrdenados.forEach(mes => {
           const itens = mapaMeses.get(mes) || [];
-          return itens.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+
+          const totalMes = itens.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+          const totalPago = itens
+            .filter(i => i.pago)
+            .reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+          const totalPendente = itens
+            .filter(i => !i.pago)
+            .reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+
+          totais.push(Number(totalMes.toFixed(2)));
+          pagos.push(Number(totalPago.toFixed(2)));
+          pendentes.push(Number(totalPendente.toFixed(2)));
         });
 
         if (financeChart) financeChart.destroy();
 
-        const corTexto = getComputedStyle(document.documentElement).getPropertyValue("--text").trim() || "#1f2937";
+        const estilo = getComputedStyle(document.documentElement);
+        const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
+        const gridColor = "rgba(148, 163, 184, 0.15)";
+        const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
+        const green = estilo.getPropertyValue("--green").trim() || "#16a34a";
+        const orange = estilo.getPropertyValue("--orange").trim() || "#d97706";
+
+        const ctx = financeChartCanvas.getContext("2d");
+        const gradientBar = ctx.createLinearGradient(0, 0, 0, financeChartCanvas.height || 320);
+        gradientBar.addColorStop(0, primary);
+        gradientBar.addColorStop(1, "rgba(29, 78, 216, 0.25)");
 
         financeChart = new Chart(financeChartCanvas, {
-          type: "line",
+          type: "bar",
           data: {
             labels,
             datasets: [
               {
+                type: "bar",
                 label: "Total do mês",
                 data: totais,
-                borderColor: "rgba(29, 78, 216, 1)",
-                backgroundColor: "rgba(29, 78, 216, 0.15)",
-                fill: true,
-                tension: 0.3,
+                backgroundColor: gradientBar,
+                borderRadius: 10,
+                borderSkipped: false,
+                maxBarThickness: 34,
+                order: 3
+              },
+              {
+                type: "line",
+                label: "Pago",
+                data: pagos,
+                borderColor: green,
+                backgroundColor: green,
+                tension: 0.35,
+                fill: false,
                 borderWidth: 3,
                 pointRadius: 4,
-                pointHoverRadius: 6
+                pointHoverRadius: 6,
+                pointBackgroundColor: green,
+                pointBorderColor: "#ffffff",
+                pointBorderWidth: 2,
+                order: 1
+              },
+              {
+                type: "line",
+                label: "Pendente",
+                data: pendentes,
+                borderColor: orange,
+                backgroundColor: orange,
+                tension: 0.35,
+                fill: false,
+                borderWidth: 3,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: orange,
+                pointBorderColor: "#ffffff",
+                pointBorderWidth: 2,
+                order: 2
               }
             ]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+              duration: 900,
+              easing: "easeOutQuart"
+            },
             interaction: {
               mode: "index",
               intersect: false
             },
             plugins: {
               legend: {
-                labels: { color: corTexto }
+                position: "top",
+                labels: {
+                  color: corTexto,
+                  usePointStyle: true,
+                  pointStyle: "circle",
+                  padding: 18,
+                  font: {
+                    weight: "bold"
+                  }
+                }
               },
               tooltip: {
+                backgroundColor: "rgba(15, 23, 42, 0.92)",
+                titleColor: "#ffffff",
+                bodyColor: "#ffffff",
+                padding: 12,
+                displayColors: true,
                 callbacks: {
                   label(context) {
                     return `${context.dataset.label}: ${formatarMoeda(context.raw || 0)}`;
@@ -1101,8 +1175,15 @@
             },
             scales: {
               x: {
-                ticks: { color: corTexto },
-                grid: { color: "rgba(148, 163, 184, 0.15)" }
+                ticks: {
+                  color: corTexto,
+                  font: {
+                    weight: "bold"
+                  }
+                },
+                grid: {
+                  display: false
+                }
               },
               y: {
                 beginAtZero: true,
@@ -1112,7 +1193,9 @@
                     return formatarMoeda(value);
                   }
                 },
-                grid: { color: "rgba(148, 163, 184, 0.15)" }
+                grid: {
+                  color: gridColor
+                }
               }
             }
           }
