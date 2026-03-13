@@ -990,24 +990,114 @@
         return resultado;
       }
 
-      function obterDadosGrafico() {
-        const lista = aplicarFiltros(despesasCache);
+      function gerarListaParaGraficoMensal() {
         const mapaMeses = new Map();
 
-        if (monthTerm) {
-          mapaMeses.set(monthTerm, lista);
-          return mapaMeses;
-        }
+        despesasCache.forEach(itemBase => {
+          const item = normalizarCategoria(itemBase);
 
-        lista.forEach(item => {
-          const mes = item.mesReferencia || getMesFromDate(item.vencimento);
-          if (!mes) return;
+          if (!item.vencimento && !isGastoFixo(item) && !isCartao(item)) return;
 
-          if (!mapaMeses.has(mes)) {
-            mapaMeses.set(mes, []);
+          if (!item.vencimento) {
+            const hoje = new Date();
+            const inicio = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
+
+            if (isGastoFixo(item)) {
+              const cursor = new Date(`${inicio}-01T00:00:00`);
+              const fim = new Date(cursor);
+              fim.setMonth(fim.getMonth() + 11);
+
+              while (cursor <= fim) {
+                const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+                if (!mesEstaIgnorado(item, yyyyMm)) {
+                  if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
+                  mapaMeses.get(yyyyMm).push({
+                    ...item,
+                    origemId: item.id,
+                    mesReferencia: yyyyMm,
+                    recorrenteMesFuturo: true,
+                    pago: false,
+                    vencimento: ""
+                  });
+                }
+                cursor.setMonth(cursor.getMonth() + 1);
+              }
+            }
+
+            if (isCartao(item)) {
+              const cursor = new Date(`${inicio}-01T00:00:00`);
+              const fim = new Date(cursor);
+              fim.setMonth(fim.getMonth() + 11);
+
+              while (cursor <= fim) {
+                const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+                if (!mesEstaIgnorado(item, yyyyMm)) {
+                  if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
+                  mapaMeses.get(yyyyMm).push({
+                    ...item,
+                    origemId: item.id,
+                    mesReferencia: yyyyMm,
+                    recorrenteMesFuturo: true,
+                    recorrenteZerado: true,
+                    valor: 0,
+                    pago: false,
+                    vencimento: ""
+                  });
+                }
+                cursor.setMonth(cursor.getMonth() + 1);
+              }
+            }
+
+            return;
           }
 
-          mapaMeses.get(mes).push(item);
+          const mesOriginal = getMesFromDate(item.vencimento);
+
+          if (isGastoFixo(item)) {
+            const inicio = new Date(`${mesOriginal}-01T00:00:00`);
+            const fim = new Date(inicio);
+            fim.setMonth(fim.getMonth() + 11);
+
+            const cursor = new Date(inicio);
+
+            while (cursor <= fim) {
+              const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+              if (!mesEstaIgnorado(item, yyyyMm)) {
+                if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
+                mapaMeses.get(yyyyMm).push(criarInstanciaMes(item, yyyyMm, yyyyMm !== mesOriginal));
+              }
+              cursor.setMonth(cursor.getMonth() + 1);
+            }
+
+            return;
+          }
+
+          if (isCartao(item)) {
+            const inicio = new Date(`${mesOriginal}-01T00:00:00`);
+            const fim = new Date(inicio);
+            fim.setMonth(fim.getMonth() + 11);
+
+            const cursor = new Date(inicio);
+
+            while (cursor <= fim) {
+              const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+              if (!mesEstaIgnorado(item, yyyyMm)) {
+                if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
+                if (yyyyMm === mesOriginal) {
+                  mapaMeses.get(yyyyMm).push(criarInstanciaMes(item, yyyyMm, false));
+                } else {
+                  mapaMeses.get(yyyyMm).push(criarInstanciaCartaoFuturo(item, yyyyMm));
+                }
+              }
+              cursor.setMonth(cursor.getMonth() + 1);
+            }
+
+            return;
+          }
+
+          if (mesEstaIgnorado(item, mesOriginal)) return;
+          if (!mapaMeses.has(mesOriginal)) mapaMeses.set(mesOriginal, []);
+          mapaMeses.get(mesOriginal).push(criarInstanciaMes(item, mesOriginal, false));
         });
 
         return mapaMeses;
@@ -1059,7 +1149,7 @@
       function renderGraficoMensal() {
         if (!financeChartCanvas || typeof Chart === "undefined") return;
 
-        const mapaMeses = obterDadosGrafico();
+        const mapaMeses = gerarListaParaGraficoMensal();
         const mesesOrdenados = [...mapaMeses.keys()].sort((a, b) => a.localeCompare(b));
 
         const labels = [];
@@ -1609,12 +1699,13 @@
 
       monthFilter.addEventListener("input", () => {
         monthTerm = monthFilter.value;
-        atualizarPainelCompleto();
+        renderTabelaPrincipal();
+        renderIpva();
       });
 
       searchInput.addEventListener("input", () => {
         searchTerm = searchInput.value.trim();
-        atualizarPainelCompleto();
+        renderTabelaPrincipal();
       });
 
       themeToggle.addEventListener("click", () => {
@@ -1693,7 +1784,8 @@
               id: doc.id,
               ...doc.data()
             }));
-            atualizarPainelCompleto();
+            renderTabelaPrincipal();
+            renderGraficoMensal();
           }, (error) => {
             if (
               error.code === "failed-precondition" ||
