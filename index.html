@@ -265,11 +265,11 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel" id="ipva-panel">
         <div class="panel-header ipva-header">
           <div>
             <h2>IPVA do carro</h2>
-            <p>Atualização em tempo real.</p>
+            <p id="ipva-subtitle">Atualização em tempo real.</p>
           </div>
           <button id="edit-ipva-btn" class="btn-light" type="button">Editar IPVA</button>
         </div>
@@ -419,6 +419,8 @@
 
       const mainTableBody = document.getElementById("main-table-body");
       const ipvaTableBody = document.getElementById("ipva-table-body");
+      const ipvaPanel = document.getElementById("ipva-panel");
+      const ipvaSubtitle = document.getElementById("ipva-subtitle");
 
       const totalGeralEl = document.getElementById("total-geral");
       const totalPendenteEl = document.getElementById("total-pendente");
@@ -848,6 +850,33 @@
           ...item,
           categoria: item.categoria || definirCategoriaAutomatica(item.descricao)
         };
+      }
+
+      function getIpvaOrdenado() {
+        return [...ipvaData]
+          .filter(item => item.data && numeroSeguro(item.valor) > 0)
+          .sort((a, b) => (a.data || "").localeCompare(b.data || ""));
+      }
+
+      function getUltimoMesIpva() {
+        const parcelas = getIpvaOrdenado();
+        if (!parcelas.length) return "";
+        return getMesFromDate(parcelas[parcelas.length - 1].data);
+      }
+
+      function getIpvaVisivelPorMes() {
+        const parcelas = getIpvaOrdenado();
+
+        if (!parcelas.length) return [];
+
+        if (!monthTerm) return parcelas;
+
+        const ultimoMesIpva = getUltimoMesIpva();
+        if (ultimoMesIpva && monthTerm > ultimoMesIpva) {
+          return [];
+        }
+
+        return parcelas.filter(item => getMesFromDate(item.data) <= monthTerm);
       }
 
       function aplicarFiltros(lista) {
@@ -1300,16 +1329,32 @@
       function renderIpva() {
         ipvaTableBody.innerHTML = "";
 
-        if (!ipvaData.length) {
+        const listaIpva = getIpvaVisivelPorMes();
+        const ultimoMesIpva = getUltimoMesIpva();
+
+        if (monthTerm && ultimoMesIpva && monthTerm > ultimoMesIpva) {
+          ipvaPanel.classList.add("hidden");
+          return;
+        }
+
+        ipvaPanel.classList.remove("hidden");
+
+        if (ultimoMesIpva) {
+          ipvaSubtitle.textContent = `Atualização em tempo real até ${formatarMesTitulo(ultimoMesIpva)}.`;
+        } else {
+          ipvaSubtitle.textContent = "Atualização em tempo real.";
+        }
+
+        if (!listaIpva.length) {
           ipvaTableBody.innerHTML = `
             <tr>
-              <td colspan="5" class="empty-cell">Nenhuma parcela de IPVA cadastrada.</td>
+              <td colspan="5" class="empty-cell">Nenhuma parcela de IPVA cadastrada para este período.</td>
             </tr>
           `;
           return;
         }
 
-        ipvaData.forEach((item, index) => {
+        listaIpva.forEach((item, index) => {
           const status = item.pago ? "Pago" : "Pendente";
           const tr = document.createElement("tr");
           tr.className = item.pago ? "row-paid" : "";
@@ -1319,7 +1364,7 @@
               <input
                 type="checkbox"
                 class="ipva-check"
-                data-index="${index}"
+                data-index-real="${item.indexReal}"
                 ${item.pago ? "checked" : ""}
               />
             </td>
@@ -1482,11 +1527,11 @@
         }
       }
 
-      async function alternarIpva(index) {
+      async function alternarIpva(indexReal) {
         const novaLista = ipvaData.map((item, i) => ({
           data: item?.data || "",
           valor: numeroSeguro(item?.valor),
-          pago: i === index ? !Boolean(item?.pago) : Boolean(item?.pago)
+          pago: i === indexReal ? !Boolean(item?.pago) : Boolean(item?.pago)
         })).filter(item => item.data);
 
         try {
@@ -1555,7 +1600,7 @@
             valor,
             pago: Boolean(pago)
           };
-        }).filter(item => item.data !== null);
+        }).filter(item => item.data !== null && item.valor > 0);
 
         try {
           await db.collection("configuracoes").doc("ipva_carro").set({
@@ -1572,6 +1617,7 @@
       monthFilter.addEventListener("input", () => {
         monthTerm = monthFilter.value;
         renderTabelaPrincipal();
+        renderIpva();
       });
 
       searchInput.addEventListener("input", () => {
@@ -1623,7 +1669,7 @@
       ipvaTableBody.addEventListener("click", async (e) => {
         const check = e.target.closest(".ipva-check");
         if (check) {
-          await alternarIpva(Number(check.dataset.index));
+          await alternarIpva(Number(check.dataset.indexReal));
         }
       });
 
@@ -1672,11 +1718,14 @@
         unsubscribeIpva = db.collection("configuracoes")
           .doc("ipva_carro")
           .onSnapshot((doc) => {
-            ipvaData = (doc.data()?.parcelas || []).map(item => ({
-              data: item?.data || "",
-              valor: numeroSeguro(item?.valor),
-              pago: Boolean(item?.pago)
-            })).filter(item => item.data);
+            ipvaData = (doc.data()?.parcelas || [])
+              .map((item, index) => ({
+                indexReal: index,
+                data: item?.data || "",
+                valor: numeroSeguro(item?.valor),
+                pago: Boolean(item?.pago)
+              }))
+              .filter(item => item.data && item.valor > 0);
 
             renderIpva();
           }, () => {
