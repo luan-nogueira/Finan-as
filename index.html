@@ -513,8 +513,13 @@
       }
 
       function numeroSeguro(valor) {
-        const n = Number(valor);
-        return Number.isFinite(n) ? n : 0;
+        if (valor === null || valor === undefined || valor === "") return 0;
+
+        const n = Number(String(valor).replace(",", "."));
+
+        if (!Number.isFinite(n)) return 0;
+
+        return n;
       }
 
       function converterValorInput(valorDigitado) {
@@ -571,7 +576,8 @@
       }
 
       function valorNumerico(valor) {
-        return numeroSeguro(valor);
+        const n = numeroSeguro(valor);
+        return Math.round(n * 100) / 100;
       }
 
       function formatarMoeda(valor) {
@@ -583,7 +589,7 @@
 
       function formatarMoedaTabela(valor) {
         if (valor === null || valor === undefined || valor === "") return "-";
-        if (!Number.isFinite(Number(valor))) return "-";
+        if (!Number.isFinite(Number(String(valor).replace(",", ".")))) return "-";
         return formatarMoeda(valor);
       }
 
@@ -1048,11 +1054,26 @@
       }
 
       function renderResumo(lista) {
-        const totalGeral = lista.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
-        const totalPago = lista.filter(i => i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
-        const totalPendente = lista.filter(i => !i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
-        const qtdPagos = lista.filter(i => i.pago).length;
-        const qtdPendentes = lista.filter(i => !i.pago).length;
+        let totalGeral = 0;
+        let totalPago = 0;
+        let totalPendente = 0;
+
+        let qtdPagos = 0;
+        let qtdPendentes = 0;
+
+        lista.forEach(item => {
+          const valor = valorNumerico(item.valor);
+
+          totalGeral += valor;
+
+          if (item.pago) {
+            totalPago += valor;
+            qtdPagos++;
+          } else {
+            totalPendente += valor;
+            qtdPendentes++;
+          }
+        });
 
         totalGeralEl.textContent = formatarMoeda(totalGeral);
         totalPagoEl.textContent = formatarMoeda(totalPago);
