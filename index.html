@@ -990,59 +990,24 @@
         return resultado;
       }
 
-      function gerarListaParaGraficoMensal() {
+      function obterDadosGrafico() {
+        const lista = aplicarFiltros(despesasCache);
         const mapaMeses = new Map();
 
-        despesasCache.forEach(itemBase => {
-          const item = normalizarCategoria(itemBase);
+        if (monthTerm) {
+          mapaMeses.set(monthTerm, lista);
+          return mapaMeses;
+        }
 
-          if (!item.vencimento) return;
+        lista.forEach(item => {
+          const mes = item.mesReferencia || getMesFromDate(item.vencimento);
+          if (!mes) return;
 
-          const mesOriginal = getMesFromDate(item.vencimento);
-
-          if (isGastoFixo(item)) {
-            const inicio = new Date(`${mesOriginal}-01T00:00:00`);
-            const fim = new Date();
-            fim.setMonth(fim.getMonth() + 11);
-
-            const cursor = new Date(inicio);
-
-            while (cursor <= fim) {
-              const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-              if (!mesEstaIgnorado(item, yyyyMm)) {
-                if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
-                mapaMeses.get(yyyyMm).push(criarInstanciaMes(item, yyyyMm, yyyyMm !== mesOriginal));
-              }
-              cursor.setMonth(cursor.getMonth() + 1);
-            }
-            return;
+          if (!mapaMeses.has(mes)) {
+            mapaMeses.set(mes, []);
           }
 
-          if (isCartao(item)) {
-            const inicio = new Date(`${mesOriginal}-01T00:00:00`);
-            const fim = new Date();
-            fim.setMonth(fim.getMonth() + 11);
-
-            const cursor = new Date(inicio);
-
-            while (cursor <= fim) {
-              const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-              if (!mesEstaIgnorado(item, yyyyMm)) {
-                if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
-                if (yyyyMm === mesOriginal) {
-                  mapaMeses.get(yyyyMm).push(criarInstanciaMes(item, yyyyMm, false));
-                } else {
-                  mapaMeses.get(yyyyMm).push(criarInstanciaCartaoFuturo(item, yyyyMm));
-                }
-              }
-              cursor.setMonth(cursor.getMonth() + 1);
-            }
-            return;
-          }
-
-          if (mesEstaIgnorado(item, mesOriginal)) return;
-          if (!mapaMeses.has(mesOriginal)) mapaMeses.set(mesOriginal, []);
-          mapaMeses.get(mesOriginal).push(criarInstanciaMes(item, mesOriginal, false));
+          mapaMeses.get(mes).push(item);
         });
 
         return mapaMeses;
@@ -1052,11 +1017,13 @@
         let totalGeral = 0;
         let totalPago = 0;
         let totalPendente = 0;
+
         let qtdPagos = 0;
         let qtdPendentes = 0;
 
         lista.forEach(item => {
           const valor = valorNumerico(item.valor);
+
           totalGeral += valor;
 
           if (item.pago) {
@@ -1092,10 +1059,10 @@
       function renderGraficoMensal() {
         if (!financeChartCanvas || typeof Chart === "undefined") return;
 
-        const mapaMeses = gerarListaParaGraficoMensal();
+        const mapaMeses = obterDadosGrafico();
         const mesesOrdenados = [...mapaMeses.keys()].sort((a, b) => a.localeCompare(b));
 
-        const labels = mesesOrdenados.map(formatarMesCurto);
+        const labels = [];
         const totais = [];
         const pagos = [];
         const pendentes = [];
@@ -1111,12 +1078,16 @@
             .filter(i => !i.pago)
             .reduce((acc, item) => acc + valorNumerico(item.valor), 0);
 
+          labels.push(formatarMesCurto(mes));
           totais.push(Number(totalMes.toFixed(2)));
           pagos.push(Number(totalPago.toFixed(2)));
           pendentes.push(Number(totalPendente.toFixed(2)));
         });
 
-        if (financeChart) financeChart.destroy();
+        if (financeChart) {
+          financeChart.destroy();
+          financeChart = null;
+        }
 
         const estilo = getComputedStyle(document.documentElement);
         const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
@@ -1130,7 +1101,7 @@
         gradientBar.addColorStop(0, primary);
         gradientBar.addColorStop(1, "rgba(29, 78, 216, 0.25)");
 
-        financeChart = new Chart(financeChartCanvas, {
+        financeChart = new Chart(ctx, {
           type: "bar",
           data: {
             labels,
