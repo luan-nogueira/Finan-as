@@ -514,11 +514,8 @@
 
       function numeroSeguro(valor) {
         if (valor === null || valor === undefined || valor === "") return 0;
-
         const n = Number(String(valor).replace(",", "."));
-
         if (!Number.isFinite(n)) return 0;
-
         return n;
       }
 
@@ -1018,7 +1015,6 @@
               }
               cursor.setMonth(cursor.getMonth() + 1);
             }
-
             return;
           }
 
@@ -1041,7 +1037,6 @@
               }
               cursor.setMonth(cursor.getMonth() + 1);
             }
-
             return;
           }
 
@@ -1057,13 +1052,11 @@
         let totalGeral = 0;
         let totalPago = 0;
         let totalPendente = 0;
-
         let qtdPagos = 0;
         let qtdPendentes = 0;
 
         lista.forEach(item => {
           const valor = valorNumerico(item.valor);
-
           totalGeral += valor;
 
           if (item.pago) {
@@ -1250,6 +1243,12 @@
             }
           }
         });
+      }
+
+      function atualizarPainelCompleto() {
+        renderTabelaPrincipal();
+        renderIpva();
+        renderGraficoMensal();
       }
 
       function renderTabelaPrincipal() {
@@ -1591,12 +1590,14 @@
 
       closeModalBtn.addEventListener("click", fecharModalEdicao);
       cancelEditBtn.addEventListener("click", fecharModalEdicao);
+
       editModal.addEventListener("click", (e) => {
         if (e.target === editModal) fecharModalEdicao();
       });
 
       editIpvaBtn.addEventListener("click", abrirModalIpva);
       closeIpvaModal.addEventListener("click", fecharModalIpva);
+
       ipvaModal.addEventListener("click", (e) => {
         if (e.target === ipvaModal) fecharModalIpva();
       });
@@ -1637,13 +1638,12 @@
 
       monthFilter.addEventListener("input", () => {
         monthTerm = monthFilter.value;
-        renderTabelaPrincipal();
-        renderIpva();
+        atualizarPainelCompleto();
       });
 
       searchInput.addEventListener("input", () => {
         searchTerm = searchInput.value.trim();
-        renderTabelaPrincipal();
+        atualizarPainelCompleto();
       });
 
       themeToggle.addEventListener("click", () => {
@@ -1687,7 +1687,7 @@
         }
       });
 
-      ipvaTableBody.addEventListener("click", async (e) => {
+      ipvaTableBody.addEventListener("change", async (e) => {
         const check = e.target.closest(".ipva-check");
         if (check) {
           await alternarIpva(Number(check.dataset.indexReal));
@@ -1722,8 +1722,7 @@
               id: doc.id,
               ...doc.data()
             }));
-            renderTabelaPrincipal();
-            renderGraficoMensal();
+            atualizarPainelCompleto();
           }, (error) => {
             if (
               error.code === "failed-precondition" ||
