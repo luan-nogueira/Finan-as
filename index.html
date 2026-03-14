@@ -13,6 +13,201 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    .toggle-compras-btn {
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      background: var(--card-2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .toggle-compras-btn .arrow {
+      font-size: 11px;
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-compras-btn.expanded .arrow {
+      transform: rotate(180deg);
+    }
+
+    .compras-row td {
+      background: var(--bg-soft);
+      padding: 0;
+    }
+
+    .compras-box {
+      padding: 14px;
+      border-top: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--bg-soft), transparent);
+    }
+
+    .compras-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .compras-header h4 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .compras-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .compras-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--card);
+      margin-bottom: 12px;
+    }
+
+    .compras-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .compras-table th,
+    .compras-table td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      text-align: left;
+    }
+
+    .compras-table th {
+      background: var(--card-2);
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .compras-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .compras-empty {
+      padding: 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .compra-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .compra-action-btn {
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card-2);
+      color: var(--text);
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .compra-action-btn.delete {
+      background: rgba(239, 68, 68, 0.08);
+      color: var(--red);
+      border-color: rgba(239, 68, 68, 0.18);
+    }
+
+    .compra-form {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 0.8fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .compra-form .field {
+      gap: 6px;
+    }
+
+    .compra-form input,
+    .compra-form select {
+      height: 42px;
+    }
+
+    .compra-form button {
+      height: 42px;
+      border-radius: 12px;
+      border: 0;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      padding: 0 16px;
+      cursor: pointer;
+    }
+
+    .compra-categoria-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 840px) {
+      .compra-form {
+        grid-template-columns: 1fr;
+      }
+
+      .compras-header {
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .compras-box {
+        padding: 10px;
+      }
+
+      .compras-table th,
+      .compras-table td {
+        font-size: 12px;
+        padding: 8px;
+      }
+
+      .toggle-compras-btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .compra-actions {
+        flex-direction: column;
+      }
+
+      .compra-action-btn {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -132,7 +327,7 @@
           <form id="expense-form" class="form-grid">
             <div class="field">
               <label for="descricao">Descrição</label>
-              <input list="gastos-list" type="text" id="descricao" placeholder="Ex: Cartão BB" required />
+              <input list="gastos-list" type="text" id="descricao" placeholder="Ex: Condomínio" required />
               <datalist id="gastos-list">
                 <option value="Condomínio"></option>
                 <option value="Internet"></option>
@@ -169,25 +364,6 @@
             <div class="field">
               <label for="tipo-preview">Grupo na tabela</label>
               <input type="text" id="tipo-preview" value="Será definido automaticamente" readonly />
-            </div>
-
-            <div class="field">
-              <label for="categoria-compra">Categoria da compra</label>
-              <select id="categoria-compra">
-                <option value="">Selecione</option>
-                <option value="Alimentação">Alimentação</option>
-                <option value="Fast food">Fast food</option>
-                <option value="Lazer">Lazer</option>
-                <option value="Mercado">Mercado</option>
-                <option value="Transporte">Transporte</option>
-                <option value="Saúde">Saúde</option>
-                <option value="Farmácia">Farmácia</option>
-                <option value="Roupas">Roupas</option>
-                <option value="Casa">Casa</option>
-                <option value="Educação">Educação</option>
-                <option value="Beleza">Beleza</option>
-                <option value="Outros">Outros</option>
-              </select>
             </div>
 
             <div class="field">
@@ -260,7 +436,7 @@
 
           <div class="field">
             <label for="search-input">Buscar</label>
-            <input type="text" id="search-input" placeholder="Ex: condomínio, cartão, alimentação, lazer" />
+            <input type="text" id="search-input" placeholder="Ex: condomínio, mercado pago, cartão" />
           </div>
         </div>
 
@@ -336,25 +512,6 @@
             <option value="Gastos fixos">Gastos fixos</option>
             <option value="Cartões">Cartões</option>
             <option value="Gastos comuns">Gastos comuns</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="edit-categoria-compra">Categoria da compra</label>
-          <select id="edit-categoria-compra">
-            <option value="">Selecione</option>
-            <option value="Alimentação">Alimentação</option>
-            <option value="Fast food">Fast food</option>
-            <option value="Lazer">Lazer</option>
-            <option value="Mercado">Mercado</option>
-            <option value="Transporte">Transporte</option>
-            <option value="Saúde">Saúde</option>
-            <option value="Farmácia">Farmácia</option>
-            <option value="Roupas">Roupas</option>
-            <option value="Casa">Casa</option>
-            <option value="Educação">Educação</option>
-            <option value="Beleza">Beleza</option>
-            <option value="Outros">Outros</option>
           </select>
         </div>
 
@@ -489,10 +646,26 @@
       let monthTerm = "";
       let lastEditedId = null;
       let financeChart = null;
+      let cartoesExpandidos = new Set();
 
       const CATEGORIA_FIXA = "Gastos fixos";
       const CATEGORIA_CARTOES = "Cartões";
       const CATEGORIA_COMUM = "Gastos comuns";
+
+      const CATEGORIAS_COMPRA = [
+        "Alimentação",
+        "Fast food",
+        "Lazer",
+        "Mercado",
+        "Transporte",
+        "Saúde",
+        "Farmácia",
+        "Roupas",
+        "Casa",
+        "Educação",
+        "Beleza",
+        "Outros"
+      ];
 
       const GASTOS_FIXOS = [
         "Condomínio",
@@ -508,32 +681,32 @@
       ];
 
       const DESPESAS_INICIAIS = [
-        { descricao: "Condomínio", valor: 390.00, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Internet", valor: 80.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Luz", valor: null, vencimento: "2026-02-27", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Gás", valor: 53.99, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Riachuelo", valor: 301.00, vencimento: "2026-03-13", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Cartão Carrefour", valor: 405.00, vencimento: "2026-03-21", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Cartão Renner", valor: 476.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "C&A", valor: 96.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Carro", valor: 1500.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: 12, parcelaTotal: 48, pago: false, categoriaCompra: "" },
-        { descricao: "Mercado pago", valor: 1640.00, vencimento: "2026-03-22", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Cartão caixa", valor: null, vencimento: "2026-03-24", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Condomínio", valor: 390.00, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Internet", valor: 80.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Luz", valor: null, vencimento: "2026-02-27", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Gás", valor: 53.99, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Riachuelo", valor: 301.00, vencimento: "2026-03-13", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Cartão Carrefour", valor: 405.00, vencimento: "2026-03-21", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Cartão Renner", valor: 476.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "C&A", valor: 96.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Carro", valor: 1500.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: 12, parcelaTotal: 48, pago: false, compras: [] },
+        { descricao: "Mercado pago", valor: 1640.00, vencimento: "2026-03-22", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Cartão caixa", valor: null, vencimento: "2026-03-24", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
 
-        { descricao: "Cartão Nubank", valor: 81.74, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Cartão Santander", valor: 22.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Cartão BB", valor: 2076.81, vencimento: "2026-03-09", observacao: "300$ mãe", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Vivo", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Mercado pago", valor: 108.64, vencimento: "2026-03-12", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Cartão Nubank", valor: 81.74, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Cartão Santander", valor: 22.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Cartão BB", valor: 2076.81, vencimento: "2026-03-09", observacao: "300$ mãe", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Vivo", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Mercado pago", valor: 108.64, vencimento: "2026-03-12", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
 
-        { descricao: "Claro", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Cartão preto", valor: 153.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Cartão inter", valor: 189.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Cartão Nubank", valor: 184.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Reneg. Itaú", valor: 70.00, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Reneg. Casas Bahia", valor: 100.00, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: 10, parcelaTotal: 10, pago: false, categoriaCompra: "" },
-        { descricao: "Faculdade", valor: 570.00, vencimento: "", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
-        { descricao: "Coren", valor: null, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" }
+        { descricao: "Claro", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Cartão preto", valor: 153.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Cartão inter", valor: 189.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Cartão Nubank", valor: 184.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Reneg. Itaú", valor: 70.00, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Reneg. Casas Bahia", valor: 100.00, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: 10, parcelaTotal: 10, pago: false, compras: [] },
+        { descricao: "Faculdade", valor: 570.00, vencimento: "", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
+        { descricao: "Coren", valor: null, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] }
       ];
 
       const ipvaPadrao = [
@@ -743,7 +916,6 @@
         document.getElementById("edit-id").value = item.id;
         document.getElementById("edit-descricao").value = item.descricao || "";
         document.getElementById("edit-categoria").value = item.categoria || definirCategoriaAutomatica(item.descricao);
-        document.getElementById("edit-categoria-compra").value = item.categoriaCompra || "";
         document.getElementById("edit-valor").value = item.valor ?? "";
         document.getElementById("edit-vencimento").value = item.vencimento || "";
         document.getElementById("edit-observacao").value = item.observacao || "";
@@ -795,6 +967,30 @@
         ipvaFormList.appendChild(div);
       }
 
+      function normalizarCompras(item) {
+        if (!Array.isArray(item?.compras)) return [];
+        return item.compras
+          .map(compra => ({
+            nome: String(compra?.nome || "").trim(),
+            categoria: String(compra?.categoria || "").trim(),
+            valor: numeroSeguro(compra?.valor)
+          }))
+          .filter(compra => compra.nome);
+      }
+
+      function getTotalCompras(item) {
+        return normalizarCompras(item).reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
+      }
+
+      function getOptionsCategoriasCompra(selected = "") {
+        return `
+          <option value="">Selecione</option>
+          ${CATEGORIAS_COMPRA.map(cat => `
+            <option value="${escapeHtml(cat)}" ${cat === selected ? "selected" : ""}>${escapeHtml(cat)}</option>
+          `).join("")}
+        `;
+      }
+
       async function garantirIpvaInicial() {
         const ref = db.collection("configuracoes").doc("ipva_carro");
         const snap = await ref.get();
@@ -817,13 +1013,13 @@
           batch.set(ref, {
             descricao: item.descricao,
             categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
-            categoriaCompra: item.categoriaCompra || "",
             valor: item.valor ?? null,
             vencimento: item.vencimento || "",
             observacao: item.observacao || "",
             parcelaAtual: item.parcelaAtual || null,
             parcelaTotal: item.parcelaTotal || null,
             mesesIgnorados: [],
+            compras: Array.isArray(item.compras) ? item.compras : [],
             pago: Boolean(item.pago),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
@@ -884,7 +1080,8 @@
           valor: 0,
           pago: false,
           recorrenteMesFuturo: true,
-          recorrenteZerado: true
+          recorrenteZerado: true,
+          compras: []
         };
       }
 
@@ -892,7 +1089,7 @@
         return {
           ...item,
           categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
-          categoriaCompra: item.categoriaCompra || ""
+          compras: normalizarCompras(item)
         };
       }
 
@@ -947,7 +1144,8 @@
                   recorrenteMesFuturo: true,
                   recorrenteZerado: true,
                   valor: 0,
-                  pago: false
+                  pago: false,
+                  compras: []
                 });
               } else {
                 resultado.push({
@@ -1009,9 +1207,12 @@
           const termo = normalizarTexto(searchTerm);
           resultado = resultado.filter(item =>
             normalizarTexto(item.descricao).includes(termo) ||
-            normalizarTexto(item.categoriaCompra).includes(termo) ||
             normalizarTexto(item.observacao).includes(termo) ||
-            normalizarTexto(item.categoria).includes(termo)
+            normalizarTexto(item.categoria).includes(termo) ||
+            normalizarCompras(item).some(compra =>
+              normalizarTexto(compra.nome).includes(termo) ||
+              normalizarTexto(compra.categoria).includes(termo)
+            )
           );
         }
 
@@ -1083,7 +1284,8 @@
                     recorrenteZerado: true,
                     valor: 0,
                     pago: false,
-                    vencimento: ""
+                    vencimento: "",
+                    compras: []
                   });
                 }
                 cursor.setMonth(cursor.getMonth() + 1);
@@ -1348,10 +1550,97 @@
         });
       }
 
-      function atualizarPainelCompleto() {
-        renderTabelaPrincipal();
-        renderIpva();
-        renderGraficoMensal();
+      function renderComprasDoCartao(item) {
+        const compras = normalizarCompras(item);
+        const totalCompras = getTotalCompras(item);
+
+        return `
+          <div class="compras-box">
+            <div class="compras-header">
+              <div>
+                <h4>Compras do ${escapeHtml(item.descricao)}</h4>
+                <p>Detalhamento das compras do cartão. O valor total do cartão continua manual.</p>
+              </div>
+              <div>
+                <strong>Total das compras lançadas: ${formatarMoeda(totalCompras)}</strong>
+              </div>
+            </div>
+
+            <div class="compras-table-wrap">
+              ${
+                compras.length
+                  ? `
+                    <table class="compras-table">
+                      <thead>
+                        <tr>
+                          <th>Compra</th>
+                          <th>Categoria</th>
+                          <th>Valor</th>
+                          <th>Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${compras.map((compra, index) => `
+                          <tr>
+                            <td>${escapeHtml(compra.nome)}</td>
+                            <td><span class="compra-categoria-badge">${escapeHtml(compra.categoria || "Sem categoria")}</span></td>
+                            <td>${formatarMoeda(compra.valor)}</td>
+                            <td>
+                              <div class="compra-actions">
+                                <button
+                                  type="button"
+                                  class="compra-action-btn"
+                                  data-action="edit-compra"
+                                  data-id="${escapeHtml(item.id)}"
+                                  data-index="${index}"
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  type="button"
+                                  class="compra-action-btn delete"
+                                  data-action="delete-compra"
+                                  data-id="${escapeHtml(item.id)}"
+                                  data-index="${index}"
+                                >
+                                  Excluir
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        `).join("")}
+                      </tbody>
+                    </table>
+                  `
+                  : `<div class="compras-empty">Nenhuma compra cadastrada neste cartão.</div>`
+              }
+            </div>
+
+            <form class="compra-form" data-card-id="${escapeHtml(item.id)}">
+              <div class="field">
+                <label>Compra</label>
+                <input type="text" name="nome" placeholder="Ex: McDonald's, Cinema, Mercado" required />
+              </div>
+
+              <div class="field">
+                <label>Categoria</label>
+                <select name="categoria" required>
+                  ${getOptionsCategoriasCompra()}
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Valor</label>
+                <input type="number" name="valor" step="0.01" min="0" placeholder="0,00" required />
+              </div>
+
+              <div class="field">
+                <label>&nbsp;</label>
+                <button type="submit">Adicionar compra</button>
+              </div>
+            </form>
+          </div>
+        `;
       }
 
       function renderTabelaPrincipal() {
@@ -1389,14 +1678,14 @@
             const idReal = item.origemId || item.id;
             const ehRecorrenteFuturo = Boolean(item.recorrenteMesFuturo);
             const mesReferencia = item.mesReferencia || getMesFromDate(item.vencimento);
-
-            const categoriaCompraHtml = item.categoriaCompra
-              ? `<small><strong>Categoria:</strong> ${escapeHtml(item.categoriaCompra)}</small>`
-              : "";
+            const podeExpandirCompras = isCartao(item) && !ehRecorrenteFuturo;
+            const estaExpandido = cartoesExpandidos.has(idReal);
 
             const observacaoExtra = item.recorrenteZerado
               ? `${item.observacao ? `${item.observacao} | ` : ""}Próximo mês iniciado com valor zerado`
               : (item.observacao || "-");
+
+            const totalCompras = getTotalCompras(item);
 
             const tr = document.createElement("tr");
             tr.className = item.pago ? "row-paid" : (isVencida(item) ? "row-overdue" : "");
@@ -1418,10 +1707,21 @@
                 <div class="parcelas-info">
                   <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
                   <small>${escapeHtml(getParcelasRestantes(item))}</small>
-                  ${categoriaCompraHtml}
+                  ${podeExpandirCompras ? `<small><strong>Compras lançadas:</strong> ${formatarMoeda(totalCompras)}</small>` : ""}
                   ${item.recorrenteZerado ? '<span class="recorrente-badge">Próximo mês com valor zerado</span>' : ""}
                   ${ehRecorrenteFuturo && !item.recorrenteZerado ? '<span class="recorrente-badge">Recorrente do mês</span>' : ""}
                 </div>
+                ${podeExpandirCompras ? `
+                  <button
+                    class="toggle-compras-btn ${estaExpandido ? "expanded" : ""}"
+                    type="button"
+                    data-action="toggle-compras"
+                    data-id="${idReal}"
+                  >
+                    <span class="arrow">▼</span>
+                    <span>${estaExpandido ? "Ocultar compras" : "Ver compras do cartão"}</span>
+                  </button>
+                ` : ""}
               </td>
               <td class="valor-cell">${formatarMoedaTabela(item.valor)}</td>
               <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
@@ -1440,6 +1740,17 @@
             `;
 
             mainTableBody.appendChild(tr);
+
+            if (podeExpandirCompras && estaExpandido) {
+              const compraRow = document.createElement("tr");
+              compraRow.className = "compras-row";
+              compraRow.innerHTML = `
+                <td colspan="7">
+                  ${renderComprasDoCartao(item)}
+                </td>
+              `;
+              mainTableBody.appendChild(compraRow);
+            }
           });
         });
 
@@ -1514,7 +1825,6 @@
         e.preventDefault();
 
         const descricao = document.getElementById("descricao").value.trim();
-        const categoriaCompra = document.getElementById("categoria-compra").value.trim();
         const valorDigitado = document.getElementById("valor").value;
         const valor = converterValorInput(valorDigitado);
         const vencimento = document.getElementById("vencimento").value.trim();
@@ -1536,13 +1846,13 @@
           await db.collection("despesas").add({
             descricao,
             categoria,
-            categoriaCompra,
             valor,
             vencimento,
             observacao,
             parcelaAtual: parcelaAtual || null,
             parcelaTotal: parcelaTotal || null,
             mesesIgnorados: [],
+            compras: [],
             pago: false,
             uid: auth.currentUser.uid,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1565,7 +1875,6 @@
         const id = document.getElementById("edit-id").value;
         const descricao = document.getElementById("edit-descricao").value.trim();
         const categoria = document.getElementById("edit-categoria").value;
-        const categoriaCompra = document.getElementById("edit-categoria-compra").value.trim();
         const valorDigitado = document.getElementById("edit-valor").value;
         const valor = converterValorInput(valorDigitado);
         const vencimento = document.getElementById("edit-vencimento").value.trim();
@@ -1584,7 +1893,6 @@
           await db.collection("despesas").doc(id).update({
             descricao,
             categoria,
-            categoriaCompra,
             valor,
             vencimento,
             observacao,
@@ -1674,6 +1982,76 @@
         } catch (error) {
           alert("Erro ao atualizar IPVA: " + error.message);
         }
+      }
+
+      async function adicionarCompraAoCartao(cardId, nome, categoria, valor) {
+        const item = despesasCache.find(d => d.id === cardId);
+        if (!item) return;
+
+        const compras = normalizarCompras(item);
+        compras.push({
+          nome: String(nome || "").trim(),
+          categoria: String(categoria || "").trim(),
+          valor: numeroSeguro(valor)
+        });
+
+        await db.collection("despesas").doc(cardId).update({ compras });
+      }
+
+      async function excluirCompraDoCartao(cardId, index) {
+        const item = despesasCache.find(d => d.id === cardId);
+        if (!item) return;
+
+        const compras = normalizarCompras(item);
+        compras.splice(index, 1);
+
+        await db.collection("despesas").doc(cardId).update({ compras });
+      }
+
+      async function editarCompraDoCartao(cardId, index) {
+        const item = despesasCache.find(d => d.id === cardId);
+        if (!item) return;
+
+        const compras = normalizarCompras(item);
+        const compra = compras[index];
+        if (!compra) return;
+
+        const novoNome = prompt("Editar nome da compra:", compra.nome);
+        if (novoNome === null) return;
+
+        const novaCategoria = prompt(
+          `Editar categoria da compra:\n\nSugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
+          compra.categoria || ""
+        );
+        if (novaCategoria === null) return;
+
+        const novoValorTexto = prompt("Editar valor da compra:", String(compra.valor ?? ""));
+        if (novoValorTexto === null) return;
+
+        const novoValor = converterValorInput(novoValorTexto);
+
+        if (!String(novoNome).trim()) {
+          alert("Digite o nome da compra.");
+          return;
+        }
+
+        if (!String(novaCategoria).trim()) {
+          alert("Digite a categoria da compra.");
+          return;
+        }
+
+        if (Number.isNaN(novoValor) || novoValor === null) {
+          alert("Digite um valor válido.");
+          return;
+        }
+
+        compras[index] = {
+          nome: String(novoNome).trim(),
+          categoria: String(novaCategoria).trim(),
+          valor: numeroSeguro(novoValor)
+        };
+
+        await db.collection("despesas").doc(cardId).update({ compras });
       }
 
       authForm.addEventListener("submit", async (e) => {
@@ -1782,6 +2160,40 @@
         await alternarPagamento(check.dataset.id);
       });
 
+      mainTableBody.addEventListener("submit", async (e) => {
+        const compraForm = e.target.closest(".compra-form");
+        if (!compraForm) return;
+
+        e.preventDefault();
+
+        const cardId = compraForm.dataset.cardId;
+        const nome = compraForm.nome.value.trim();
+        const categoria = compraForm.categoria.value.trim();
+        const valor = converterValorInput(compraForm.valor.value);
+
+        if (!nome) {
+          alert("Digite o nome da compra.");
+          return;
+        }
+
+        if (!categoria) {
+          alert("Selecione a categoria da compra.");
+          return;
+        }
+
+        if (Number.isNaN(valor) || valor === null) {
+          alert("Digite um valor válido.");
+          return;
+        }
+
+        try {
+          await adicionarCompraAoCartao(cardId, nome, categoria, valor);
+          compraForm.reset();
+        } catch (error) {
+          alert("Erro ao adicionar compra: " + error.message);
+        }
+      });
+
       mainTableBody.addEventListener("click", async (e) => {
         const btn = e.target.closest("button");
         if (!btn) return;
@@ -1790,13 +2202,51 @@
         const mes = btn.dataset.mes;
         const action = btn.dataset.action;
 
+        if (action === "toggle-compras") {
+          if (cartoesExpandidos.has(id)) {
+            cartoesExpandidos.delete(id);
+          } else {
+            cartoesExpandidos.add(id);
+          }
+          renderTabelaPrincipal();
+          return;
+        }
+
         if (action === "edit") {
           const item = despesasCache.find(d => d.id === id);
           if (item) abrirModalEdicao(normalizarCategoria(item));
+          return;
         }
 
         if (action === "delete") {
           await excluirDespesa(id, mes);
+          return;
+        }
+
+        if (action === "delete-compra") {
+          const compraIndex = Number(btn.dataset.index);
+          if (!Number.isInteger(compraIndex)) return;
+
+          const confirmar = confirm("Deseja excluir esta compra?");
+          if (!confirmar) return;
+
+          try {
+            await excluirCompraDoCartao(id, compraIndex);
+          } catch (error) {
+            alert("Erro ao excluir compra: " + error.message);
+          }
+          return;
+        }
+
+        if (action === "edit-compra") {
+          const compraIndex = Number(btn.dataset.index);
+          if (!Number.isInteger(compraIndex)) return;
+
+          try {
+            await editarCompraDoCartao(id, compraIndex);
+          } catch (error) {
+            alert("Erro ao editar compra: " + error.message);
+          }
         }
       });
 
