@@ -132,7 +132,7 @@
           <form id="expense-form" class="form-grid">
             <div class="field">
               <label for="descricao">Descrição</label>
-              <input list="gastos-list" type="text" id="descricao" placeholder="Ex: Condomínio" required />
+              <input list="gastos-list" type="text" id="descricao" placeholder="Ex: Cartão BB" required />
               <datalist id="gastos-list">
                 <option value="Condomínio"></option>
                 <option value="Internet"></option>
@@ -169,6 +169,25 @@
             <div class="field">
               <label for="tipo-preview">Grupo na tabela</label>
               <input type="text" id="tipo-preview" value="Será definido automaticamente" readonly />
+            </div>
+
+            <div class="field">
+              <label for="categoria-compra">Categoria da compra</label>
+              <select id="categoria-compra">
+                <option value="">Selecione</option>
+                <option value="Alimentação">Alimentação</option>
+                <option value="Fast food">Fast food</option>
+                <option value="Lazer">Lazer</option>
+                <option value="Mercado">Mercado</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Saúde">Saúde</option>
+                <option value="Farmácia">Farmácia</option>
+                <option value="Roupas">Roupas</option>
+                <option value="Casa">Casa</option>
+                <option value="Educação">Educação</option>
+                <option value="Beleza">Beleza</option>
+                <option value="Outros">Outros</option>
+              </select>
             </div>
 
             <div class="field">
@@ -241,7 +260,7 @@
 
           <div class="field">
             <label for="search-input">Buscar</label>
-            <input type="text" id="search-input" placeholder="Ex: condomínio, mercado pago, cartão" />
+            <input type="text" id="search-input" placeholder="Ex: condomínio, cartão, alimentação, lazer" />
           </div>
         </div>
 
@@ -317,6 +336,25 @@
             <option value="Gastos fixos">Gastos fixos</option>
             <option value="Cartões">Cartões</option>
             <option value="Gastos comuns">Gastos comuns</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="edit-categoria-compra">Categoria da compra</label>
+          <select id="edit-categoria-compra">
+            <option value="">Selecione</option>
+            <option value="Alimentação">Alimentação</option>
+            <option value="Fast food">Fast food</option>
+            <option value="Lazer">Lazer</option>
+            <option value="Mercado">Mercado</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Saúde">Saúde</option>
+            <option value="Farmácia">Farmácia</option>
+            <option value="Roupas">Roupas</option>
+            <option value="Casa">Casa</option>
+            <option value="Educação">Educação</option>
+            <option value="Beleza">Beleza</option>
+            <option value="Outros">Outros</option>
           </select>
         </div>
 
@@ -470,32 +508,32 @@
       ];
 
       const DESPESAS_INICIAIS = [
-        { descricao: "Condomínio", valor: 390.00, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Internet", valor: 80.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Luz", valor: null, vencimento: "2026-02-27", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Gás", valor: 53.99, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Riachuelo", valor: 301.00, vencimento: "2026-03-13", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Cartão Carrefour", valor: 405.00, vencimento: "2026-03-21", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Cartão Renner", valor: 476.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "C&A", valor: 96.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Carro", valor: 1500.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: 12, parcelaTotal: 48, pago: false },
-        { descricao: "Mercado pago", valor: 1640.00, vencimento: "2026-03-22", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Cartão caixa", valor: null, vencimento: "2026-03-24", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Condomínio", valor: 390.00, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Internet", valor: 80.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Luz", valor: null, vencimento: "2026-02-27", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Gás", valor: 53.99, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Riachuelo", valor: 301.00, vencimento: "2026-03-13", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Cartão Carrefour", valor: 405.00, vencimento: "2026-03-21", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Cartão Renner", valor: 476.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "C&A", valor: 96.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Carro", valor: 1500.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: 12, parcelaTotal: 48, pago: false, categoriaCompra: "" },
+        { descricao: "Mercado pago", valor: 1640.00, vencimento: "2026-03-22", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Cartão caixa", valor: null, vencimento: "2026-03-24", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
 
-        { descricao: "Cartão Nubank", valor: 81.74, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Cartão Santander", valor: 22.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Cartão BB", valor: 2076.81, vencimento: "2026-03-09", observacao: "300$ mãe", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Vivo", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Mercado pago", valor: 108.64, vencimento: "2026-03-12", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
+        { descricao: "Cartão Nubank", valor: 81.74, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Cartão Santander", valor: 22.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Cartão BB", valor: 2076.81, vencimento: "2026-03-09", observacao: "300$ mãe", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Vivo", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Mercado pago", valor: 108.64, vencimento: "2026-03-12", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
 
-        { descricao: "Claro", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Cartão preto", valor: 153.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Cartão inter", valor: 189.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Cartão Nubank", valor: 184.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Reneg. Itaú", valor: 70.00, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Reneg. Casas Bahia", valor: 100.00, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: 10, parcelaTotal: 10, pago: false },
-        { descricao: "Faculdade", valor: 570.00, vencimento: "", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false },
-        { descricao: "Coren", valor: null, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false }
+        { descricao: "Claro", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Cartão preto", valor: 153.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Cartão inter", valor: 189.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Cartão Nubank", valor: 184.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Reneg. Itaú", valor: 70.00, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Reneg. Casas Bahia", valor: 100.00, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: 10, parcelaTotal: 10, pago: false, categoriaCompra: "" },
+        { descricao: "Faculdade", valor: 570.00, vencimento: "", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" },
+        { descricao: "Coren", valor: null, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, categoriaCompra: "" }
       ];
 
       const ipvaPadrao = [
@@ -705,6 +743,7 @@
         document.getElementById("edit-id").value = item.id;
         document.getElementById("edit-descricao").value = item.descricao || "";
         document.getElementById("edit-categoria").value = item.categoria || definirCategoriaAutomatica(item.descricao);
+        document.getElementById("edit-categoria-compra").value = item.categoriaCompra || "";
         document.getElementById("edit-valor").value = item.valor ?? "";
         document.getElementById("edit-vencimento").value = item.vencimento || "";
         document.getElementById("edit-observacao").value = item.observacao || "";
@@ -778,6 +817,7 @@
           batch.set(ref, {
             descricao: item.descricao,
             categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
+            categoriaCompra: item.categoriaCompra || "",
             valor: item.valor ?? null,
             vencimento: item.vencimento || "",
             observacao: item.observacao || "",
@@ -851,7 +891,8 @@
       function normalizarCategoria(item) {
         return {
           ...item,
-          categoria: item.categoria || definirCategoriaAutomatica(item.descricao)
+          categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
+          categoriaCompra: item.categoriaCompra || ""
         };
       }
 
@@ -968,6 +1009,7 @@
           const termo = normalizarTexto(searchTerm);
           resultado = resultado.filter(item =>
             normalizarTexto(item.descricao).includes(termo) ||
+            normalizarTexto(item.categoriaCompra).includes(termo) ||
             normalizarTexto(item.observacao).includes(termo) ||
             normalizarTexto(item.categoria).includes(termo)
           );
@@ -1348,6 +1390,10 @@
             const ehRecorrenteFuturo = Boolean(item.recorrenteMesFuturo);
             const mesReferencia = item.mesReferencia || getMesFromDate(item.vencimento);
 
+            const categoriaCompraHtml = item.categoriaCompra
+              ? `<small><strong>Categoria:</strong> ${escapeHtml(item.categoriaCompra)}</small>`
+              : "";
+
             const observacaoExtra = item.recorrenteZerado
               ? `${item.observacao ? `${item.observacao} | ` : ""}Próximo mês iniciado com valor zerado`
               : (item.observacao || "-");
@@ -1372,6 +1418,7 @@
                 <div class="parcelas-info">
                   <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
                   <small>${escapeHtml(getParcelasRestantes(item))}</small>
+                  ${categoriaCompraHtml}
                   ${item.recorrenteZerado ? '<span class="recorrente-badge">Próximo mês com valor zerado</span>' : ""}
                   ${ehRecorrenteFuturo && !item.recorrenteZerado ? '<span class="recorrente-badge">Recorrente do mês</span>' : ""}
                 </div>
@@ -1467,6 +1514,7 @@
         e.preventDefault();
 
         const descricao = document.getElementById("descricao").value.trim();
+        const categoriaCompra = document.getElementById("categoria-compra").value.trim();
         const valorDigitado = document.getElementById("valor").value;
         const valor = converterValorInput(valorDigitado);
         const vencimento = document.getElementById("vencimento").value.trim();
@@ -1488,6 +1536,7 @@
           await db.collection("despesas").add({
             descricao,
             categoria,
+            categoriaCompra,
             valor,
             vencimento,
             observacao,
@@ -1516,6 +1565,7 @@
         const id = document.getElementById("edit-id").value;
         const descricao = document.getElementById("edit-descricao").value.trim();
         const categoria = document.getElementById("edit-categoria").value;
+        const categoriaCompra = document.getElementById("edit-categoria-compra").value.trim();
         const valorDigitado = document.getElementById("edit-valor").value;
         const valor = converterValorInput(valorDigitado);
         const vencimento = document.getElementById("edit-vencimento").value.trim();
@@ -1534,6 +1584,7 @@
           await db.collection("despesas").doc(id).update({
             descricao,
             categoria,
+            categoriaCompra,
             valor,
             vencimento,
             observacao,
