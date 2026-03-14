@@ -926,4 +926,31 @@ input[type="checkbox"] {
   }
 
 }
+@media (max-width: 640px) {
+  .toggle-compras-btn {
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .toggle-compras-btn span {
+    display: inline !important;
+    white-space: nowrap !important;
+  }
+
+  .toggle-compras-btn .arrow {
+    display: inline-block !important;
+    flex: 0 0 auto !important;
+  }
+}
+
 
