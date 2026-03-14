@@ -706,6 +706,40 @@ input[type="checkbox"] {
   margin: 0;
 }
 
+/* NOVOS AJUSTES - BOTÃO DE COMPRAS */
+.toggle-compras-btn {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card-2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  text-align: center;
+  cursor: pointer;
+}
+
+.toggle-compras-btn span {
+  display: inline;
+  white-space: nowrap;
+}
+
+.toggle-compras-btn .arrow {
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
 @media (max-width: 920px) {
   .hero {
     flex-direction: column;
@@ -840,6 +874,7 @@ input[type="checkbox"] {
 
   .actions-cell {
     gap: 6px;
+    align-items: center;
   }
 
   .action-btn {
@@ -887,59 +922,23 @@ input[type="checkbox"] {
   .modal-actions button {
     width: 100%;
   }
-}
-/* AJUSTE MOBILE - BOTÃO DE EXPANDIR COMPRAS */
-@media (max-width: 640px) {
 
+  /* AJUSTE FINAL DO BOTÃO NO CELULAR */
   .toggle-compras-btn {
-    font-size: 11px;
-    padding: 6px 8px;
-    border-radius: 10px;
-    width: 100%;
-    max-width: 110px;
-    text-align: center;
-    line-height: 1.2;
-  }
-
-  .toggle-compras-btn span {
-    display: block;
-  }
-
-  /* Ajusta célula para não quebrar layout */
-  .actions-cell {
-    align-items: center;
-  }
-
-  /* Subtabela mais compacta */
-  .compras-subtable th,
-  .compras-subtable td {
-    font-size: 11px;
-    padding: 6px;
-  }
-
-  /* Form de compra mais compacto */
-  .form-add-compra input,
-  .form-add-compra select,
-  .form-add-compra button {
-    height: 36px;
-    font-size: 12px;
-  }
-
-}
-@media (max-width: 640px) {
-  .toggle-compras-btn {
+    margin-top: 6px;
     width: auto !important;
-    max-width: none !important;
+    max-width: 100% !important;
     min-width: 0 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 6px !important;
-    padding: 6px 10px !important;
-    font-size: 11px !important;
+    gap: 5px !important;
+    padding: 6px 8px !important;
+    font-size: 10px !important;
     line-height: 1 !important;
     white-space: nowrap !important;
     flex-wrap: nowrap !important;
+    border-radius: 8px !important;
   }
 
   .toggle-compras-btn span {
@@ -950,7 +949,20 @@ input[type="checkbox"] {
   .toggle-compras-btn .arrow {
     display: inline-block !important;
     flex: 0 0 auto !important;
+    font-size: 10px !important;
+  }
+
+  /* caso exista subtabela/form de compras */
+  .compras-subtable th,
+  .compras-subtable td {
+    font-size: 11px;
+    padding: 6px;
+  }
+
+  .form-add-compra input,
+  .form-add-compra select,
+  .form-add-compra button {
+    height: 36px;
+    font-size: 12px;
   }
 }
-
-
