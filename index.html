@@ -242,7 +242,16 @@
         <div id="category-chart-panel-wrapper" class="collapsible-content hidden">
           <div class="panel-header collapsible-header">
             <h2>Gráfico por categoria</h2>
-            <p>Veja em quais categorias você está gastando mais no filtro atual.</p>
+            <p>Mostra apenas as compras lançadas dentro de “Ver compras”.</p>
+          </div>
+
+          <div class="filters-grid filters-grid-two category-chart-filters">
+            <div class="field">
+              <label for="category-filter">Filtrar categoria</label>
+              <select id="category-filter">
+                <option value="">Todas as categorias</option>
+              </select>
+            </div>
           </div>
 
           <div class="chart-box">
@@ -439,6 +448,7 @@
       const categoryChartPanelWrapper = document.getElementById("category-chart-panel-wrapper");
       const categoryChartToggleIcon = document.getElementById("category-chart-toggle-icon");
       const categoryChartCanvas = document.getElementById("category-chart");
+      const categoryFilter = document.getElementById("category-filter");
 
       const monthFilter = document.getElementById("month-filter");
       const searchInput = document.getElementById("search-input");
@@ -482,6 +492,7 @@
       let financeChart = null;
       let categoryChart = null;
       let cartoesExpandidos = new Set();
+      let categoryFilterTerm = "";
 
       const CATEGORIA_FIXA = "Gastos fixos";
       const CATEGORIA_CARTOES = "Cartões";
@@ -1199,29 +1210,19 @@
         const mapa = new Map();
 
         lista.forEach(item => {
-          const valorItem = valorNumerico(item.valor);
           const compras = normalizarCompras(item);
 
-          if (compras.length) {
-            compras.forEach(compra => {
-              const categoria = compra.categoria || "Sem categoria";
-              mapa.set(categoria, (mapa.get(categoria) || 0) + numeroSeguro(compra.valor));
-            });
+          if (!compras.length) return;
 
-            const restoNaoDetalhado = valorItem - getTotalCompras(item);
-            if (restoNaoDetalhado > 0.009) {
-              mapa.set("Cartão sem detalhar", (mapa.get("Cartão sem detalhar") || 0) + restoNaoDetalhado);
+          compras.forEach(compra => {
+            const categoria = String(compra.categoria || "Sem categoria").trim();
+
+            if (categoryFilterTerm && categoria !== categoryFilterTerm) {
+              return;
             }
-            return;
-          }
 
-          let categoriaFinal = "Outros";
-
-          if (item.categoria === CATEGORIA_FIXA) categoriaFinal = "Gastos fixos";
-          else if (item.categoria === CATEGORIA_COMUM) categoriaFinal = "Gastos comuns";
-          else if (item.categoria === CATEGORIA_CARTOES) categoriaFinal = "Cartões";
-
-          mapa.set(categoriaFinal, (mapa.get(categoriaFinal) || 0) + valorItem);
+            mapa.set(categoria, (mapa.get(categoria) || 0) + numeroSeguro(compra.valor));
+          });
         });
 
         return [...mapa.entries()]
@@ -1231,6 +1232,38 @@
           }))
           .filter(item => item.total > 0)
           .sort((a, b) => b.total - a.total);
+      }
+
+      function atualizarFiltroCategorias(lista) {
+        if (!categoryFilter) return;
+
+        const categoriasSet = new Set();
+
+        lista.forEach(item => {
+          const compras = normalizarCompras(item);
+          compras.forEach(compra => {
+            const categoria = String(compra.categoria || "Sem categoria").trim();
+            if (categoria) categoriasSet.add(categoria);
+          });
+        });
+
+        const categoriasOrdenadas = [...categoriasSet].sort((a, b) => a.localeCompare(b, "pt-BR"));
+        const valorAtual = categoryFilter.value;
+
+        categoryFilter.innerHTML = `
+          <option value="">Todas as categorias</option>
+          ${categoriasOrdenadas.map(cat => `
+            <option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>
+          `).join("")}
+        `;
+
+        if (categoriasOrdenadas.includes(valorAtual)) {
+          categoryFilter.value = valorAtual;
+          categoryFilterTerm = valorAtual;
+        } else {
+          categoryFilter.value = "";
+          categoryFilterTerm = "";
+        }
       }
 
       function renderResumo(lista) {
@@ -1440,6 +1473,7 @@
         if (!categoryChartCanvas || typeof Chart === "undefined") return;
 
         const lista = aplicarFiltros(despesasCache);
+        atualizarFiltroCategorias(lista);
         const dados = gerarDadosCategorias(lista);
 
         if (categoryChart) {
@@ -1452,10 +1486,69 @@
         const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
         const gridColor = "rgba(148, 163, 184, 0.15)";
 
+        const ctx = categoryChartCanvas.getContext("2d");
+
+        if (!dados.length) {
+          categoryChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: ["Sem compras cadastradas"],
+              datasets: [
+                {
+                  label: "Total por categoria",
+                  data: [0],
+                  backgroundColor: primary,
+                  borderRadius: 10,
+                  borderSkipped: false,
+                  maxBarThickness: 38
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              indexAxis: "y",
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  callbacks: {
+                    label() {
+                      return " R$ 0,00";
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  grid: {
+                    color: gridColor
+                  },
+                  ticks: {
+                    color: corTexto,
+                    callback(value) {
+                      return formatarMoeda(value);
+                    }
+                  }
+                },
+                y: {
+                  grid: {
+                    display: false
+                  },
+                  ticks: {
+                    color: corTexto
+                  }
+                }
+              }
+            }
+          });
+          return;
+        }
+
         const labels = dados.map(item => item.categoria);
         const valores = dados.map(item => item.total);
-
-        const ctx = categoryChartCanvas.getContext("2d");
 
         categoryChart = new Chart(ctx, {
           type: "bar",
@@ -2111,6 +2204,11 @@
         renderGraficoCategorias();
       });
 
+      categoryFilter.addEventListener("change", () => {
+        categoryFilterTerm = categoryFilter.value.trim();
+        renderGraficoCategorias();
+      });
+
       themeToggle.addEventListener("click", () => {
         const current = document.documentElement.getAttribute("data-theme") || "light";
         salvarTema(current === "dark" ? "light" : "dark");
@@ -2164,6 +2262,7 @@
         try {
           await adicionarCompraAoCartao(cardId, nome, categoria, valor);
           compraForm.reset();
+          renderGraficoCategorias();
         } catch (error) {
           alert("Erro ao adicionar compra: " + error.message);
         }
@@ -2207,6 +2306,7 @@
 
           try {
             await excluirCompraDoCartao(id, compraIndex);
+            renderGraficoCategorias();
           } catch (error) {
             alert("Erro ao excluir compra: " + error.message);
           }
@@ -2219,6 +2319,7 @@
 
           try {
             await editarCompraDoCartao(id, compraIndex);
+            renderGraficoCategorias();
           } catch (error) {
             alert("Erro ao editar compra: " + error.message);
           }
