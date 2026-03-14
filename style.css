@@ -577,7 +577,6 @@ html[data-theme="dark"] .btn-delete.action-btn {
   gap: 14px;
 }
 
-/* AJUSTE VISUAL DO GRÁFICO */
 .chart-box {
   height: 380px;
   padding: 18px;
@@ -706,7 +705,7 @@ input[type="checkbox"] {
   margin: 0;
 }
 
-/* NOVOS AJUSTES - BOTÃO DE COMPRAS */
+/* botão ver/ocultar compras */
 .toggle-compras-btn {
   margin-top: 8px;
   display: inline-flex;
@@ -923,7 +922,6 @@ input[type="checkbox"] {
     width: 100%;
   }
 
-  /* AJUSTE FINAL DO BOTÃO NO CELULAR */
   .toggle-compras-btn {
     margin-top: 6px;
     width: auto !important;
@@ -952,11 +950,84 @@ input[type="checkbox"] {
     font-size: 10px !important;
   }
 
-  /* caso exista subtabela/form de compras */
+  .compras-row td {
+    padding: 0 !important;
+  }
+
+  .compras-box {
+    padding: 10px !important;
+  }
+
+  .compras-header {
+    display: block !important;
+    margin-bottom: 10px !important;
+  }
+
+  .compras-header h4 {
+    font-size: 16px !important;
+    margin: 0 0 4px 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .compras-header p {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+    margin: 0 0 8px 0 !important;
+  }
+
+  .compras-header strong {
+    display: block !important;
+    font-size: 13px !important;
+    margin-top: 4px !important;
+  }
+
+  .compras-table-wrap {
+    margin-bottom: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .compras-empty {
+    padding: 12px !important;
+    font-size: 12px !important;
+  }
+
   .compras-subtable th,
   .compras-subtable td {
     font-size: 11px;
     padding: 6px;
+  }
+
+  .compra-form {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .compra-form .field {
+    gap: 4px !important;
+  }
+
+  .compra-form label {
+    font-size: 12px !important;
+  }
+
+  .compra-form input,
+  .compra-form select {
+    height: 38px !important;
+    font-size: 12px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+  }
+
+  .compra-form button {
+    height: 38px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+  }
+
+  .compra-categoria-badge {
+    font-size: 11px !important;
+    padding: 5px 8px !important;
   }
 
   .form-add-compra input,
