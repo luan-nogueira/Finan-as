@@ -13,317 +13,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <style>
-    .toggle-compras-btn {
-      margin-top: 8px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      width: auto;
-      max-width: 100%;
-      min-width: 0;
-      border: 1px solid var(--border);
-      background: var(--card-2);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 6px 10px;
-      font-size: 12px;
-      font-weight: 700;
-      line-height: 1.1;
-      white-space: nowrap;
-      flex-wrap: nowrap;
-      text-align: center;
-      cursor: pointer;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .toggle-compras-btn .arrow {
-      font-size: 11px;
-      transition: transform 0.2s ease;
-      display: inline-block;
-      flex: 0 0 auto;
-    }
-
-    .toggle-compras-btn.expanded .arrow {
-      transform: rotate(180deg);
-    }
-
-    .compras-row td {
-      background: var(--bg-soft);
-      padding: 0;
-    }
-
-    .compras-box {
-      width: 100%;
-      padding: 14px;
-      border-top: 1px solid var(--border);
-      background: linear-gradient(180deg, var(--bg-soft), transparent);
-    }
-
-    .compras-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
-    .compras-header h4 {
-      margin: 0;
-      font-size: 15px;
-    }
-
-    .compras-header p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .compras-table-wrap {
-      width: 100%;
-      overflow-x: auto;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: var(--card);
-      margin-bottom: 12px;
-    }
-
-    .compras-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .compras-table th,
-    .compras-table td {
-      padding: 10px;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-      text-align: left;
-    }
-
-    .compras-table th {
-      background: var(--card-2);
-      color: var(--muted);
-      font-size: 12px;
-      text-transform: uppercase;
-    }
-
-    .compras-table tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .compras-empty {
-      width: 100%;
-      padding: 14px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .compra-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .compra-action-btn {
-      height: 34px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--card-2);
-      color: var(--text);
-      padding: 0 12px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .compra-action-btn.delete {
-      background: rgba(239, 68, 68, 0.08);
-      color: var(--red);
-      border-color: rgba(239, 68, 68, 0.18);
-    }
-
-    .compra-form {
-      width: 100%;
-      display: grid;
-      grid-template-columns: 1.4fr 1fr 0.8fr auto;
-      gap: 10px;
-      align-items: end;
-    }
-
-    .compra-form .field {
-      gap: 6px;
-    }
-
-    .compra-form input,
-    .compra-form select {
-      height: 42px;
-    }
-
-    .compra-form button {
-      height: 42px;
-      border-radius: 12px;
-      border: 0;
-      background: var(--primary);
-      color: #fff;
-      font-weight: 700;
-      padding: 0 16px;
-      cursor: pointer;
-    }
-
-    .compra-categoria-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: var(--primary-soft);
-      color: var(--primary);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    @media (max-width: 840px) {
-      .compra-form {
-        grid-template-columns: 1fr;
-      }
-
-      .compras-header {
-        align-items: stretch;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .compras-row td {
-        padding: 0 !important;
-      }
-
-      .compras-box {
-        width: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        text-align: center !important;
-        padding: 10px !important;
-      }
-
-      .compras-header {
-        width: 100% !important;
-        display: block !important;
-        text-align: center !important;
-        margin-bottom: 10px !important;
-      }
-
-      .compras-header h4 {
-        font-size: 16px !important;
-        margin: 0 0 4px 0 !important;
-        line-height: 1.2 !important;
-        text-align: center !important;
-      }
-
-      .compras-header p {
-        font-size: 12px !important;
-        line-height: 1.3 !important;
-        margin: 0 0 8px 0 !important;
-        text-align: center !important;
-      }
-
-      .compras-header strong {
-        display: block !important;
-        font-size: 13px !important;
-        margin-top: 4px !important;
-        text-align: center !important;
-      }
-
-      .compras-table-wrap,
-      .compras-empty,
-      .compra-form {
-        width: 100% !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-      }
-
-      .compras-table th,
-      .compras-table td {
-        font-size: 12px !important;
-        padding: 8px !important;
-      }
-
-      .compras-empty {
-        padding: 12px !important;
-        font-size: 12px !important;
-        text-align: center !important;
-      }
-
-      .toggle-compras-btn {
-        width: auto !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 5px !important;
-        padding: 6px 8px !important;
-        font-size: 10px !important;
-        line-height: 1 !important;
-        white-space: nowrap !important;
-        flex-wrap: nowrap !important;
-        border-radius: 8px !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-      }
-
-      .compra-form {
-        grid-template-columns: 1fr !important;
-        gap: 8px !important;
-        justify-items: center !important;
-      }
-
-      .compra-form .field {
-        width: 100% !important;
-        gap: 4px !important;
-      }
-
-      .compra-form label {
-        width: 100% !important;
-        text-align: left !important;
-        font-size: 12px !important;
-      }
-
-      .compra-form input,
-      .compra-form select {
-        height: 38px !important;
-        font-size: 12px !important;
-        padding: 0 10px !important;
-        border-radius: 10px !important;
-      }
-
-      .compra-form button {
-        height: 38px !important;
-        font-size: 12px !important;
-        border-radius: 10px !important;
-        width: 100% !important;
-      }
-
-      .compra-actions {
-        flex-direction: column;
-      }
-
-      .compra-action-btn {
-        width: 100%;
-      }
-
-      .compra-categoria-badge {
-        font-size: 11px !important;
-        padding: 5px 8px !important;
-      }
-    }
-  </style>
 </head>
 <body>
 
@@ -515,16 +204,29 @@
       </section>
 
       <section class="panel collapsible-panel">
-        <button
-          id="toggle-chart-panel"
-          type="button"
-          class="collapse-toggle-btn"
-          aria-expanded="false"
-          aria-controls="chart-panel-wrapper"
-        >
-          <span>📊 Ver gráfico</span>
-          <span id="chart-toggle-icon">▼</span>
-        </button>
+        <div class="chart-toggle-row">
+          <button
+            id="toggle-chart-panel"
+            type="button"
+            class="collapse-toggle-btn half-toggle"
+            aria-expanded="false"
+            aria-controls="chart-panel-wrapper"
+          >
+            <span>📊 Ver gráfico mensal</span>
+            <span id="chart-toggle-icon">▼</span>
+          </button>
+
+          <button
+            id="toggle-category-chart-panel"
+            type="button"
+            class="collapse-toggle-btn half-toggle"
+            aria-expanded="false"
+            aria-controls="category-chart-panel-wrapper"
+          >
+            <span>📈 Ver gráfico por categoria</span>
+            <span id="category-chart-toggle-icon">▼</span>
+          </button>
+        </div>
 
         <div id="chart-panel-wrapper" class="collapsible-content hidden">
           <div class="panel-header collapsible-header">
@@ -534,6 +236,17 @@
 
           <div class="chart-box">
             <canvas id="finance-chart"></canvas>
+          </div>
+        </div>
+
+        <div id="category-chart-panel-wrapper" class="collapsible-content hidden">
+          <div class="panel-header collapsible-header">
+            <h2>Gráfico por categoria</h2>
+            <p>Veja em quais categorias você está gastando mais no filtro atual.</p>
+          </div>
+
+          <div class="chart-box">
+            <canvas id="category-chart"></canvas>
           </div>
         </div>
       </section>
@@ -722,6 +435,11 @@
       const chartToggleIcon = document.getElementById("chart-toggle-icon");
       const financeChartCanvas = document.getElementById("finance-chart");
 
+      const toggleCategoryChartPanelBtn = document.getElementById("toggle-category-chart-panel");
+      const categoryChartPanelWrapper = document.getElementById("category-chart-panel-wrapper");
+      const categoryChartToggleIcon = document.getElementById("category-chart-toggle-icon");
+      const categoryChartCanvas = document.getElementById("category-chart");
+
       const monthFilter = document.getElementById("month-filter");
       const searchInput = document.getElementById("search-input");
       const monthHeader = document.getElementById("month-header");
@@ -762,6 +480,7 @@
       let monthTerm = "";
       let lastEditedId = null;
       let financeChart = null;
+      let categoryChart = null;
       let cartoesExpandidos = new Set();
 
       const CATEGORIA_FIXA = "Gastos fixos";
@@ -1024,6 +743,19 @@
         if (!aberto) {
           setTimeout(() => {
             renderGraficoMensal();
+          }, 50);
+        }
+      }
+
+      function alternarPainelGraficoCategoria() {
+        const aberto = !categoryChartPanelWrapper.classList.contains("hidden");
+        categoryChartPanelWrapper.classList.toggle("hidden");
+        toggleCategoryChartPanelBtn.setAttribute("aria-expanded", String(!aberto));
+        categoryChartToggleIcon.textContent = aberto ? "▼" : "▲";
+
+        if (!aberto) {
+          setTimeout(() => {
+            renderGraficoCategorias();
           }, 50);
         }
       }
@@ -1463,6 +1195,44 @@
         return mapaMeses;
       }
 
+      function gerarDadosCategorias(lista) {
+        const mapa = new Map();
+
+        lista.forEach(item => {
+          const valorItem = valorNumerico(item.valor);
+          const compras = normalizarCompras(item);
+
+          if (compras.length) {
+            compras.forEach(compra => {
+              const categoria = compra.categoria || "Sem categoria";
+              mapa.set(categoria, (mapa.get(categoria) || 0) + numeroSeguro(compra.valor));
+            });
+
+            const restoNaoDetalhado = valorItem - getTotalCompras(item);
+            if (restoNaoDetalhado > 0.009) {
+              mapa.set("Cartão sem detalhar", (mapa.get("Cartão sem detalhar") || 0) + restoNaoDetalhado);
+            }
+            return;
+          }
+
+          let categoriaFinal = "Outros";
+
+          if (item.categoria === CATEGORIA_FIXA) categoriaFinal = "Gastos fixos";
+          else if (item.categoria === CATEGORIA_COMUM) categoriaFinal = "Gastos comuns";
+          else if (item.categoria === CATEGORIA_CARTOES) categoriaFinal = "Cartões";
+
+          mapa.set(categoriaFinal, (mapa.get(categoriaFinal) || 0) + valorItem);
+        });
+
+        return [...mapa.entries()]
+          .map(([categoria, total]) => ({
+            categoria,
+            total: Number(total.toFixed(2))
+          }))
+          .filter(item => item.total > 0)
+          .sort((a, b) => b.total - a.total);
+      }
+
       function renderResumo(lista) {
         let totalGeral = 0;
         let totalPago = 0;
@@ -1666,6 +1436,90 @@
         });
       }
 
+      function renderGraficoCategorias() {
+        if (!categoryChartCanvas || typeof Chart === "undefined") return;
+
+        const lista = aplicarFiltros(despesasCache);
+        const dados = gerarDadosCategorias(lista);
+
+        if (categoryChart) {
+          categoryChart.destroy();
+          categoryChart = null;
+        }
+
+        const estilo = getComputedStyle(document.documentElement);
+        const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
+        const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
+        const gridColor = "rgba(148, 163, 184, 0.15)";
+
+        const labels = dados.map(item => item.categoria);
+        const valores = dados.map(item => item.total);
+
+        const ctx = categoryChartCanvas.getContext("2d");
+
+        categoryChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Total por categoria",
+                data: valores,
+                backgroundColor: primary,
+                borderRadius: 10,
+                borderSkipped: false,
+                maxBarThickness: 38
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: "rgba(15, 23, 42, 0.92)",
+                titleColor: "#ffffff",
+                bodyColor: "#ffffff",
+                callbacks: {
+                  label(context) {
+                    return ` ${formatarMoeda(context.raw || 0)}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                grid: {
+                  color: gridColor
+                },
+                ticks: {
+                  color: corTexto,
+                  callback(value) {
+                    return formatarMoeda(value);
+                  }
+                }
+              },
+              y: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: corTexto,
+                  font: {
+                    weight: "bold"
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
       function renderComprasDoCartao(item) {
         const compras = normalizarCompras(item);
         const totalCompras = getTotalCompras(item);
@@ -1674,10 +1528,11 @@
           <div class="compras-box">
             <div class="compras-header">
               <div>
-                <h4>Compras:</h4>
+                <h4>Compras</h4>
+                <p>Detalhamento do cartão selecionado</p>
               </div>
               <div>
-                <strong> Compras lançadas: ${formatarMoeda(totalCompras)}</strong>
+                <strong>Compras lançadas: ${formatarMoeda(totalCompras)}</strong>
               </div>
             </div>
 
@@ -2189,6 +2044,7 @@
 
       toggleExpenseFormBtn.addEventListener("click", alternarFormularioDespesa);
       toggleChartPanelBtn.addEventListener("click", alternarPainelGrafico);
+      toggleCategoryChartPanelBtn.addEventListener("click", alternarPainelGraficoCategoria);
 
       form.addEventListener("submit", salvarDespesa);
       editForm.addEventListener("submit", salvarEdicao);
@@ -2245,17 +2101,21 @@
         monthTerm = monthFilter.value;
         renderTabelaPrincipal();
         renderIpva();
+        renderGraficoMensal();
+        renderGraficoCategorias();
       });
 
       searchInput.addEventListener("input", () => {
         searchTerm = searchInput.value.trim();
         renderTabelaPrincipal();
+        renderGraficoCategorias();
       });
 
       themeToggle.addEventListener("click", () => {
         const current = document.documentElement.getAttribute("data-theme") || "light";
         salvarTema(current === "dark" ? "light" : "dark");
         renderGraficoMensal();
+        renderGraficoCategorias();
       });
 
       logoutBtn.addEventListener("click", async () => {
@@ -2402,6 +2262,7 @@
             }));
             renderTabelaPrincipal();
             renderGraficoMensal();
+            renderGraficoCategorias();
           }, (error) => {
             if (
               error.code === "failed-precondition" ||
