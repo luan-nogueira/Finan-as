@@ -417,7 +417,9 @@ html[data-theme="dark"] .btn-delete {
 
 .table-wrap {
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: 18px;
   background: var(--card);
@@ -1145,8 +1147,27 @@ input[type="checkbox"] {
     font-size: 10px !important;
   }
 
+  .table-wrap {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    width: 100% !important;
+  }
+
+  #main-table {
+    width: 100% !important;
+    min-width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  #main-table tbody,
+  #main-table tr,
+  #main-table td {
+    max-width: 100% !important;
+  }
+
   .compras-row td {
     padding: 0 !important;
+    overflow: visible !important;
   }
 
   .compras-box {
@@ -1159,6 +1180,7 @@ input[type="checkbox"] {
     text-align: center !important;
     padding: 10px !important;
     margin: 0 auto !important;
+    overflow: hidden !important;
   }
 
   .compras-header {
@@ -1193,7 +1215,23 @@ input[type="checkbox"] {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 auto 10px auto !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     border-radius: 12px !important;
+  }
+
+  .compras-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+  }
+
+  .compras-table th,
+  .compras-table td {
+    font-size: 11px !important;
+    padding: 6px !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
   }
 
   .compras-empty {
@@ -1201,14 +1239,7 @@ input[type="checkbox"] {
     padding: 12px !important;
     font-size: 12px !important;
     text-align: center !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  .compras-table th,
-  .compras-table td {
-    font-size: 11px !important;
-    padding: 6px !important;
+    margin: 0 auto 10px auto !important;
   }
 
   .compra-form {
@@ -1216,7 +1247,7 @@ input[type="checkbox"] {
     max-width: 100% !important;
     grid-template-columns: 1fr !important;
     gap: 8px !important;
-    justify-items: center !important;
+    justify-items: stretch !important;
     margin-left: auto !important;
     margin-right: auto !important;
   }
@@ -1238,6 +1269,7 @@ input[type="checkbox"] {
     font-size: 12px !important;
     padding: 0 10px !important;
     border-radius: 10px !important;
+    width: 100% !important;
   }
 
   .compra-form button {
