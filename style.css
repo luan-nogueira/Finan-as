@@ -715,7 +715,6 @@ input[type="checkbox"] {
   margin: 0;
 }
 
-/* botão ver/ocultar compras */
 .toggle-compras-btn {
   margin-top: 8px;
   display: inline-flex;
@@ -756,7 +755,6 @@ input[type="checkbox"] {
   transform: rotate(180deg);
 }
 
-/* área de compras */
 .compras-row td {
   background: var(--bg-soft);
   padding: 0 !important;
