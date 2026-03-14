@@ -203,6 +203,12 @@ body {
   padding: 14px;
 }
 
+.chart-toggle-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .collapse-toggle-btn {
   width: 100%;
   border: 1px solid var(--border);
@@ -216,6 +222,10 @@ body {
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
+}
+
+.half-toggle {
+  min-width: 0;
 }
 
 .collapsible-content {
@@ -727,6 +737,8 @@ input[type="checkbox"] {
   flex-wrap: nowrap;
   text-align: center;
   cursor: pointer;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .toggle-compras-btn span {
@@ -737,15 +749,45 @@ input[type="checkbox"] {
 .toggle-compras-btn .arrow {
   display: inline-block;
   flex: 0 0 auto;
+  transition: transform 0.2s ease;
+}
+
+.toggle-compras-btn.expanded .arrow {
+  transform: rotate(180deg);
 }
 
 /* área de compras */
 .compras-row td {
   background: var(--bg-soft);
+  padding: 0 !important;
 }
 
 .compras-box {
   width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 14px;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--bg-soft), transparent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.compras-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 auto 12px auto;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.compras-header > div {
+  flex: 1 1 240px;
 }
 
 .compras-header h4,
@@ -755,10 +797,132 @@ input[type="checkbox"] {
   margin-right: 0;
 }
 
+.compras-header h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+}
+
+.compras-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.compras-header strong {
+  display: block;
+  font-size: 14px;
+}
+
 .compras-table-wrap,
 .compras-empty,
 .compra-form {
   width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.compras-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  margin-bottom: 12px;
+}
+
+.compras-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.compras-table th,
+.compras-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  text-align: left;
+}
+
+.compras-table th {
+  background: var(--card-2);
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.compras-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.compras-empty {
+  width: 100%;
+  padding: 14px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.compra-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.compra-action-btn {
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card-2);
+  color: var(--text);
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.compra-action-btn.delete {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--red);
+  border-color: rgba(239, 68, 68, 0.18);
+}
+
+.compra-form {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.8fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.compra-form .field {
+  gap: 6px;
+}
+
+.compra-form input,
+.compra-form select {
+  height: 42px;
+}
+
+.compra-form button {
+  height: 42px;
+  border-radius: 12px;
+  border: 0;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  padding: 0 16px;
+  cursor: pointer;
+}
+
+.compra-categoria-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 @media (max-width: 920px) {
@@ -785,7 +949,8 @@ input[type="checkbox"] {
 
   .form-grid,
   .filters-grid-two,
-  .ipva-row {
+  .ipva-row,
+  .chart-toggle-row {
     grid-template-columns: 1fr;
   }
 
@@ -797,6 +962,14 @@ input[type="checkbox"] {
   .chart-box {
     height: 340px;
     padding: 14px;
+  }
+
+  .compra-form {
+    grid-template-columns: 1fr;
+  }
+
+  .compras-header {
+    align-items: stretch;
   }
 }
 
@@ -980,17 +1153,20 @@ input[type="checkbox"] {
 
   .compras-box {
     width: 100% !important;
+    max-width: 100% !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
+    justify-content: center !important;
     text-align: center !important;
     padding: 10px !important;
+    margin: 0 auto !important;
   }
 
   .compras-header {
     width: 100% !important;
     display: block !important;
-    margin-bottom: 10px !important;
+    margin: 0 auto 10px auto !important;
     text-align: center !important;
   }
 
@@ -1017,6 +1193,7 @@ input[type="checkbox"] {
 
   .compras-table-wrap {
     width: 100% !important;
+    max-width: 100% !important;
     margin: 0 auto 10px auto !important;
     border-radius: 12px !important;
   }
@@ -1030,10 +1207,10 @@ input[type="checkbox"] {
     margin-right: auto !important;
   }
 
-  .compras-subtable th,
-  .compras-subtable td {
-    font-size: 11px;
-    padding: 6px;
+  .compras-table th,
+  .compras-table td {
+    font-size: 11px !important;
+    padding: 6px !important;
   }
 
   .compra-form {
@@ -1072,15 +1249,16 @@ input[type="checkbox"] {
     width: 100% !important;
   }
 
+  .compra-actions {
+    flex-direction: column;
+  }
+
+  .compra-action-btn {
+    width: 100%;
+  }
+
   .compra-categoria-badge {
     font-size: 11px !important;
     padding: 5px 8px !important;
-  }
-
-  .form-add-compra input,
-  .form-add-compra select,
-  .form-add-compra button {
-    height: 36px;
-    font-size: 12px;
   }
 }
