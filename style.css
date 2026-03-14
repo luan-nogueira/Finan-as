@@ -888,3 +888,42 @@ input[type="checkbox"] {
     width: 100%;
   }
 }
+/* AJUSTE MOBILE - BOTÃO DE EXPANDIR COMPRAS */
+@media (max-width: 640px) {
+
+  .toggle-compras-btn {
+    font-size: 11px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 110px;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .toggle-compras-btn span {
+    display: block;
+  }
+
+  /* Ajusta célula para não quebrar layout */
+  .actions-cell {
+    align-items: center;
+  }
+
+  /* Subtabela mais compacta */
+  .compras-subtable th,
+  .compras-subtable td {
+    font-size: 11px;
+    padding: 6px;
+  }
+
+  /* Form de compra mais compacto */
+  .form-add-compra input,
+  .form-add-compra select,
+  .form-add-compra button {
+    height: 36px;
+    font-size: 12px;
+  }
+
+}
+
