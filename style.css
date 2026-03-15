@@ -1028,8 +1028,14 @@ input[type="checkbox"] {
     font-size: 14px;
   }
 
+  .table-wrap {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    width: 100% !important;
+  }
+
   table {
-    table-layout: auto;
+    table-layout: auto !important;
   }
 
   th,
@@ -1042,11 +1048,11 @@ input[type="checkbox"] {
     font-size: 11px;
   }
 
-  .col-check { width: 52px; }
-  .col-desc { width: auto; }
-  .col-value { width: 92px; }
-  .col-date { width: 92px; }
-  .col-actions { width: 92px; }
+  .col-check { width: 44px !important; }
+  .col-desc { width: auto !important; }
+  .col-value { width: 92px !important; }
+  .col-date { width: 86px !important; }
+  .col-actions { width: 78px !important; }
 
   .col-obs,
   .col-status,
@@ -1057,18 +1063,44 @@ input[type="checkbox"] {
     display: none;
   }
 
-  .parcelas-info {
-    font-size: 11px;
+  #main-table {
+    width: 100% !important;
+    min-width: 100% !important;
+    table-layout: auto !important;
   }
 
-  .valor-cell {
+  #main-table td:nth-child(2),
+  #main-table th:nth-child(2) {
+    width: auto !important;
+    min-width: 120px !important;
+  }
+
+  .descricao-cell-text {
+    display: block !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    line-height: 1.2 !important;
+  }
+
+  .parcelas-info {
     font-size: 11px;
-    white-space: nowrap;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .valor-cell,
+  #main-table td:nth-child(3),
+  #main-table td:nth-child(4) {
+    font-size: 11px;
+    white-space: nowrap !important;
   }
 
   .actions-cell {
     gap: 6px;
-    align-items: center;
+    align-items: stretch !important;
+    width: 100% !important;
   }
 
   .action-btn {
@@ -1076,21 +1108,8 @@ input[type="checkbox"] {
     font-size: 14px;
     border-radius: 10px;
     padding: 0;
-  }
-
-  .descricao-cell-text,
-  td:nth-child(2) div:first-child {
-    word-break: break-word;
-    line-height: 1.2;
-  }
-
-  td:nth-child(2) {
-    min-width: 0;
-  }
-
-  td:nth-child(3),
-  td:nth-child(4) {
-    white-space: nowrap;
+    width: 100% !important;
+    min-width: 0 !important;
   }
 
   input[type="checkbox"] {
@@ -1145,24 +1164,6 @@ input[type="checkbox"] {
     display: inline-block !important;
     flex: 0 0 auto !important;
     font-size: 10px !important;
-  }
-
-  .table-wrap {
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-    width: 100% !important;
-  }
-
-  #main-table {
-    width: 100% !important;
-    min-width: 100% !important;
-    table-layout: fixed !important;
-  }
-
-  #main-table tbody,
-  #main-table tr,
-  #main-table td {
-    max-width: 100% !important;
   }
 
   .compras-row td {
@@ -1223,7 +1224,7 @@ input[type="checkbox"] {
   .compras-table {
     width: 100% !important;
     min-width: 0 !important;
-    table-layout: fixed !important;
+    table-layout: auto !important;
   }
 
   .compras-table th,
