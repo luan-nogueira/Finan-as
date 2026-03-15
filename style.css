@@ -1042,7 +1042,7 @@ input[type="checkbox"] {
     overflow-y: visible !important;
   }
 
-  /* esconde o cabeçalho da tabela principal no celular para evitar sobreposição */
+  /* esconde apenas o cabeçalho da tabela principal no celular */
   #main-table thead {
     display: none !important;
   }
@@ -1051,18 +1051,36 @@ input[type="checkbox"] {
     width: 100% !important;
     min-width: 100% !important;
     max-width: 100% !important;
-    table-layout: fixed !important;
+    table-layout: auto !important;
   }
 
-  #main-table tbody,
-  #main-table tr {
+  /* linha comum da tabela principal em grid responsivo */
+  #main-table > tbody > tr:not(.compras-row):has(td:not(.group-row)) {
+    display: grid !important;
+    grid-template-columns: 28px minmax(0, 1fr) 72px 54px;
+    grid-template-areas:
+      "check desc value actions"
+      "check desc date actions";
+    column-gap: 6px;
+    align-items: center;
     width: 100% !important;
   }
 
+  /* mantém linha de grupo normal */
+  #main-table > tbody > tr:has(.group-row) {
+    display: table-row !important;
+  }
+
+  /* mantém linha expandida de compras normal */
+  #main-table > tbody > tr.compras-row {
+    display: table-row !important;
+  }
+
   #main-table td {
-    padding: 8px 4px !important;
+    padding: 6px 2px !important;
     font-size: 11px !important;
-    vertical-align: middle !important;
+    border-bottom: 1px solid var(--border);
+    min-width: 0 !important;
   }
 
   .col-obs,
@@ -1074,42 +1092,59 @@ input[type="checkbox"] {
     display: none !important;
   }
 
-  #main-table td:nth-child(1) {
-    width: 34px !important;
-    min-width: 34px !important;
-    max-width: 34px !important;
-    text-align: center !important;
+  #main-table > tbody > tr:not(.compras-row):has(td:not(.group-row)) > td:nth-child(1) {
+    grid-area: check;
+    width: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-bottom: none !important;
   }
 
-  #main-table td:nth-child(2) {
+  #main-table > tbody > tr:not(.compras-row):has(td:not(.group-row)) > td:nth-child(2) {
+    grid-area: desc;
     width: auto !important;
     min-width: 0 !important;
+    border-bottom: none !important;
   }
 
-  #main-table td:nth-child(3) {
-    width: 76px !important;
-    min-width: 76px !important;
-    max-width: 76px !important;
+  #main-table > tbody > tr:not(.compras-row):has(td:not(.group-row)) > td:nth-child(3) {
+    grid-area: value;
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
     white-space: nowrap !important;
+    text-align: right !important;
+    border-bottom: none !important;
+    align-self: end;
   }
 
-  #main-table td:nth-child(4) {
-    width: 64px !important;
-    min-width: 64px !important;
-    max-width: 64px !important;
+  #main-table > tbody > tr:not(.compras-row):has(td:not(.group-row)) > td:nth-child(4) {
+    grid-area: date;
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
     white-space: nowrap !important;
-    text-align: center !important;
+    text-align: right !important;
+    font-size: 10px !important;
+    color: var(--muted);
+    border-bottom: none !important;
+    align-self: start;
   }
 
-  #main-table td:nth-child(5),
-  #main-table td:nth-child(6) {
+  #main-table > tbody > tr:not(.compras-row):has(td:not(.group-row)) > td:nth-child(5),
+  #main-table > tbody > tr:not(.compras-row):has(td:not(.group-row)) > td:nth-child(6) {
     display: none !important;
   }
 
-  #main-table td:nth-child(7) {
-    width: 58px !important;
-    min-width: 58px !important;
-    max-width: 58px !important;
+  #main-table > tbody > tr:not(.compras-row):has(td:not(.group-row)) > td:nth-child(7) {
+    grid-area: actions;
+    width: 54px !important;
+    min-width: 54px !important;
+    max-width: 54px !important;
+    border-bottom: none !important;
   }
 
   .descricao-cell-text {
@@ -1135,7 +1170,7 @@ input[type="checkbox"] {
   }
 
   .valor-cell {
-    font-size: 10px !important;
+    font-size: 11px !important;
     white-space: nowrap !important;
     font-weight: 800 !important;
   }
@@ -1150,8 +1185,8 @@ input[type="checkbox"] {
   .action-btn {
     width: 100% !important;
     min-width: 0 !important;
-    height: 28px !important;
-    font-size: 12px !important;
+    height: 26px !important;
+    font-size: 11px !important;
     border-radius: 8px !important;
     padding: 0 !important;
   }
@@ -1159,6 +1194,14 @@ input[type="checkbox"] {
   input[type="checkbox"] {
     width: 18px !important;
     height: 18px !important;
+  }
+
+  .group-row {
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+    padding: 8px 10px !important;
+    font-size: 12px !important;
   }
 
   .chart-box {
