@@ -975,7 +975,7 @@ input[type="checkbox"] {
 
 @media (max-width: 640px) {
   .container {
-    padding: 12px;
+    padding: 10px;
   }
 
   .panel,
