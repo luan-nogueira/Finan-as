@@ -579,10 +579,8 @@
       function converterValorInput(valorDigitado) {
         const texto = String(valorDigitado ?? "").trim().replace(",", ".");
         if (texto === "") return null;
-
         const numero = Number(texto);
         if (!Number.isFinite(numero) || numero < 0) return NaN;
-
         return numero;
       }
 
@@ -597,7 +595,6 @@
       function definirCategoriaAutomatica(descricao) {
         const desc = normalizarTexto(descricao);
         const ehFixo = GASTOS_FIXOS.some(item => normalizarTexto(item) === desc);
-
         if (ehFixo) return CATEGORIA_FIXA;
         if (desc.includes("cartao")) return CATEGORIA_CARTOES;
         return CATEGORIA_COMUM;
@@ -750,12 +747,7 @@
         chartPanelWrapper.classList.toggle("hidden");
         toggleChartPanelBtn.setAttribute("aria-expanded", String(!aberto));
         chartToggleIcon.textContent = aberto ? "▼" : "▲";
-
-        if (!aberto) {
-          setTimeout(() => {
-            renderGraficoMensal();
-          }, 50);
-        }
+        if (!aberto) setTimeout(() => renderGraficoMensal(), 50);
       }
 
       function alternarPainelGraficoCategoria() {
@@ -763,12 +755,7 @@
         categoryChartPanelWrapper.classList.toggle("hidden");
         toggleCategoryChartPanelBtn.setAttribute("aria-expanded", String(!aberto));
         categoryChartToggleIcon.textContent = aberto ? "▼" : "▲";
-
-        if (!aberto) {
-          setTimeout(() => {
-            renderGraficoCategorias();
-          }, 50);
-        }
+        if (!aberto) setTimeout(() => renderGraficoCategorias(), 50);
       }
 
       function abrirModalEdicao(item) {
@@ -790,7 +777,7 @@
 
       function abrirModalIpva() {
         ipvaFormList.innerHTML = "";
-        ipvaData.forEach((item) => adicionarLinhaIpva(item));
+        ipvaData.forEach(item => adicionarLinhaIpva(item));
         ipvaModal.classList.remove("hidden");
       }
 
@@ -853,7 +840,6 @@
       async function garantirIpvaInicial() {
         const ref = db.collection("configuracoes").doc("ipva_carro");
         const snap = await ref.get();
-
         if (!snap.exists) {
           await ref.set({
             parcelas: ipvaPadrao,
@@ -867,7 +853,7 @@
         if (!snap.empty) return;
 
         const batch = db.batch();
-        DESPESAS_INICIAIS.forEach((item) => {
+        DESPESAS_INICIAIS.forEach(item => {
           const ref = db.collection("despesas").doc();
           batch.set(ref, {
             descricao: item.descricao,
@@ -889,13 +875,11 @@
 
       function ajustarDataParaMes(dataOriginal, yyyyMm) {
         if (!dataOriginal || !yyyyMm) return dataOriginal || "";
-
         const [, , diaStr] = dataOriginal.split("-");
         const [ano, mes] = yyyyMm.split("-").map(Number);
         const diaOriginal = Number(diaStr || 1);
         const ultimoDia = new Date(ano, mes, 0).getDate();
         const diaFinal = Math.min(diaOriginal, ultimoDia);
-
         return `${ano}-${String(mes).padStart(2, "0")}-${String(diaFinal).padStart(2, "0")}`;
       }
 
@@ -966,16 +950,11 @@
 
       function getIpvaVisivelPorMes() {
         const parcelas = getIpvaOrdenado();
-
         if (!parcelas.length) return [];
-
         if (!monthTerm) return parcelas;
 
         const ultimoMesIpva = getUltimoMesIpva();
-        if (ultimoMesIpva && monthTerm > ultimoMesIpva) {
-          return [];
-        }
-
+        if (ultimoMesIpva && monthTerm > ultimoMesIpva) return [];
         return parcelas.filter(item => getMesFromDate(item.data) <= monthTerm);
       }
 
@@ -1076,16 +1055,10 @@
         }
 
         resultado.sort((a, b) => {
-          const ordemGrupo = {
-            "Fixos": 1,
-            "Cartões": 2,
-            "Outros": 3
-          };
-
+          const ordemGrupo = { "Fixos": 1, "Cartões": 2, "Outros": 3 };
           const grupoA = ordemGrupo[getGrupoVisual(a)] || 99;
           const grupoB = ordemGrupo[getGrupoVisual(b)] || 99;
           if (grupoA !== grupoB) return grupoA - grupoB;
-
           return (a.vencimento || "9999-99-99").localeCompare(b.vencimento || "9999-99-99");
         });
 
@@ -1160,7 +1133,6 @@
             const inicio = new Date(`${mesOriginal}-01T00:00:00`);
             const fim = new Date(inicio);
             fim.setMonth(fim.getMonth() + 11);
-
             const cursor = new Date(inicio);
 
             while (cursor <= fim) {
@@ -1171,7 +1143,6 @@
               }
               cursor.setMonth(cursor.getMonth() + 1);
             }
-
             return;
           }
 
@@ -1179,7 +1150,6 @@
             const inicio = new Date(`${mesOriginal}-01T00:00:00`);
             const fim = new Date(inicio);
             fim.setMonth(fim.getMonth() + 11);
-
             const cursor = new Date(inicio);
 
             while (cursor <= fim) {
@@ -1194,7 +1164,6 @@
               }
               cursor.setMonth(cursor.getMonth() + 1);
             }
-
             return;
           }
 
@@ -1208,40 +1177,29 @@
 
       function gerarDadosCategorias(lista) {
         const mapa = new Map();
-
         lista.forEach(item => {
           const compras = normalizarCompras(item);
-
           if (!compras.length) return;
 
           compras.forEach(compra => {
             const categoria = String(compra.categoria || "Sem categoria").trim();
-
-            if (categoryFilterTerm && categoria !== categoryFilterTerm) {
-              return;
-            }
-
+            if (categoryFilterTerm && categoria !== categoryFilterTerm) return;
             mapa.set(categoria, (mapa.get(categoria) || 0) + numeroSeguro(compra.valor));
           });
         });
 
         return [...mapa.entries()]
-          .map(([categoria, total]) => ({
-            categoria,
-            total: Number(total.toFixed(2))
-          }))
+          .map(([categoria, total]) => ({ categoria, total: Number(total.toFixed(2)) }))
           .filter(item => item.total > 0)
           .sort((a, b) => b.total - a.total);
       }
 
       function atualizarFiltroCategorias(lista) {
         if (!categoryFilter) return;
-
         const categoriasSet = new Set();
 
         lista.forEach(item => {
-          const compras = normalizarCompras(item);
-          compras.forEach(compra => {
+          normalizarCompras(item).forEach(compra => {
             const categoria = String(compra.categoria || "Sem categoria").trim();
             if (categoria) categoriasSet.add(categoria);
           });
@@ -1270,15 +1228,12 @@
         let totalGeral = 0;
         let totalPago = 0;
         let totalPendente = 0;
-
         let qtdPagos = 0;
         let qtdPendentes = 0;
 
         lista.forEach(item => {
           const valor = valorNumerico(item.valor);
-
           totalGeral += valor;
-
           if (item.pago) {
             totalPago += valor;
             qtdPagos++;
@@ -1322,14 +1277,9 @@
 
         mesesOrdenados.forEach(mes => {
           const itens = mapaMeses.get(mes) || [];
-
           const totalMes = itens.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
-          const totalPago = itens
-            .filter(i => i.pago)
-            .reduce((acc, item) => acc + valorNumerico(item.valor), 0);
-          const totalPendente = itens
-            .filter(i => !i.pago)
-            .reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+          const totalPago = itens.filter(i => i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+          const totalPendente = itens.filter(i => !i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
 
           labels.push(formatarMesCurto(mes));
           totais.push(Number(totalMes.toFixed(2)));
@@ -1406,14 +1356,8 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: {
-              duration: 900,
-              easing: "easeOutQuart"
-            },
-            interaction: {
-              mode: "index",
-              intersect: false
-            },
+            animation: { duration: 900, easing: "easeOutQuart" },
+            interaction: { mode: "index", intersect: false },
             plugins: {
               legend: {
                 position: "top",
@@ -1422,9 +1366,7 @@
                   usePointStyle: true,
                   pointStyle: "circle",
                   padding: 18,
-                  font: {
-                    weight: "bold"
-                  }
+                  font: { weight: "bold" }
                 }
               },
               tooltip: {
@@ -1442,27 +1384,16 @@
             },
             scales: {
               x: {
-                ticks: {
-                  color: corTexto,
-                  font: {
-                    weight: "bold"
-                  }
-                },
-                grid: {
-                  display: false
-                }
+                ticks: { color: corTexto, font: { weight: "bold" } },
+                grid: { display: false }
               },
               y: {
                 beginAtZero: true,
                 ticks: {
                   color: corTexto,
-                  callback(value) {
-                    return formatarMoeda(value);
-                  }
+                  callback(value) { return formatarMoeda(value); }
                 },
-                grid: {
-                  color: gridColor
-                }
+                grid: { color: gridColor }
               }
             }
           }
@@ -1485,7 +1416,6 @@
         const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
         const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
         const gridColor = "rgba(148, 163, 184, 0.15)";
-
         const ctx = categoryChartCanvas.getContext("2d");
 
         if (!dados.length) {
@@ -1493,53 +1423,39 @@
             type: "bar",
             data: {
               labels: ["Sem compras cadastradas"],
-              datasets: [
-                {
-                  label: "Total por categoria",
-                  data: [0],
-                  backgroundColor: primary,
-                  borderRadius: 10,
-                  borderSkipped: false,
-                  maxBarThickness: 38
-                }
-              ]
+              datasets: [{
+                label: "Total por categoria",
+                data: [0],
+                backgroundColor: primary,
+                borderRadius: 10,
+                borderSkipped: false,
+                maxBarThickness: 38
+              }]
             },
             options: {
               responsive: true,
               maintainAspectRatio: false,
               indexAxis: "y",
               plugins: {
-                legend: {
-                  display: false
-                },
+                legend: { display: false },
                 tooltip: {
                   callbacks: {
-                    label() {
-                      return " R$ 0,00";
-                    }
+                    label() { return " R$ 0,00"; }
                   }
                 }
               },
               scales: {
                 x: {
                   beginAtZero: true,
-                  grid: {
-                    color: gridColor
-                  },
+                  grid: { color: gridColor },
                   ticks: {
                     color: corTexto,
-                    callback(value) {
-                      return formatarMoeda(value);
-                    }
+                    callback(value) { return formatarMoeda(value); }
                   }
                 },
                 y: {
-                  grid: {
-                    display: false
-                  },
-                  ticks: {
-                    color: corTexto
-                  }
+                  grid: { display: false },
+                  ticks: { color: corTexto }
                 }
               }
             }
@@ -1554,25 +1470,21 @@
           type: "bar",
           data: {
             labels,
-            datasets: [
-              {
-                label: "Total por categoria",
-                data: valores,
-                backgroundColor: primary,
-                borderRadius: 10,
-                borderSkipped: false,
-                maxBarThickness: 38
-              }
-            ]
+            datasets: [{
+              label: "Total por categoria",
+              data: valores,
+              backgroundColor: primary,
+              borderRadius: 10,
+              borderSkipped: false,
+              maxBarThickness: 38
+            }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: "y",
             plugins: {
-              legend: {
-                display: false
-              },
+              legend: { display: false },
               tooltip: {
                 backgroundColor: "rgba(15, 23, 42, 0.92)",
                 titleColor: "#ffffff",
@@ -1587,25 +1499,17 @@
             scales: {
               x: {
                 beginAtZero: true,
-                grid: {
-                  color: gridColor
-                },
+                grid: { color: gridColor },
                 ticks: {
                   color: corTexto,
-                  callback(value) {
-                    return formatarMoeda(value);
-                  }
+                  callback(value) { return formatarMoeda(value); }
                 }
               },
               y: {
-                grid: {
-                  display: false
-                },
+                grid: { display: false },
                 ticks: {
                   color: corTexto,
-                  font: {
-                    weight: "bold"
-                  }
+                  font: { weight: "bold" }
                 }
               }
             }
@@ -1897,12 +1801,10 @@
         const categoria = definirCategoriaAutomatica(descricao);
 
         if (!auth.currentUser) return;
-
         if (Number.isNaN(valor)) {
           alert("Digite um valor válido.");
           return;
         }
-
         if (!validarParcelas(parcelaAtual, parcelaTotal)) return;
 
         try {
@@ -1949,7 +1851,6 @@
           alert("Digite um valor válido.");
           return;
         }
-
         if (!validarParcelas(parcelaAtual, parcelaTotal)) return;
 
         try {
@@ -1997,7 +1898,6 @@
 
             if (excluirApenasMes) {
               const mesesIgnorados = getMesesIgnorados(item);
-
               if (!mesReferencia) {
                 alert("Não foi possível identificar o mês da linha.");
                 return;
@@ -2016,14 +1916,12 @@
             );
 
             if (!excluirTodos) return;
-
             await db.collection("despesas").doc(id).delete();
             return;
           }
 
           const confirmarExclusao = confirm(`Deseja excluir "${item.descricao}"?`);
           if (!confirmarExclusao) return;
-
           await db.collection("despesas").doc(id).delete();
         } catch (error) {
           alert("Erro ao excluir despesa: " + error.message);
@@ -2134,7 +2032,6 @@
       });
 
       document.getElementById("descricao").addEventListener("input", atualizarPreviewCategoria);
-
       toggleExpenseFormBtn.addEventListener("click", alternarFormularioDespesa);
       toggleChartPanelBtn.addEventListener("click", alternarPainelGrafico);
       toggleCategoryChartPanelBtn.addEventListener("click", alternarPainelGraficoCategoria);
@@ -2171,11 +2068,7 @@
           const valor = numeroSeguro(valorInput?.value);
           const pago = pagoInput?.value === "true";
 
-          return {
-            data: data || null,
-            valor,
-            pago: Boolean(pago)
-          };
+          return { data: data || null, valor, pago: Boolean(pago) };
         }).filter(item => item.data !== null && item.valor > 0);
 
         try {
@@ -2183,7 +2076,6 @@
             parcelas,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-
           fecharModalIpva();
         } catch (error) {
           alert("Erro ao salvar IPVA: " + error.message);
@@ -2328,9 +2220,7 @@
 
       ipvaTableBody.addEventListener("change", async (e) => {
         const check = e.target.closest(".ipva-check");
-        if (check) {
-          await alternarIpva(Number(check.dataset.indexReal));
-        }
+        if (check) await alternarIpva(Number(check.dataset.indexReal));
       });
 
       auth.onAuthStateChanged(async (user) => {
