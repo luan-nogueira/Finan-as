@@ -336,53 +336,53 @@
         <button type="button" class="modal-close" id="close-modal" aria-label="Fechar modal">&times;</button>
       </div>
 
-      <form id="edit-form" class="form-grid">
-        <input type="hidden" id="edit-id" />
+     <form id="edit-form" class="form-grid">
+  <input type="hidden" id="edit-id" />
 
-        <div class="field">
-          <label for="edit-descricao">Descrição</label>
-          <input list="gastos-list" type="text" id="edit-descricao" required />
-        </div>
+  <div class="field">
+    <label for="edit-descricao">Descrição</label>
+    <input list="gastos-list" type="text" id="edit-descricao" required />
+  </div>
 
-        <div class="field">
-          <label for="edit-categoria">Categoria principal</label>
-          <select id="edit-categoria" required>
-            <option value="Gastos fixos">Gastos fixos</option>
-            <option value="Cartões">Cartões</option>
-            <option value="Gastos comuns">Gastos comuns</option>
-          </select>
-        </div>
+  <div class="field">
+    <label for="edit-categoria">Categoria principal</label>
+    <select id="edit-categoria" required>
+      <option value="Gastos fixos">Gastos fixos</option>
+      <option value="Cartões">Cartões</option>
+      <option value="Gastos comuns">Gastos comuns</option>
+    </select>
+  </div>
 
-        <div class="field">
-          <label for="edit-valor">Valor</label>
-          <input type="number" id="edit-valor" step="0.01" min="0" inputmode="decimal" />
-        </div>
+  <div class="field">
+    <label for="edit-valor">Valor</label>
+    <input type="number" id="edit-valor" step="0.01" min="0" inputmode="decimal" />
+  </div>
 
-        <div class="field">
-          <label for="edit-vencimento">Vencimento</label>
-          <input type="date" id="edit-vencimento" />
-        </div>
+  <div class="field">
+    <label for="edit-vencimento">Vencimento</label>
+    <input type="date" id="edit-vencimento" />
+  </div>
 
-        <div class="field">
-          <label for="edit-parcela-atual">Parcela atual</label>
-          <input type="number" id="edit-parcela-atual" min="1" />
-        </div>
+  <div class="field">
+    <label for="edit-parcela-atual">Parcela atual</label>
+    <input type="number" id="edit-parcela-atual" min="1" />
+  </div>
 
-        <div class="field">
-          <label for="edit-parcela-total">Total de parcelas</label>
-          <input type="number" id="edit-parcela-total" min="1" />
-        </div>
+  <div class="field">
+    <label for="edit-parcela-total">Total de parcelas</label>
+    <input type="number" id="edit-parcela-total" min="1" />
+  </div>
 
-        <div class="field full">
-          <label for="edit-observacao">Observação</label>
-          <input type="text" id="edit-observacao" />
-        </div>
+  <div class="field full">
+    <label for="edit-observacao">Observação</label>
+    <input type="text" id="edit-observacao" />
+  </div>
 
-        <div class="modal-actions full">
-          <button type="button" class="btn-light" id="cancel-edit">Cancelar</button>
-          <button type="submit" class="btn-primary">Salvar alterações</button>
-        </div>
-      </form>
+  <div class="modal-actions full">
+    <button type="button" class="btn-light" id="cancel-edit">Cancelar</button>
+    <button type="submit" class="btn-primary">Salvar alterações</button>
+  </div>
+</form>
     </div>
   </div>
 
@@ -404,1075 +404,1131 @@
     </div>
   </div>
 
-  <script>
-    (() => {
-      const firebaseConfig = {
-        apiKey: "AIzaSyAA9oMvrsKbsixFBgJ5MlZuHdriVBcG4hA",
-        authDomain: "financas-4f348.firebaseapp.com",
-        projectId: "financas-4f348",
-        storageBucket: "financas-4f348.firebasestorage.app",
-        messagingSenderId: "521022969270",
-        appId: "1:521022969270:web:aa68de175296674d35dd17"
+ <script>
+  (() => {
+    const firebaseConfig = {
+      apiKey: "AIzaSyAA9oMvrsKbsixFBgJ5MlZuHdriVBcG4hA",
+      authDomain: "financas-4f348.firebaseapp.com",
+      projectId: "financas-4f348",
+      storageBucket: "financas-4f348.firebasestorage.app",
+      messagingSenderId: "521022969270",
+      appId: "1:521022969270:web:aa68de175296674d35dd17"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const loginBox = document.getElementById("loginBox");
+    const appRoot = document.getElementById("appRoot");
+
+    const authForm = document.getElementById("auth-form");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const authMessage = document.getElementById("auth-message");
+
+    const form = document.getElementById("expense-form");
+    const logoutBtn = document.getElementById("logout-btn");
+    const userEmail = document.getElementById("user-email");
+    const themeToggle = document.getElementById("theme-toggle");
+
+    const toggleExpenseFormBtn = document.getElementById("toggle-expense-form");
+    const expenseFormWrapper = document.getElementById("expense-form-wrapper");
+    const expenseToggleIcon = document.getElementById("expense-toggle-icon");
+
+    const toggleChartPanelBtn = document.getElementById("toggle-chart-panel");
+    const chartPanelWrapper = document.getElementById("chart-panel-wrapper");
+    const chartToggleIcon = document.getElementById("chart-toggle-icon");
+    const financeChartCanvas = document.getElementById("finance-chart");
+
+    const toggleCategoryChartPanelBtn = document.getElementById("toggle-category-chart-panel");
+    const categoryChartPanelWrapper = document.getElementById("category-chart-panel-wrapper");
+    const categoryChartToggleIcon = document.getElementById("category-chart-toggle-icon");
+    const categoryChartCanvas = document.getElementById("category-chart");
+    const categoryFilter = document.getElementById("category-filter");
+
+    const monthFilter = document.getElementById("month-filter");
+    const searchInput = document.getElementById("search-input");
+    const monthHeader = document.getElementById("month-header");
+    const categoriaPreview = document.getElementById("categoria-preview");
+    const tipoPreview = document.getElementById("tipo-preview");
+
+    const mainTableBody = document.getElementById("main-table-body");
+    const ipvaTableBody = document.getElementById("ipva-table-body");
+    const ipvaPanel = document.getElementById("ipva-panel");
+    const ipvaSubtitle = document.getElementById("ipva-subtitle");
+
+    const totalGeralEl = document.getElementById("total-geral");
+    const totalPendenteEl = document.getElementById("total-pendente");
+    const totalPagoEl = document.getElementById("total-pago");
+    const qtdPendentesEl = document.getElementById("qtd-pendentes");
+    const qtdPagosEl = document.getElementById("qtd-pagos");
+
+    const alertaVencidas = document.getElementById("alerta-vencidas");
+    const alertaVencidasTexto = document.getElementById("alerta-vencidas-texto");
+
+    const editModal = document.getElementById("edit-modal");
+    const editForm = document.getElementById("edit-form");
+    const closeModalBtn = document.getElementById("close-modal");
+    const cancelEditBtn = document.getElementById("cancel-edit");
+
+    const editIpvaBtn = document.getElementById("edit-ipva-btn");
+    const ipvaModal = document.getElementById("ipva-modal");
+    const closeIpvaModal = document.getElementById("close-ipva-modal");
+    const ipvaForm = document.getElementById("ipva-form");
+    const ipvaFormList = document.getElementById("ipva-form-list");
+    const addIpvaRowBtn = document.getElementById("add-ipva-row");
+
+    let despesasCache = [];
+    let ipvaData = [];
+    let unsubscribe = null;
+    let unsubscribeIpva = null;
+    let searchTerm = "";
+    let monthTerm = "";
+    let lastEditedId = null;
+    let financeChart = null;
+    let categoryChart = null;
+    let cartoesExpandidos = new Set();
+    let categoryFilterTerm = "";
+    let itensRenderizadosMap = new Map();
+    let ultimoContextoEdicao = null;
+
+    const CATEGORIA_FIXA = "Gastos fixos";
+    const CATEGORIA_CARTOES = "Cartões";
+    const CATEGORIA_COMUM = "Gastos comuns";
+
+    const CATEGORIAS_COMPRA = [
+      "Alimentação",
+      "Fast food",
+      "Lazer",
+      "Mercado",
+      "Transporte",
+      "Saúde",
+      "Farmácia",
+      "Roupas",
+      "Casa",
+      "Educação",
+      "Beleza",
+      "Outros"
+    ];
+
+    const GASTOS_FIXOS = [
+      "Condomínio",
+      "Internet",
+      "Gás",
+      "Carro",
+      "Cartão mercado pago",
+      "Mercado pago",
+      "Vivo",
+      "Claro",
+      "Faculdade",
+      "Personal"
+    ];
+
+    const DESPESAS_INICIAIS = [
+      { descricao: "Condomínio", valor: 390.00, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Internet", valor: 80.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Luz", valor: null, vencimento: "2026-02-27", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Gás", valor: 53.99, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Riachuelo", valor: 301.00, vencimento: "2026-03-13", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Cartão Carrefour", valor: 405.00, vencimento: "2026-03-21", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Cartão Renner", valor: 476.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "C&A", valor: 96.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Carro", valor: 1500.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: 12, parcelaTotal: 48, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Mercado pago", valor: 1640.00, vencimento: "2026-03-22", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Cartão caixa", valor: null, vencimento: "2026-03-24", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Cartão Nubank", valor: 81.74, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Cartão Santander", valor: 22.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Cartão BB", valor: 2076.81, vencimento: "2026-03-09", observacao: "300$ mãe", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Vivo", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Mercado pago", valor: 108.64, vencimento: "2026-03-12", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Claro", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Cartão preto", valor: 153.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Cartão inter", valor: 189.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Cartão Nubank", valor: 184.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Reneg. Itaú", valor: 70.00, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Reneg. Casas Bahia", valor: 100.00, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: 10, parcelaTotal: 10, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Faculdade", valor: 570.00, vencimento: "", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} },
+      { descricao: "Coren", valor: null, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [], ajustesMensais: {} }
+    ];
+
+    const ipvaPadrao = [
+      { data: "2026-01-30", valor: 772.77, pago: true },
+      { data: "2026-03-03", valor: 772.77, pago: false },
+      { data: "2026-04-07", valor: 772.78, pago: false }
+    ];
+
+    function normalizarTexto(texto) {
+      return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toLowerCase();
+    }
+
+    function numeroSeguro(valor) {
+      if (valor === null || valor === undefined || valor === "") return 0;
+      const n = Number(String(valor).replace(",", "."));
+      if (!Number.isFinite(n)) return 0;
+      return n;
+    }
+
+    function converterValorInput(valorDigitado) {
+      const texto = String(valorDigitado ?? "").trim().replace(",", ".");
+      if (texto === "") return null;
+      const numero = Number(texto);
+      if (!Number.isFinite(numero) || numero < 0) return NaN;
+      return numero;
+    }
+
+    function validarParcelas(parcelaAtual, parcelaTotal) {
+      if (parcelaAtual && parcelaTotal && parcelaAtual > parcelaTotal) {
+        alert("A parcela atual não pode ser maior que o total de parcelas.");
+        return false;
+      }
+      return true;
+    }
+
+    function definirCategoriaAutomatica(descricao) {
+      const desc = normalizarTexto(descricao);
+      const ehFixo = GASTOS_FIXOS.some(item => normalizarTexto(item) === desc);
+      if (ehFixo) return CATEGORIA_FIXA;
+      if (desc.includes("cartao")) return CATEGORIA_CARTOES;
+      return CATEGORIA_COMUM;
+    }
+
+    function getGrupoVisual(item) {
+      const categoria = item.categoria || definirCategoriaAutomatica(item.descricao);
+      if (categoria === CATEGORIA_FIXA) return "Fixos";
+      if (categoria === CATEGORIA_CARTOES) return "Cartões";
+      return "Outros";
+    }
+
+    function atualizarPreviewCategoria() {
+      const descricao = document.getElementById("descricao").value.trim();
+      if (!descricao) {
+        categoriaPreview.value = "Será definida automaticamente";
+        tipoPreview.value = "Será definido automaticamente";
+        return;
+      }
+
+      const categoria = definirCategoriaAutomatica(descricao);
+      const grupo = getGrupoVisual({ descricao, categoria });
+      categoriaPreview.value = categoria;
+      tipoPreview.value = grupo;
+    }
+
+    function mostrarApp(logado) {
+      loginBox.style.display = logado ? "none" : "grid";
+      appRoot.style.display = logado ? "block" : "none";
+    }
+
+    function valorNumerico(valor) {
+      const n = numeroSeguro(valor);
+      return Math.round(n * 100) / 100;
+    }
+
+    function formatarMoeda(valor) {
+      return numeroSeguro(valor).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
+
+    function formatarMoedaTabela(valor) {
+      if (valor === null || valor === undefined || valor === "") return "-";
+      if (!Number.isFinite(Number(String(valor).replace(",", ".")))) return "-";
+      return formatarMoeda(valor);
+    }
+
+    function formatarDataBR(valor) {
+      if (!valor) return "-";
+      const d = new Date(valor + "T00:00:00");
+      if (Number.isNaN(d.getTime())) return valor;
+      return d.toLocaleDateString("pt-BR");
+    }
+
+    function getTodayISO() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function getMesFromDate(dateStr) {
+      return String(dateStr || "").slice(0, 7);
+    }
+
+    function isVencida(item) {
+      if (!item.vencimento || item.pago) return false;
+      return item.vencimento < getTodayISO();
+    }
+
+    function getStatus(item) {
+      if (item.pago) return "Pago";
+      if (isVencida(item)) return "Vencido";
+      return "Pendente";
+    }
+
+    function getTextoParcelas(item) {
+      const atual = Number(item.parcelaAtual || 0);
+      const total = Number(item.parcelaTotal || 0);
+      if (!atual || !total) return "-";
+      return `${atual}/${total}`;
+    }
+
+    function getParcelasRestantes(item) {
+      const atual = Number(item.parcelaAtual || 0);
+      const total = Number(item.parcelaTotal || 0);
+      if (!atual || !total) return "-";
+      const faltam = total - atual;
+      return faltam > 0 ? `Faltam ${faltam}` : "Última parcela";
+    }
+
+    function formatarMesTitulo(yyyyMm) {
+      if (!yyyyMm) return "Todos os meses";
+      const [ano, mes] = yyyyMm.split("-");
+      const d = new Date(Number(ano), Number(mes) - 1, 1);
+      const texto = d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+      return texto.charAt(0).toUpperCase() + texto.slice(1);
+    }
+
+    function formatarMesCurto(yyyyMm) {
+      if (!yyyyMm) return "";
+      const [ano, mes] = yyyyMm.split("-");
+      const d = new Date(Number(ano), Number(mes) - 1, 1);
+      return d.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
+    }
+
+    function escapeHtml(texto) {
+      return String(texto ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function salvarTema(theme) {
+      localStorage.setItem("finance_theme", theme);
+      document.documentElement.setAttribute("data-theme", theme);
+      themeToggle.textContent = theme === "dark" ? "☀️ Tema claro" : "🌙 Tema escuro";
+    }
+
+    function carregarTema() {
+      salvarTema(localStorage.getItem("finance_theme") || "light");
+    }
+
+    function traduzirErroAuth(code) {
+      const erros = {
+        "auth/invalid-email": "E-mail inválido.",
+        "auth/missing-password": "Digite a senha.",
+        "auth/user-not-found": "Usuário não encontrado.",
+        "auth/wrong-password": "Senha incorreta.",
+        "auth/invalid-credential": "E-mail ou senha inválidos.",
+        "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde."
+      };
+      return erros[code] || `Erro: ${code}`;
+    }
+
+    function alternarFormularioDespesa() {
+      const aberto = !expenseFormWrapper.classList.contains("hidden");
+      expenseFormWrapper.classList.toggle("hidden");
+      toggleExpenseFormBtn.setAttribute("aria-expanded", String(!aberto));
+      expenseToggleIcon.textContent = aberto ? "▼" : "▲";
+    }
+
+    function alternarPainelGrafico() {
+      const aberto = !chartPanelWrapper.classList.contains("hidden");
+      chartPanelWrapper.classList.toggle("hidden");
+      toggleChartPanelBtn.setAttribute("aria-expanded", String(!aberto));
+      chartToggleIcon.textContent = aberto ? "▼" : "▲";
+      if (!aberto) setTimeout(() => renderGraficoMensal(), 50);
+    }
+
+    function alternarPainelGraficoCategoria() {
+      const aberto = !categoryChartPanelWrapper.classList.contains("hidden");
+      categoryChartPanelWrapper.classList.toggle("hidden");
+      toggleCategoryChartPanelBtn.setAttribute("aria-expanded", String(!aberto));
+      categoryChartToggleIcon.textContent = aberto ? "▼" : "▲";
+      if (!aberto) setTimeout(() => renderGraficoCategorias(), 50);
+    }
+
+    function getAjustesMensais(item) {
+      return item && item.ajustesMensais && typeof item.ajustesMensais === "object"
+        ? item.ajustesMensais
+        : {};
+    }
+
+    function normalizarAjustesMensais(item) {
+      const ajustes = getAjustesMensais(item);
+      const resultado = {};
+
+      Object.entries(ajustes).forEach(([mes, ajuste]) => {
+        if (!mes || !ajuste || typeof ajuste !== "object") return;
+
+        resultado[mes] = {
+          ...ajuste,
+          valor: ajuste.valor === null || ajuste.valor === undefined || ajuste.valor === ""
+            ? null
+            : numeroSeguro(ajuste.valor),
+          parcelaAtual: ajuste.parcelaAtual || null,
+          parcelaTotal: ajuste.parcelaTotal || null,
+          compras: Array.isArray(ajuste.compras) ? ajuste.compras : undefined
+        };
+      });
+
+      return resultado;
+    }
+
+    function aplicarAjusteMensalNaInstancia(instancia) {
+      const ajustesMes = getAjustesMensais(instancia)[instancia.mesReferencia];
+      if (!ajustesMes) return instancia;
+
+      return {
+        ...instancia,
+        ...ajustesMes,
+        valor: Object.prototype.hasOwnProperty.call(ajustesMes, "valor")
+          ? ajustesMes.valor
+          : instancia.valor,
+        parcelaAtual: Object.prototype.hasOwnProperty.call(ajustesMes, "parcelaAtual")
+          ? ajustesMes.parcelaAtual
+          : instancia.parcelaAtual,
+        parcelaTotal: Object.prototype.hasOwnProperty.call(ajustesMes, "parcelaTotal")
+          ? ajustesMes.parcelaTotal
+          : instancia.parcelaTotal,
+        compras: Array.isArray(ajustesMes.compras)
+          ? normalizarCompras({ compras: ajustesMes.compras })
+          : instancia.compras
+      };
+    }
+
+    function abrirModalEdicao(item) {
+      let infoEl = document.getElementById("edit-month-info");
+      let hiddenMonthEl = document.getElementById("edit-month-ref");
+      let hiddenMonthlyEl = document.getElementById("edit-is-monthly");
+
+      if (!infoEl) {
+        infoEl = document.createElement("p");
+        infoEl.id = "edit-month-info";
+        infoEl.style.margin = "0 0 14px";
+        infoEl.style.color = "var(--muted)";
+        infoEl.style.fontSize = "14px";
+        editForm.insertBefore(infoEl, editForm.firstChild);
+      }
+
+      if (!hiddenMonthEl) {
+        hiddenMonthEl = document.createElement("input");
+        hiddenMonthEl.type = "hidden";
+        hiddenMonthEl.id = "edit-month-ref";
+        editForm.appendChild(hiddenMonthEl);
+      }
+
+      if (!hiddenMonthlyEl) {
+        hiddenMonthlyEl = document.createElement("input");
+        hiddenMonthlyEl.type = "hidden";
+        hiddenMonthlyEl.id = "edit-is-monthly";
+        editForm.appendChild(hiddenMonthlyEl);
+      }
+
+      ultimoContextoEdicao = { ...item };
+
+      document.getElementById("edit-id").value = item.origemId || item.id;
+      document.getElementById("edit-descricao").value = item.descricao || "";
+      document.getElementById("edit-categoria").value = item.categoria || definirCategoriaAutomatica(item.descricao);
+      document.getElementById("edit-valor").value = item.valor ?? "";
+      document.getElementById("edit-vencimento").value = item.vencimento || "";
+      document.getElementById("edit-observacao").value = item.observacao || "";
+      document.getElementById("edit-parcela-atual").value = item.parcelaAtual || "";
+      document.getElementById("edit-parcela-total").value = item.parcelaTotal || "";
+
+      const itemOriginal = despesasCache.find(d => d.id === (item.origemId || item.id));
+      const recorrente = itemOriginal ? isRecorrenteMensal(normalizarCategoria(itemOriginal)) : false;
+      const editarSoOMes = Boolean(item.mesReferencia) && recorrente;
+
+      hiddenMonthEl.value = item.mesReferencia || "";
+      hiddenMonthlyEl.value = editarSoOMes ? "true" : "false";
+
+      infoEl.textContent = editarSoOMes
+        ? `Você está editando apenas ${formatarMesTitulo(item.mesReferencia)}. Os outros meses não serão alterados.`
+        : "Você está editando o item principal.";
+
+      editModal.classList.remove("hidden");
+    }
+
+    function fecharModalEdicao() {
+      editModal.classList.add("hidden");
+      editForm.reset();
+      ultimoContextoEdicao = null;
+      const infoEl = document.getElementById("edit-month-info");
+      const hiddenMonthEl = document.getElementById("edit-month-ref");
+      const hiddenMonthlyEl = document.getElementById("edit-is-monthly");
+      if (infoEl) infoEl.textContent = "";
+      if (hiddenMonthEl) hiddenMonthEl.value = "";
+      if (hiddenMonthlyEl) hiddenMonthlyEl.value = "";
+    }
+
+    function abrirModalIpva() {
+      ipvaFormList.innerHTML = "";
+      ipvaData.forEach(item => adicionarLinhaIpva(item));
+      ipvaModal.classList.remove("hidden");
+    }
+
+    function fecharModalIpva() {
+      ipvaModal.classList.add("hidden");
+    }
+
+    function adicionarLinhaIpva(item = { data: "", valor: "", pago: false }) {
+      const div = document.createElement("div");
+      div.className = "ipva-row";
+      div.innerHTML = `
+        <div class="field">
+          <label>Data</label>
+          <input type="date" class="ipva-data" value="${item.data || ""}">
+        </div>
+        <div class="field">
+          <label>Valor</label>
+          <input type="number" step="0.01" class="ipva-valor" value="${item.valor ?? ""}">
+        </div>
+        <div class="field">
+          <label>Pago</label>
+          <select class="ipva-pago">
+            <option value="false" ${item.pago ? "" : "selected"}>Não</option>
+            <option value="true" ${item.pago ? "selected" : ""}>Sim</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button type="button" class="btn-delete remove-ipva-btn">Remover</button>
+        </div>
+      `;
+      div.querySelector(".remove-ipva-btn").addEventListener("click", () => div.remove());
+      ipvaFormList.appendChild(div);
+    }
+
+    function normalizarCompras(item) {
+      if (!Array.isArray(item?.compras)) return [];
+      return item.compras
+        .map(compra => ({
+          nome: String(compra?.nome || "").trim(),
+          categoria: String(compra?.categoria || "").trim(),
+          valor: numeroSeguro(compra?.valor)
+        }))
+        .filter(compra => compra.nome);
+    }
+
+    function getTotalCompras(item) {
+      return normalizarCompras(item).reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
+    }
+
+    function getOptionsCategoriasCompra(selected = "") {
+      return `
+        <option value="">Selecione</option>
+        ${CATEGORIAS_COMPRA.map(cat => `
+          <option value="${escapeHtml(cat)}" ${cat === selected ? "selected" : ""}>${escapeHtml(cat)}</option>
+        `).join("")}
+      `;
+    }
+
+    async function garantirIpvaInicial() {
+      const ref = db.collection("configuracoes").doc("ipva_carro");
+      const snap = await ref.get();
+      if (!snap.exists) {
+        await ref.set({
+          parcelas: ipvaPadrao,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+
+    async function garantirDespesasIniciais() {
+      const snap = await db.collection("despesas").limit(1).get();
+      if (!snap.empty) return;
+
+      const batch = db.batch();
+      DESPESAS_INICIAIS.forEach(item => {
+        const ref = db.collection("despesas").doc();
+        batch.set(ref, {
+          descricao: item.descricao,
+          categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
+          valor: item.valor ?? null,
+          vencimento: item.vencimento || "",
+          observacao: item.observacao || "",
+          parcelaAtual: item.parcelaAtual || null,
+          parcelaTotal: item.parcelaTotal || null,
+          mesesIgnorados: [],
+          compras: Array.isArray(item.compras) ? item.compras : [],
+          ajustesMensais: {},
+          pago: Boolean(item.pago),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+
+      await batch.commit();
+    }
+
+    function ajustarDataParaMes(dataOriginal, yyyyMm) {
+      if (!dataOriginal || !yyyyMm) return dataOriginal || "";
+      const [, , diaStr] = dataOriginal.split("-");
+      const [ano, mes] = yyyyMm.split("-").map(Number);
+      const diaOriginal = Number(diaStr || 1);
+      const ultimoDia = new Date(ano, mes, 0).getDate();
+      const diaFinal = Math.min(diaOriginal, ultimoDia);
+      return `${ano}-${String(mes).padStart(2, "0")}-${String(diaFinal).padStart(2, "0")}`;
+    }
+
+    function getMesesIgnorados(item) {
+      return Array.isArray(item?.mesesIgnorados) ? item.mesesIgnorados : [];
+    }
+
+    function mesEstaIgnorado(item, yyyyMm) {
+      return getMesesIgnorados(item).includes(yyyyMm);
+    }
+
+    function isGastoFixo(item) {
+      return (item.categoria || definirCategoriaAutomatica(item.descricao)) === CATEGORIA_FIXA;
+    }
+
+    function isCartao(item) {
+      return (item.categoria || definirCategoriaAutomatica(item.descricao)) === CATEGORIA_CARTOES;
+    }
+
+    function isRecorrenteMensal(item) {
+      return isGastoFixo(item) || isCartao(item);
+    }
+
+    function criarInstanciaMes(item, yyyyMm, recorrenteMesFuturo = false) {
+      const instancia = {
+        ...item,
+        origemId: item.id,
+        mesReferencia: yyyyMm,
+        vencimento: item.vencimento ? ajustarDataParaMes(item.vencimento, yyyyMm) : "",
+        recorrenteMesFuturo,
+        pago: recorrenteMesFuturo ? false : Boolean(item.pago)
       };
 
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-      }
-
-      const auth = firebase.auth();
-      const db = firebase.firestore();
-
-      const loginBox = document.getElementById("loginBox");
-      const appRoot = document.getElementById("appRoot");
-
-      const authForm = document.getElementById("auth-form");
-      const emailInput = document.getElementById("email");
-      const passwordInput = document.getElementById("password");
-      const authMessage = document.getElementById("auth-message");
-
-      const form = document.getElementById("expense-form");
-      const logoutBtn = document.getElementById("logout-btn");
-      const userEmail = document.getElementById("user-email");
-      const themeToggle = document.getElementById("theme-toggle");
-
-      const toggleExpenseFormBtn = document.getElementById("toggle-expense-form");
-      const expenseFormWrapper = document.getElementById("expense-form-wrapper");
-      const expenseToggleIcon = document.getElementById("expense-toggle-icon");
-
-      const toggleChartPanelBtn = document.getElementById("toggle-chart-panel");
-      const chartPanelWrapper = document.getElementById("chart-panel-wrapper");
-      const chartToggleIcon = document.getElementById("chart-toggle-icon");
-      const financeChartCanvas = document.getElementById("finance-chart");
-
-      const toggleCategoryChartPanelBtn = document.getElementById("toggle-category-chart-panel");
-      const categoryChartPanelWrapper = document.getElementById("category-chart-panel-wrapper");
-      const categoryChartToggleIcon = document.getElementById("category-chart-toggle-icon");
-      const categoryChartCanvas = document.getElementById("category-chart");
-      const categoryFilter = document.getElementById("category-filter");
-
-      const monthFilter = document.getElementById("month-filter");
-      const searchInput = document.getElementById("search-input");
-      const monthHeader = document.getElementById("month-header");
-      const categoriaPreview = document.getElementById("categoria-preview");
-      const tipoPreview = document.getElementById("tipo-preview");
-
-      const mainTableBody = document.getElementById("main-table-body");
-      const ipvaTableBody = document.getElementById("ipva-table-body");
-      const ipvaPanel = document.getElementById("ipva-panel");
-      const ipvaSubtitle = document.getElementById("ipva-subtitle");
-
-      const totalGeralEl = document.getElementById("total-geral");
-      const totalPendenteEl = document.getElementById("total-pendente");
-      const totalPagoEl = document.getElementById("total-pago");
-      const qtdPendentesEl = document.getElementById("qtd-pendentes");
-      const qtdPagosEl = document.getElementById("qtd-pagos");
-
-      const alertaVencidas = document.getElementById("alerta-vencidas");
-      const alertaVencidasTexto = document.getElementById("alerta-vencidas-texto");
-
-      const editModal = document.getElementById("edit-modal");
-      const editForm = document.getElementById("edit-form");
-      const closeModalBtn = document.getElementById("close-modal");
-      const cancelEditBtn = document.getElementById("cancel-edit");
-
-      const editIpvaBtn = document.getElementById("edit-ipva-btn");
-      const ipvaModal = document.getElementById("ipva-modal");
-      const closeIpvaModal = document.getElementById("close-ipva-modal");
-      const ipvaForm = document.getElementById("ipva-form");
-      const ipvaFormList = document.getElementById("ipva-form-list");
-      const addIpvaRowBtn = document.getElementById("add-ipva-row");
-
-      let despesasCache = [];
-      let ipvaData = [];
-      let unsubscribe = null;
-      let unsubscribeIpva = null;
-      let searchTerm = "";
-      let monthTerm = "";
-      let lastEditedId = null;
-      let financeChart = null;
-      let categoryChart = null;
-      let cartoesExpandidos = new Set();
-      let categoryFilterTerm = "";
-
-      const CATEGORIA_FIXA = "Gastos fixos";
-      const CATEGORIA_CARTOES = "Cartões";
-      const CATEGORIA_COMUM = "Gastos comuns";
-
-      const CATEGORIAS_COMPRA = [
-        "Alimentação",
-        "Fast food",
-        "Lazer",
-        "Mercado",
-        "Transporte",
-        "Saúde",
-        "Farmácia",
-        "Roupas",
-        "Casa",
-        "Educação",
-        "Beleza",
-        "Outros"
-      ];
-
-      const GASTOS_FIXOS = [
-        "Condomínio",
-        "Internet",
-        "Gás",
-        "Carro",
-        "Cartão mercado pago",
-        "Mercado pago",
-        "Vivo",
-        "Claro",
-        "Faculdade",
-        "Personal"
-      ];
-
-      const DESPESAS_INICIAIS = [
-        { descricao: "Condomínio", valor: 390.00, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Internet", valor: 80.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Luz", valor: null, vencimento: "2026-02-27", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Gás", valor: 53.99, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Riachuelo", valor: 301.00, vencimento: "2026-03-13", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Cartão Carrefour", valor: 405.00, vencimento: "2026-03-21", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Cartão Renner", valor: 476.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "C&A", valor: 96.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Carro", valor: 1500.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: 12, parcelaTotal: 48, pago: false, compras: [] },
-        { descricao: "Mercado pago", valor: 1640.00, vencimento: "2026-03-22", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Cartão caixa", valor: null, vencimento: "2026-03-24", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-
-        { descricao: "Cartão Nubank", valor: 81.74, vencimento: "2026-03-08", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Cartão Santander", valor: 22.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Cartão BB", valor: 2076.81, vencimento: "2026-03-09", observacao: "300$ mãe", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Vivo", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Mercado pago", valor: 108.64, vencimento: "2026-03-12", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-
-        { descricao: "Claro", valor: 55.00, vencimento: "2026-03-10", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Cartão preto", valor: 153.00, vencimento: "2026-03-20", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Cartão inter", valor: 189.00, vencimento: "2026-03-15", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Cartão Nubank", valor: 184.00, vencimento: "2026-03-07", observacao: "", categoria: CATEGORIA_CARTOES, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Reneg. Itaú", valor: 70.00, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Reneg. Casas Bahia", valor: 100.00, vencimento: "2026-03-25", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: 10, parcelaTotal: 10, pago: false, compras: [] },
-        { descricao: "Faculdade", valor: 570.00, vencimento: "", observacao: "", categoria: CATEGORIA_FIXA, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] },
-        { descricao: "Coren", valor: null, vencimento: "", observacao: "", categoria: CATEGORIA_COMUM, parcelaAtual: null, parcelaTotal: null, pago: false, compras: [] }
-      ];
-
-      const ipvaPadrao = [
-        { data: "2026-01-30", valor: 772.77, pago: true },
-        { data: "2026-03-03", valor: 772.77, pago: false },
-        { data: "2026-04-07", valor: 772.78, pago: false }
-      ];
-
-      function normalizarTexto(texto) {
-        return String(texto || "")
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .trim()
-          .toLowerCase();
-      }
-
-      function numeroSeguro(valor) {
-        if (valor === null || valor === undefined || valor === "") return 0;
-        const n = Number(String(valor).replace(",", "."));
-        if (!Number.isFinite(n)) return 0;
-        return n;
-      }
-
-      function converterValorInput(valorDigitado) {
-        const texto = String(valorDigitado ?? "").trim().replace(",", ".");
-        if (texto === "") return null;
-        const numero = Number(texto);
-        if (!Number.isFinite(numero) || numero < 0) return NaN;
-        return numero;
-      }
-
-      function validarParcelas(parcelaAtual, parcelaTotal) {
-        if (parcelaAtual && parcelaTotal && parcelaAtual > parcelaTotal) {
-          alert("A parcela atual não pode ser maior que o total de parcelas.");
-          return false;
-        }
-        return true;
-      }
-
-      function definirCategoriaAutomatica(descricao) {
-        const desc = normalizarTexto(descricao);
-        const ehFixo = GASTOS_FIXOS.some(item => normalizarTexto(item) === desc);
-        if (ehFixo) return CATEGORIA_FIXA;
-        if (desc.includes("cartao")) return CATEGORIA_CARTOES;
-        return CATEGORIA_COMUM;
-      }
-
-      function getGrupoVisual(item) {
-        const categoria = item.categoria || definirCategoriaAutomatica(item.descricao);
-        if (categoria === CATEGORIA_FIXA) return "Fixos";
-        if (categoria === CATEGORIA_CARTOES) return "Cartões";
-        return "Outros";
-      }
-
-      function atualizarPreviewCategoria() {
-        const descricao = document.getElementById("descricao").value.trim();
-        if (!descricao) {
-          categoriaPreview.value = "Será definida automaticamente";
-          tipoPreview.value = "Será definido automaticamente";
-          return;
-        }
-
-        const categoria = definirCategoriaAutomatica(descricao);
-        const grupo = getGrupoVisual({ descricao, categoria });
-        categoriaPreview.value = categoria;
-        tipoPreview.value = grupo;
-      }
-
-      function mostrarApp(logado) {
-        loginBox.style.display = logado ? "none" : "grid";
-        appRoot.style.display = logado ? "block" : "none";
-      }
-
-      function valorNumerico(valor) {
-        const n = numeroSeguro(valor);
-        return Math.round(n * 100) / 100;
-      }
-
-      function formatarMoeda(valor) {
-        return numeroSeguro(valor).toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL"
-        });
-      }
-
-      function formatarMoedaTabela(valor) {
-        if (valor === null || valor === undefined || valor === "") return "-";
-        if (!Number.isFinite(Number(String(valor).replace(",", ".")))) return "-";
-        return formatarMoeda(valor);
-      }
-
-      function formatarDataBR(valor) {
-        if (!valor) return "-";
-        const d = new Date(valor + "T00:00:00");
-        if (Number.isNaN(d.getTime())) return valor;
-        return d.toLocaleDateString("pt-BR");
-      }
-
-      function getTodayISO() {
-        const d = new Date();
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${y}-${m}-${day}`;
-      }
-
-      function getMesFromDate(dateStr) {
-        return String(dateStr || "").slice(0, 7);
-      }
-
-      function isVencida(item) {
-        if (!item.vencimento || item.pago) return false;
-        return item.vencimento < getTodayISO();
-      }
-
-      function getStatus(item) {
-        if (item.pago) return "Pago";
-        if (isVencida(item)) return "Vencido";
-        return "Pendente";
-      }
-
-      function getTextoParcelas(item) {
-        const atual = Number(item.parcelaAtual || 0);
-        const total = Number(item.parcelaTotal || 0);
-        if (!atual || !total) return "-";
-        return `${atual}/${total}`;
-      }
-
-      function getParcelasRestantes(item) {
-        const atual = Number(item.parcelaAtual || 0);
-        const total = Number(item.parcelaTotal || 0);
-        if (!atual || !total) return "-";
-        const faltam = total - atual;
-        return faltam > 0 ? `Faltam ${faltam}` : "Última parcela";
-      }
-
-      function formatarMesTitulo(yyyyMm) {
-        if (!yyyyMm) return "Todos os meses";
-        const [ano, mes] = yyyyMm.split("-");
-        const d = new Date(Number(ano), Number(mes) - 1, 1);
-        const texto = d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-        return texto.charAt(0).toUpperCase() + texto.slice(1);
-      }
-
-      function formatarMesCurto(yyyyMm) {
-        if (!yyyyMm) return "";
-        const [ano, mes] = yyyyMm.split("-");
-        const d = new Date(Number(ano), Number(mes) - 1, 1);
-        return d.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
-      }
-
-      function escapeHtml(texto) {
-        return String(texto ?? "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
-      }
-
-      function salvarTema(theme) {
-        localStorage.setItem("finance_theme", theme);
-        document.documentElement.setAttribute("data-theme", theme);
-        themeToggle.textContent = theme === "dark" ? "☀️ Tema claro" : "🌙 Tema escuro";
-      }
-
-      function carregarTema() {
-        salvarTema(localStorage.getItem("finance_theme") || "light");
-      }
-
-      function traduzirErroAuth(code) {
-        const erros = {
-          "auth/invalid-email": "E-mail inválido.",
-          "auth/missing-password": "Digite a senha.",
-          "auth/user-not-found": "Usuário não encontrado.",
-          "auth/wrong-password": "Senha incorreta.",
-          "auth/invalid-credential": "E-mail ou senha inválidos.",
-          "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde."
-        };
-        return erros[code] || `Erro: ${code}`;
-      }
-
-      function alternarFormularioDespesa() {
-        const aberto = !expenseFormWrapper.classList.contains("hidden");
-        expenseFormWrapper.classList.toggle("hidden");
-        toggleExpenseFormBtn.setAttribute("aria-expanded", String(!aberto));
-        expenseToggleIcon.textContent = aberto ? "▼" : "▲";
-      }
-
-      function alternarPainelGrafico() {
-        const aberto = !chartPanelWrapper.classList.contains("hidden");
-        chartPanelWrapper.classList.toggle("hidden");
-        toggleChartPanelBtn.setAttribute("aria-expanded", String(!aberto));
-        chartToggleIcon.textContent = aberto ? "▼" : "▲";
-        if (!aberto) setTimeout(() => renderGraficoMensal(), 50);
-      }
-
-      function alternarPainelGraficoCategoria() {
-        const aberto = !categoryChartPanelWrapper.classList.contains("hidden");
-        categoryChartPanelWrapper.classList.toggle("hidden");
-        toggleCategoryChartPanelBtn.setAttribute("aria-expanded", String(!aberto));
-        categoryChartToggleIcon.textContent = aberto ? "▼" : "▲";
-        if (!aberto) setTimeout(() => renderGraficoCategorias(), 50);
-      }
-
-      function abrirModalEdicao(item) {
-        document.getElementById("edit-id").value = item.id;
-        document.getElementById("edit-descricao").value = item.descricao || "";
-        document.getElementById("edit-categoria").value = item.categoria || definirCategoriaAutomatica(item.descricao);
-        document.getElementById("edit-valor").value = item.valor ?? "";
-        document.getElementById("edit-vencimento").value = item.vencimento || "";
-        document.getElementById("edit-observacao").value = item.observacao || "";
-        document.getElementById("edit-parcela-atual").value = item.parcelaAtual || "";
-        document.getElementById("edit-parcela-total").value = item.parcelaTotal || "";
-        editModal.classList.remove("hidden");
-      }
-
-      function fecharModalEdicao() {
-        editModal.classList.add("hidden");
-        editForm.reset();
-      }
-
-      function abrirModalIpva() {
-        ipvaFormList.innerHTML = "";
-        ipvaData.forEach(item => adicionarLinhaIpva(item));
-        ipvaModal.classList.remove("hidden");
-      }
-
-      function fecharModalIpva() {
-        ipvaModal.classList.add("hidden");
-      }
-
-      function adicionarLinhaIpva(item = { data: "", valor: "", pago: false }) {
-        const div = document.createElement("div");
-        div.className = "ipva-row";
-        div.innerHTML = `
-          <div class="field">
-            <label>Data</label>
-            <input type="date" class="ipva-data" value="${item.data || ""}">
-          </div>
-          <div class="field">
-            <label>Valor</label>
-            <input type="number" step="0.01" class="ipva-valor" value="${item.valor ?? ""}">
-          </div>
-          <div class="field">
-            <label>Pago</label>
-            <select class="ipva-pago">
-              <option value="false" ${item.pago ? "" : "selected"}>Não</option>
-              <option value="true" ${item.pago ? "selected" : ""}>Sim</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>&nbsp;</label>
-            <button type="button" class="btn-delete remove-ipva-btn">Remover</button>
-          </div>
-        `;
-        div.querySelector(".remove-ipva-btn").addEventListener("click", () => div.remove());
-        ipvaFormList.appendChild(div);
-      }
-
-      function normalizarCompras(item) {
-        if (!Array.isArray(item?.compras)) return [];
-        return item.compras
-          .map(compra => ({
-            nome: String(compra?.nome || "").trim(),
-            categoria: String(compra?.categoria || "").trim(),
-            valor: numeroSeguro(compra?.valor)
-          }))
-          .filter(compra => compra.nome);
-      }
-
-      function getTotalCompras(item) {
-        return normalizarCompras(item).reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
-      }
-
-      function getOptionsCategoriasCompra(selected = "") {
-        return `
-          <option value="">Selecione</option>
-          ${CATEGORIAS_COMPRA.map(cat => `
-            <option value="${escapeHtml(cat)}" ${cat === selected ? "selected" : ""}>${escapeHtml(cat)}</option>
-          `).join("")}
-        `;
-      }
-
-      async function garantirIpvaInicial() {
-        const ref = db.collection("configuracoes").doc("ipva_carro");
-        const snap = await ref.get();
-        if (!snap.exists) {
-          await ref.set({
-            parcelas: ipvaPadrao,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-        }
-      }
-
-      async function garantirDespesasIniciais() {
-        const snap = await db.collection("despesas").limit(1).get();
-        if (!snap.empty) return;
-
-        const batch = db.batch();
-        DESPESAS_INICIAIS.forEach(item => {
-          const ref = db.collection("despesas").doc();
-          batch.set(ref, {
-            descricao: item.descricao,
-            categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
-            valor: item.valor ?? null,
-            vencimento: item.vencimento || "",
-            observacao: item.observacao || "",
-            parcelaAtual: item.parcelaAtual || null,
-            parcelaTotal: item.parcelaTotal || null,
-            mesesIgnorados: [],
-            compras: Array.isArray(item.compras) ? item.compras : [],
-            pago: Boolean(item.pago),
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-        });
-
-        await batch.commit();
-      }
-
-      function ajustarDataParaMes(dataOriginal, yyyyMm) {
-        if (!dataOriginal || !yyyyMm) return dataOriginal || "";
-        const [, , diaStr] = dataOriginal.split("-");
-        const [ano, mes] = yyyyMm.split("-").map(Number);
-        const diaOriginal = Number(diaStr || 1);
-        const ultimoDia = new Date(ano, mes, 0).getDate();
-        const diaFinal = Math.min(diaOriginal, ultimoDia);
-        return `${ano}-${String(mes).padStart(2, "0")}-${String(diaFinal).padStart(2, "0")}`;
-      }
-
-      function getMesesIgnorados(item) {
-        return Array.isArray(item?.mesesIgnorados) ? item.mesesIgnorados : [];
-      }
-
-      function mesEstaIgnorado(item, yyyyMm) {
-        return getMesesIgnorados(item).includes(yyyyMm);
-      }
-
-      function isGastoFixo(item) {
-        return (item.categoria || definirCategoriaAutomatica(item.descricao)) === CATEGORIA_FIXA;
-      }
-
-      function isCartao(item) {
-        return (item.categoria || definirCategoriaAutomatica(item.descricao)) === CATEGORIA_CARTOES;
-      }
-
-      function isRecorrenteMensal(item) {
-        return isGastoFixo(item) || isCartao(item);
-      }
-
-      function criarInstanciaMes(item, yyyyMm, recorrenteMesFuturo = false) {
-        return {
-          ...item,
-          origemId: item.id,
-          mesReferencia: yyyyMm,
-          vencimento: item.vencimento ? ajustarDataParaMes(item.vencimento, yyyyMm) : "",
-          recorrenteMesFuturo,
-          pago: recorrenteMesFuturo ? false : Boolean(item.pago)
-        };
-      }
-
-      function criarInstanciaCartaoFuturo(item, yyyyMm) {
-        return {
-          ...item,
-          origemId: item.id,
-          mesReferencia: yyyyMm,
-          vencimento: item.vencimento ? ajustarDataParaMes(item.vencimento, yyyyMm) : "",
-          valor: 0,
-          pago: false,
-          recorrenteMesFuturo: true,
-          recorrenteZerado: true,
-          compras: []
-        };
-      }
-
-      function normalizarCategoria(item) {
-        return {
-          ...item,
-          categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
-          compras: normalizarCompras(item)
-        };
-      }
-
-      function getIpvaOrdenado() {
-        return [...ipvaData]
-          .filter(item => item.data && numeroSeguro(item.valor) > 0)
-          .sort((a, b) => (a.data || "").localeCompare(b.data || ""));
-      }
-
-      function getUltimoMesIpva() {
-        const parcelas = getIpvaOrdenado();
-        if (!parcelas.length) return "";
-        return getMesFromDate(parcelas[parcelas.length - 1].data);
-      }
-
-      function getIpvaVisivelPorMes() {
-        const parcelas = getIpvaOrdenado();
-        if (!parcelas.length) return [];
-        if (!monthTerm) return parcelas;
-
-        const ultimoMesIpva = getUltimoMesIpva();
-        if (ultimoMesIpva && monthTerm > ultimoMesIpva) return [];
-        return parcelas.filter(item => getMesFromDate(item.data) <= monthTerm);
-      }
-
-      function aplicarFiltros(lista) {
-        let resultado = [];
-
-        if (monthTerm) {
-          lista.forEach(itemBase => {
-            const item = normalizarCategoria(itemBase);
-
-            if (!item.vencimento) {
-              if (isGastoFixo(item)) {
-                resultado.push({
-                  ...item,
-                  origemId: item.id,
-                  mesReferencia: monthTerm,
-                  recorrenteMesFuturo: true,
-                  pago: false
-                });
-              } else if (isCartao(item)) {
-                resultado.push({
-                  ...item,
-                  origemId: item.id,
-                  mesReferencia: monthTerm,
-                  recorrenteMesFuturo: true,
-                  recorrenteZerado: true,
-                  valor: 0,
-                  pago: false,
-                  compras: []
-                });
-              } else {
-                resultado.push({
-                  ...item,
-                  origemId: item.id,
-                  mesReferencia: monthTerm,
-                  recorrenteMesFuturo: false
-                });
-              }
-              return;
-            }
-
-            const mesOriginal = getMesFromDate(item.vencimento);
-
-            if (isGastoFixo(item)) {
-              if (mesOriginal <= monthTerm && !mesEstaIgnorado(item, monthTerm)) {
-                resultado.push(criarInstanciaMes(item, monthTerm, mesOriginal !== monthTerm));
-              }
-              return;
-            }
-
-            if (isCartao(item)) {
-              if (mesOriginal > monthTerm) return;
-              if (mesEstaIgnorado(item, monthTerm)) return;
-
-              if (mesOriginal === monthTerm) {
-                resultado.push(criarInstanciaMes(item, monthTerm, false));
-              } else {
-                resultado.push(criarInstanciaCartaoFuturo(item, monthTerm));
-              }
-              return;
-            }
-
-            if (mesOriginal === monthTerm && !mesEstaIgnorado(item, monthTerm)) {
-              resultado.push(criarInstanciaMes(item, monthTerm, false));
-            }
-          });
-        } else {
-          resultado = lista
-            .map(normalizarCategoria)
-            .filter(item => {
-              if (!item.vencimento) return true;
-              return !mesEstaIgnorado(item, getMesFromDate(item.vencimento));
-            })
-            .map(item => {
-              if (!item.vencimento) {
-                return {
-                  ...item,
-                  origemId: item.id,
-                  mesReferencia: "",
-                  recorrenteMesFuturo: false
-                };
-              }
-              return criarInstanciaMes(item, getMesFromDate(item.vencimento), false);
-            });
-        }
-
-        if (searchTerm) {
-          const termo = normalizarTexto(searchTerm);
-          resultado = resultado.filter(item =>
-            normalizarTexto(item.descricao).includes(termo) ||
-            normalizarTexto(item.observacao).includes(termo) ||
-            normalizarTexto(item.categoria).includes(termo) ||
-            normalizarCompras(item).some(compra =>
-              normalizarTexto(compra.nome).includes(termo) ||
-              normalizarTexto(compra.categoria).includes(termo)
-            )
-          );
-        }
-
-        resultado.sort((a, b) => {
-          const ordemGrupo = { "Fixos": 1, "Cartões": 2, "Outros": 3 };
-          const grupoA = ordemGrupo[getGrupoVisual(a)] || 99;
-          const grupoB = ordemGrupo[getGrupoVisual(b)] || 99;
-          if (grupoA !== grupoB) return grupoA - grupoB;
-          return (a.vencimento || "9999-99-99").localeCompare(b.vencimento || "9999-99-99");
-        });
-
-        return resultado;
-      }
-
-      function gerarListaParaGraficoMensal() {
-        const mapaMeses = new Map();
-
-        despesasCache.forEach(itemBase => {
+      return aplicarAjusteMensalNaInstancia(instancia);
+    }
+
+    function criarInstanciaCartaoFuturo(item, yyyyMm) {
+      const instancia = {
+        ...item,
+        origemId: item.id,
+        mesReferencia: yyyyMm,
+        vencimento: item.vencimento ? ajustarDataParaMes(item.vencimento, yyyyMm) : "",
+        valor: 0,
+        pago: false,
+        recorrenteMesFuturo: true,
+        recorrenteZerado: true,
+        compras: []
+      };
+
+      return aplicarAjusteMensalNaInstancia(instancia);
+    }
+
+    function normalizarCategoria(item) {
+      return {
+        ...item,
+        categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
+        compras: normalizarCompras(item),
+        ajustesMensais: normalizarAjustesMensais(item)
+      };
+    }
+
+    function getIpvaOrdenado() {
+      return [...ipvaData]
+        .filter(item => item.data && numeroSeguro(item.valor) > 0)
+        .sort((a, b) => (a.data || "").localeCompare(b.data || ""));
+    }
+
+    function getUltimoMesIpva() {
+      const parcelas = getIpvaOrdenado();
+      if (!parcelas.length) return "";
+      return getMesFromDate(parcelas[parcelas.length - 1].data);
+    }
+
+    function getIpvaVisivelPorMes() {
+      const parcelas = getIpvaOrdenado();
+      if (!parcelas.length) return [];
+      if (!monthTerm) return parcelas;
+
+      const ultimoMesIpva = getUltimoMesIpva();
+      if (ultimoMesIpva && monthTerm > ultimoMesIpva) return [];
+      return parcelas.filter(item => getMesFromDate(item.data) <= monthTerm);
+    }
+
+    function aplicarFiltros(lista) {
+      let resultado = [];
+
+      if (monthTerm) {
+        lista.forEach(itemBase => {
           const item = normalizarCategoria(itemBase);
 
-          if (!item.vencimento && !isGastoFixo(item) && !isCartao(item)) return;
-
           if (!item.vencimento) {
-            const hoje = new Date();
-            const inicio = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
-
             if (isGastoFixo(item)) {
-              const cursor = new Date(`${inicio}-01T00:00:00`);
-              const fim = new Date(cursor);
-              fim.setMonth(fim.getMonth() + 11);
-
-              while (cursor <= fim) {
-                const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-                if (!mesEstaIgnorado(item, yyyyMm)) {
-                  if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
-                  mapaMeses.get(yyyyMm).push({
-                    ...item,
-                    origemId: item.id,
-                    mesReferencia: yyyyMm,
-                    recorrenteMesFuturo: true,
-                    pago: false,
-                    vencimento: ""
-                  });
-                }
-                cursor.setMonth(cursor.getMonth() + 1);
-              }
+              resultado.push(aplicarAjusteMensalNaInstancia({
+                ...item,
+                origemId: item.id,
+                mesReferencia: monthTerm,
+                recorrenteMesFuturo: true,
+                pago: false
+              }));
+            } else if (isCartao(item)) {
+              resultado.push(aplicarAjusteMensalNaInstancia({
+                ...item,
+                origemId: item.id,
+                mesReferencia: monthTerm,
+                recorrenteMesFuturo: true,
+                recorrenteZerado: true,
+                valor: 0,
+                pago: false,
+                compras: []
+              }));
+            } else {
+              resultado.push({
+                ...item,
+                origemId: item.id,
+                mesReferencia: monthTerm,
+                recorrenteMesFuturo: false
+              });
             }
-
-            if (isCartao(item)) {
-              const cursor = new Date(`${inicio}-01T00:00:00`);
-              const fim = new Date(cursor);
-              fim.setMonth(fim.getMonth() + 11);
-
-              while (cursor <= fim) {
-                const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-                if (!mesEstaIgnorado(item, yyyyMm)) {
-                  if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
-                  mapaMeses.get(yyyyMm).push({
-                    ...item,
-                    origemId: item.id,
-                    mesReferencia: yyyyMm,
-                    recorrenteMesFuturo: true,
-                    recorrenteZerado: true,
-                    valor: 0,
-                    pago: false,
-                    vencimento: "",
-                    compras: []
-                  });
-                }
-                cursor.setMonth(cursor.getMonth() + 1);
-              }
-            }
-
             return;
           }
 
           const mesOriginal = getMesFromDate(item.vencimento);
 
           if (isGastoFixo(item)) {
-            const inicio = new Date(`${mesOriginal}-01T00:00:00`);
-            const fim = new Date(inicio);
-            fim.setMonth(fim.getMonth() + 11);
-            const cursor = new Date(inicio);
-
-            while (cursor <= fim) {
-              const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-              if (!mesEstaIgnorado(item, yyyyMm)) {
-                if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
-                mapaMeses.get(yyyyMm).push(criarInstanciaMes(item, yyyyMm, yyyyMm !== mesOriginal));
-              }
-              cursor.setMonth(cursor.getMonth() + 1);
+            if (mesOriginal <= monthTerm && !mesEstaIgnorado(item, monthTerm)) {
+              resultado.push(criarInstanciaMes(item, monthTerm, mesOriginal !== monthTerm));
             }
             return;
           }
 
           if (isCartao(item)) {
-            const inicio = new Date(`${mesOriginal}-01T00:00:00`);
-            const fim = new Date(inicio);
+            if (mesOriginal > monthTerm) return;
+            if (mesEstaIgnorado(item, monthTerm)) return;
+
+            if (mesOriginal === monthTerm) {
+              resultado.push(criarInstanciaMes(item, monthTerm, false));
+            } else {
+              resultado.push(criarInstanciaCartaoFuturo(item, monthTerm));
+            }
+            return;
+          }
+
+          if (mesOriginal === monthTerm && !mesEstaIgnorado(item, monthTerm)) {
+            resultado.push(criarInstanciaMes(item, monthTerm, false));
+          }
+        });
+      } else {
+        resultado = lista
+          .map(normalizarCategoria)
+          .filter(item => {
+            if (!item.vencimento) return true;
+            return !mesEstaIgnorado(item, getMesFromDate(item.vencimento));
+          })
+          .map(item => {
+            if (!item.vencimento) {
+              return {
+                ...item,
+                origemId: item.id,
+                mesReferencia: "",
+                recorrenteMesFuturo: false
+              };
+            }
+            return criarInstanciaMes(item, getMesFromDate(item.vencimento), false);
+          });
+      }
+
+      if (searchTerm) {
+        const termo = normalizarTexto(searchTerm);
+        resultado = resultado.filter(item =>
+          normalizarTexto(item.descricao).includes(termo) ||
+          normalizarTexto(item.observacao).includes(termo) ||
+          normalizarTexto(item.categoria).includes(termo) ||
+          normalizarCompras(item).some(compra =>
+            normalizarTexto(compra.nome).includes(termo) ||
+            normalizarTexto(compra.categoria).includes(termo)
+          )
+        );
+      }
+
+      resultado.sort((a, b) => {
+        const ordemGrupo = { "Fixos": 1, "Cartões": 2, "Outros": 3 };
+        const grupoA = ordemGrupo[getGrupoVisual(a)] || 99;
+        const grupoB = ordemGrupo[getGrupoVisual(b)] || 99;
+        if (grupoA !== grupoB) return grupoA - grupoB;
+        return (a.vencimento || "9999-99-99").localeCompare(b.vencimento || "9999-99-99");
+      });
+
+      return resultado;
+    }
+
+    function gerarListaParaGraficoMensal() {
+      const mapaMeses = new Map();
+
+      despesasCache.forEach(itemBase => {
+        const item = normalizarCategoria(itemBase);
+
+        if (!item.vencimento && !isGastoFixo(item) && !isCartao(item)) return;
+
+        if (!item.vencimento) {
+          const hoje = new Date();
+          const inicio = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
+
+          if (isGastoFixo(item)) {
+            const cursor = new Date(`${inicio}-01T00:00:00`);
+            const fim = new Date(cursor);
             fim.setMonth(fim.getMonth() + 11);
-            const cursor = new Date(inicio);
 
             while (cursor <= fim) {
               const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
               if (!mesEstaIgnorado(item, yyyyMm)) {
                 if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
-                if (yyyyMm === mesOriginal) {
-                  mapaMeses.get(yyyyMm).push(criarInstanciaMes(item, yyyyMm, false));
-                } else {
-                  mapaMeses.get(yyyyMm).push(criarInstanciaCartaoFuturo(item, yyyyMm));
-                }
+                mapaMeses.get(yyyyMm).push(aplicarAjusteMensalNaInstancia({
+                  ...item,
+                  origemId: item.id,
+                  mesReferencia: yyyyMm,
+                  recorrenteMesFuturo: true,
+                  pago: false,
+                  vencimento: ""
+                }));
               }
               cursor.setMonth(cursor.getMonth() + 1);
             }
-            return;
           }
 
-          if (mesEstaIgnorado(item, mesOriginal)) return;
-          if (!mapaMeses.has(mesOriginal)) mapaMeses.set(mesOriginal, []);
-          mapaMeses.get(mesOriginal).push(criarInstanciaMes(item, mesOriginal, false));
-        });
+          if (isCartao(item)) {
+            const cursor = new Date(`${inicio}-01T00:00:00`);
+            const fim = new Date(cursor);
+            fim.setMonth(fim.getMonth() + 11);
 
-        return mapaMeses;
+            while (cursor <= fim) {
+              const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+              if (!mesEstaIgnorado(item, yyyyMm)) {
+                if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
+                mapaMeses.get(yyyyMm).push(aplicarAjusteMensalNaInstancia({
+                  ...item,
+                  origemId: item.id,
+                  mesReferencia: yyyyMm,
+                  recorrenteMesFuturo: true,
+                  recorrenteZerado: true,
+                  valor: 0,
+                  pago: false,
+                  vencimento: "",
+                  compras: []
+                }));
+              }
+              cursor.setMonth(cursor.getMonth() + 1);
+            }
+          }
+
+          return;
+        }
+
+        const mesOriginal = getMesFromDate(item.vencimento);
+
+        if (isGastoFixo(item)) {
+          const inicio = new Date(`${mesOriginal}-01T00:00:00`);
+          const fim = new Date(inicio);
+          fim.setMonth(fim.getMonth() + 11);
+          const cursor = new Date(inicio);
+
+          while (cursor <= fim) {
+            const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+            if (!mesEstaIgnorado(item, yyyyMm)) {
+              if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
+              mapaMeses.get(yyyyMm).push(criarInstanciaMes(item, yyyyMm, yyyyMm !== mesOriginal));
+            }
+            cursor.setMonth(cursor.getMonth() + 1);
+          }
+          return;
+        }
+
+        if (isCartao(item)) {
+          const inicio = new Date(`${mesOriginal}-01T00:00:00`);
+          const fim = new Date(inicio);
+          fim.setMonth(fim.getMonth() + 11);
+          const cursor = new Date(inicio);
+
+          while (cursor <= fim) {
+            const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+            if (!mesEstaIgnorado(item, yyyyMm)) {
+              if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
+              if (yyyyMm === mesOriginal) {
+                mapaMeses.get(yyyyMm).push(criarInstanciaMes(item, yyyyMm, false));
+              } else {
+                mapaMeses.get(yyyyMm).push(criarInstanciaCartaoFuturo(item, yyyyMm));
+              }
+            }
+            cursor.setMonth(cursor.getMonth() + 1);
+          }
+          return;
+        }
+
+        if (mesEstaIgnorado(item, mesOriginal)) return;
+        if (!mapaMeses.has(mesOriginal)) mapaMeses.set(mesOriginal, []);
+        mapaMeses.get(mesOriginal).push(criarInstanciaMes(item, mesOriginal, false));
+      });
+
+      return mapaMeses;
+    }
+
+    function gerarDadosCategorias(lista) {
+      const mapa = new Map();
+      lista.forEach(item => {
+        const compras = normalizarCompras(item);
+        if (!compras.length) return;
+
+        compras.forEach(compra => {
+          const categoria = String(compra.categoria || "Sem categoria").trim();
+          if (categoryFilterTerm && categoria !== categoryFilterTerm) return;
+          mapa.set(categoria, (mapa.get(categoria) || 0) + numeroSeguro(compra.valor));
+        });
+      });
+
+      return [...mapa.entries()]
+        .map(([categoria, total]) => ({ categoria, total: Number(total.toFixed(2)) }))
+        .filter(item => item.total > 0)
+        .sort((a, b) => b.total - a.total);
+    }
+
+    function atualizarFiltroCategorias(lista) {
+      if (!categoryFilter) return;
+      const categoriasSet = new Set();
+
+      lista.forEach(item => {
+        normalizarCompras(item).forEach(compra => {
+          const categoria = String(compra.categoria || "Sem categoria").trim();
+          if (categoria) categoriasSet.add(categoria);
+        });
+      });
+
+      const categoriasOrdenadas = [...categoriasSet].sort((a, b) => a.localeCompare(b, "pt-BR"));
+      const valorAtual = categoryFilter.value;
+
+      categoryFilter.innerHTML = `
+        <option value="">Todas as categorias</option>
+        ${categoriasOrdenadas.map(cat => `
+          <option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>
+        `).join("")}
+      `;
+
+      if (categoriasOrdenadas.includes(valorAtual)) {
+        categoryFilter.value = valorAtual;
+        categoryFilterTerm = valorAtual;
+      } else {
+        categoryFilter.value = "";
+        categoryFilterTerm = "";
       }
+    }
 
-      function gerarDadosCategorias(lista) {
-        const mapa = new Map();
-        lista.forEach(item => {
-          const compras = normalizarCompras(item);
-          if (!compras.length) return;
+    function renderResumo(lista) {
+      let totalGeral = 0;
+      let totalPago = 0;
+      let totalPendente = 0;
+      let qtdPagos = 0;
+      let qtdPendentes = 0;
 
-          compras.forEach(compra => {
-            const categoria = String(compra.categoria || "Sem categoria").trim();
-            if (categoryFilterTerm && categoria !== categoryFilterTerm) return;
-            mapa.set(categoria, (mapa.get(categoria) || 0) + numeroSeguro(compra.valor));
-          });
-        });
-
-        return [...mapa.entries()]
-          .map(([categoria, total]) => ({ categoria, total: Number(total.toFixed(2)) }))
-          .filter(item => item.total > 0)
-          .sort((a, b) => b.total - a.total);
-      }
-
-      function atualizarFiltroCategorias(lista) {
-        if (!categoryFilter) return;
-        const categoriasSet = new Set();
-
-        lista.forEach(item => {
-          normalizarCompras(item).forEach(compra => {
-            const categoria = String(compra.categoria || "Sem categoria").trim();
-            if (categoria) categoriasSet.add(categoria);
-          });
-        });
-
-        const categoriasOrdenadas = [...categoriasSet].sort((a, b) => a.localeCompare(b, "pt-BR"));
-        const valorAtual = categoryFilter.value;
-
-        categoryFilter.innerHTML = `
-          <option value="">Todas as categorias</option>
-          ${categoriasOrdenadas.map(cat => `
-            <option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>
-          `).join("")}
-        `;
-
-        if (categoriasOrdenadas.includes(valorAtual)) {
-          categoryFilter.value = valorAtual;
-          categoryFilterTerm = valorAtual;
+      lista.forEach(item => {
+        const valor = valorNumerico(item.valor);
+        totalGeral += valor;
+        if (item.pago) {
+          totalPago += valor;
+          qtdPagos++;
         } else {
-          categoryFilter.value = "";
-          categoryFilterTerm = "";
+          totalPendente += valor;
+          qtdPendentes++;
         }
+      });
+
+      totalGeralEl.textContent = formatarMoeda(totalGeral);
+      totalPagoEl.textContent = formatarMoeda(totalPago);
+      totalPendenteEl.textContent = formatarMoeda(totalPendente);
+      qtdPagosEl.textContent = String(qtdPagos);
+      qtdPendentesEl.textContent = String(qtdPendentes);
+    }
+
+    function renderAlertaVencidas(lista) {
+      const vencidas = lista.filter(item => isVencida(item));
+      const total = vencidas.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+
+      if (!vencidas.length) {
+        alertaVencidas.classList.add("hidden");
+        return;
       }
 
-      function renderResumo(lista) {
-        let totalGeral = 0;
-        let totalPago = 0;
-        let totalPendente = 0;
-        let qtdPagos = 0;
-        let qtdPendentes = 0;
+      alertaVencidas.classList.remove("hidden");
+      alertaVencidasTexto.textContent =
+        `${vencidas.length} conta(s) vencida(s), total de ${formatarMoeda(total)} aguardando pagamento.`;
+    }
 
-        lista.forEach(item => {
-          const valor = valorNumerico(item.valor);
-          totalGeral += valor;
-          if (item.pago) {
-            totalPago += valor;
-            qtdPagos++;
-          } else {
-            totalPendente += valor;
-            qtdPendentes++;
-          }
-        });
+    function renderGraficoMensal() {
+      if (!financeChartCanvas || typeof Chart === "undefined") return;
 
-        totalGeralEl.textContent = formatarMoeda(totalGeral);
-        totalPagoEl.textContent = formatarMoeda(totalPago);
-        totalPendenteEl.textContent = formatarMoeda(totalPendente);
-        qtdPagosEl.textContent = String(qtdPagos);
-        qtdPendentesEl.textContent = String(qtdPendentes);
+      const mapaMeses = gerarListaParaGraficoMensal();
+      const mesesOrdenados = [...mapaMeses.keys()].sort((a, b) => a.localeCompare(b));
+
+      const labels = [];
+      const totais = [];
+      const pagos = [];
+      const pendentes = [];
+
+      mesesOrdenados.forEach(mes => {
+        const itens = mapaMeses.get(mes) || [];
+        const totalMes = itens.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+        const totalPago = itens.filter(i => i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+        const totalPendente = itens.filter(i => !i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+
+        labels.push(formatarMesCurto(mes));
+        totais.push(Number(totalMes.toFixed(2)));
+        pagos.push(Number(totalPago.toFixed(2)));
+        pendentes.push(Number(totalPendente.toFixed(2)));
+      });
+
+      if (financeChart) {
+        financeChart.destroy();
+        financeChart = null;
       }
 
-      function renderAlertaVencidas(lista) {
-        const vencidas = lista.filter(item => isVencida(item));
-        const total = vencidas.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+      const estilo = getComputedStyle(document.documentElement);
+      const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
+      const gridColor = "rgba(148, 163, 184, 0.15)";
+      const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
+      const green = estilo.getPropertyValue("--green").trim() || "#16a34a";
+      const orange = estilo.getPropertyValue("--orange").trim() || "#d97706";
 
-        if (!vencidas.length) {
-          alertaVencidas.classList.add("hidden");
-          return;
-        }
+      const ctx = financeChartCanvas.getContext("2d");
+      const gradientBar = ctx.createLinearGradient(0, 0, 0, financeChartCanvas.height || 320);
+      gradientBar.addColorStop(0, primary);
+      gradientBar.addColorStop(1, "rgba(29, 78, 216, 0.25)");
 
-        alertaVencidas.classList.remove("hidden");
-        alertaVencidasTexto.textContent =
-          `${vencidas.length} conta(s) vencida(s), total de ${formatarMoeda(total)} aguardando pagamento.`;
-      }
-
-      function renderGraficoMensal() {
-        if (!financeChartCanvas || typeof Chart === "undefined") return;
-
-        const mapaMeses = gerarListaParaGraficoMensal();
-        const mesesOrdenados = [...mapaMeses.keys()].sort((a, b) => a.localeCompare(b));
-
-        const labels = [];
-        const totais = [];
-        const pagos = [];
-        const pendentes = [];
-
-        mesesOrdenados.forEach(mes => {
-          const itens = mapaMeses.get(mes) || [];
-          const totalMes = itens.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
-          const totalPago = itens.filter(i => i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
-          const totalPendente = itens.filter(i => !i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
-
-          labels.push(formatarMesCurto(mes));
-          totais.push(Number(totalMes.toFixed(2)));
-          pagos.push(Number(totalPago.toFixed(2)));
-          pendentes.push(Number(totalPendente.toFixed(2)));
-        });
-
-        if (financeChart) {
-          financeChart.destroy();
-          financeChart = null;
-        }
-
-        const estilo = getComputedStyle(document.documentElement);
-        const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
-        const gridColor = "rgba(148, 163, 184, 0.15)";
-        const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
-        const green = estilo.getPropertyValue("--green").trim() || "#16a34a";
-        const orange = estilo.getPropertyValue("--orange").trim() || "#d97706";
-
-        const ctx = financeChartCanvas.getContext("2d");
-        const gradientBar = ctx.createLinearGradient(0, 0, 0, financeChartCanvas.height || 320);
-        gradientBar.addColorStop(0, primary);
-        gradientBar.addColorStop(1, "rgba(29, 78, 216, 0.25)");
-
-        financeChart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels,
-            datasets: [
-              {
-                type: "bar",
-                label: "Total do mês",
-                data: totais,
-                backgroundColor: gradientBar,
-                borderRadius: 10,
-                borderSkipped: false,
-                maxBarThickness: 34,
-                order: 3
-              },
-              {
-                type: "line",
-                label: "Pago",
-                data: pagos,
-                borderColor: green,
-                backgroundColor: green,
-                tension: 0.35,
-                fill: false,
-                borderWidth: 3,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                pointBackgroundColor: green,
-                pointBorderColor: "#ffffff",
-                pointBorderWidth: 2,
-                order: 1
-              },
-              {
-                type: "line",
-                label: "Pendente",
-                data: pendentes,
-                borderColor: orange,
-                backgroundColor: orange,
-                tension: 0.35,
-                fill: false,
-                borderWidth: 3,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                pointBackgroundColor: orange,
-                pointBorderColor: "#ffffff",
-                pointBorderWidth: 2,
-                order: 2
+      financeChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              type: "bar",
+              label: "Total do mês",
+              data: totais,
+              backgroundColor: gradientBar,
+              borderRadius: 10,
+              borderSkipped: false,
+              maxBarThickness: 34,
+              order: 3
+            },
+            {
+              type: "line",
+              label: "Pago",
+              data: pagos,
+              borderColor: green,
+              backgroundColor: green,
+              tension: 0.35,
+              fill: false,
+              borderWidth: 3,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: green,
+              pointBorderColor: "#ffffff",
+              pointBorderWidth: 2,
+              order: 1
+            },
+            {
+              type: "line",
+              label: "Pendente",
+              data: pendentes,
+              borderColor: orange,
+              backgroundColor: orange,
+              tension: 0.35,
+              fill: false,
+              borderWidth: 3,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: orange,
+              pointBorderColor: "#ffffff",
+              pointBorderWidth: 2,
+              order: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 900, easing: "easeOutQuart" },
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                color: corTexto,
+                usePointStyle: true,
+                pointStyle: "circle",
+                padding: 18,
+                font: { weight: "bold" }
               }
-            ]
+            },
+            tooltip: {
+              backgroundColor: "rgba(15, 23, 42, 0.92)",
+              titleColor: "#ffffff",
+              bodyColor: "#ffffff",
+              padding: 12,
+              displayColors: true,
+              callbacks: {
+                label(context) {
+                  return `${context.dataset.label}: ${formatarMoeda(context.raw || 0)}`;
+                }
+              }
+            }
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 900, easing: "easeOutQuart" },
-            interaction: { mode: "index", intersect: false },
-            plugins: {
-              legend: {
-                position: "top",
-                labels: {
-                  color: corTexto,
-                  usePointStyle: true,
-                  pointStyle: "circle",
-                  padding: 18,
-                  font: { weight: "bold" }
-                }
-              },
-              tooltip: {
-                backgroundColor: "rgba(15, 23, 42, 0.92)",
-                titleColor: "#ffffff",
-                bodyColor: "#ffffff",
-                padding: 12,
-                displayColors: true,
-                callbacks: {
-                  label(context) {
-                    return `${context.dataset.label}: ${formatarMoeda(context.raw || 0)}`;
-                  }
-                }
-              }
+          scales: {
+            x: {
+              ticks: { color: corTexto, font: { weight: "bold" } },
+              grid: { display: false }
             },
-            scales: {
-              x: {
-                ticks: { color: corTexto, font: { weight: "bold" } },
-                grid: { display: false }
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: corTexto,
+                callback(value) { return formatarMoeda(value); }
               },
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  color: corTexto,
-                  callback(value) { return formatarMoeda(value); }
-                },
-                grid: { color: gridColor }
-              }
+              grid: { color: gridColor }
             }
           }
-        });
+        }
+      });
+    }
+
+    function renderGraficoCategorias() {
+      if (!categoryChartCanvas || typeof Chart === "undefined") return;
+
+      const lista = aplicarFiltros(despesasCache);
+      atualizarFiltroCategorias(lista);
+      const dados = gerarDadosCategorias(lista);
+
+      if (categoryChart) {
+        categoryChart.destroy();
+        categoryChart = null;
       }
 
-      function renderGraficoCategorias() {
-        if (!categoryChartCanvas || typeof Chart === "undefined") return;
+      const estilo = getComputedStyle(document.documentElement);
+      const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
+      const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
+      const gridColor = "rgba(148, 163, 184, 0.15)";
+      const ctx = categoryChartCanvas.getContext("2d");
 
-        const lista = aplicarFiltros(despesasCache);
-        atualizarFiltroCategorias(lista);
-        const dados = gerarDadosCategorias(lista);
-
-        if (categoryChart) {
-          categoryChart.destroy();
-          categoryChart = null;
-        }
-
-        const estilo = getComputedStyle(document.documentElement);
-        const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
-        const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
-        const gridColor = "rgba(148, 163, 184, 0.15)";
-        const ctx = categoryChartCanvas.getContext("2d");
-
-        if (!dados.length) {
-          categoryChart = new Chart(ctx, {
-            type: "bar",
-            data: {
-              labels: ["Sem compras cadastradas"],
-              datasets: [{
-                label: "Total por categoria",
-                data: [0],
-                backgroundColor: primary,
-                borderRadius: 10,
-                borderSkipped: false,
-                maxBarThickness: 38
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              indexAxis: "y",
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  callbacks: {
-                    label() { return " R$ 0,00"; }
-                  }
-                }
-              },
-              scales: {
-                x: {
-                  beginAtZero: true,
-                  grid: { color: gridColor },
-                  ticks: {
-                    color: corTexto,
-                    callback(value) { return formatarMoeda(value); }
-                  }
-                },
-                y: {
-                  grid: { display: false },
-                  ticks: { color: corTexto }
-                }
-              }
-            }
-          });
-          return;
-        }
-
-        const labels = dados.map(item => item.categoria);
-        const valores = dados.map(item => item.total);
-
+      if (!dados.length) {
         categoryChart = new Chart(ctx, {
           type: "bar",
           data: {
-            labels,
+            labels: ["Sem compras cadastradas"],
             datasets: [{
               label: "Total por categoria",
-              data: valores,
+              data: [0],
               backgroundColor: primary,
               borderRadius: 10,
               borderSkipped: false,
@@ -1486,13 +1542,8 @@
             plugins: {
               legend: { display: false },
               tooltip: {
-                backgroundColor: "rgba(15, 23, 42, 0.92)",
-                titleColor: "#ffffff",
-                bodyColor: "#ffffff",
                 callbacks: {
-                  label(context) {
-                    return ` ${formatarMoeda(context.raw || 0)}`;
-                  }
+                  label() { return " R$ 0,00"; }
                 }
               }
             },
@@ -1507,308 +1558,427 @@
               },
               y: {
                 grid: { display: false },
-                ticks: {
-                  color: corTexto,
-                  font: { weight: "bold" }
+                ticks: { color: corTexto }
+              }
+            }
+          }
+        });
+        return;
+      }
+
+      const labels = dados.map(item => item.categoria);
+      const valores = dados.map(item => item.total);
+
+      categoryChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "Total por categoria",
+            data: valores,
+            backgroundColor: primary,
+            borderRadius: 10,
+            borderSkipped: false,
+            maxBarThickness: 38
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: "y",
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "rgba(15, 23, 42, 0.92)",
+              titleColor: "#ffffff",
+              bodyColor: "#ffffff",
+              callbacks: {
+                label(context) {
+                  return ` ${formatarMoeda(context.raw || 0)}`;
                 }
               }
             }
-          }
-        });
-      }
-
-      function renderComprasDoCartao(item) {
-        const compras = normalizarCompras(item);
-        const totalCompras = getTotalCompras(item);
-
-        return `
-          <div class="compras-box">
-            <div class="compras-header">
-              <div>
-                <h4>Compras</h4>
-                <p>Detalhamento do cartão selecionado</p>
-              </div>
-              <div>
-                <strong>Compras lançadas: ${formatarMoeda(totalCompras)}</strong>
-              </div>
-            </div>
-
-            <div class="compras-table-wrap">
-              ${
-                compras.length
-                  ? `
-                    <table class="compras-table">
-                      <thead>
-                        <tr>
-                          <th>Compra</th>
-                          <th>Categoria</th>
-                          <th>Valor</th>
-                          <th>Ações</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${compras.map((compra, index) => `
-                          <tr>
-                            <td>${escapeHtml(compra.nome)}</td>
-                            <td><span class="compra-categoria-badge">${escapeHtml(compra.categoria || "Sem categoria")}</span></td>
-                            <td>${formatarMoeda(compra.valor)}</td>
-                            <td>
-                              <div class="compra-actions">
-                                <button
-                                  type="button"
-                                  class="compra-action-btn"
-                                  data-action="edit-compra"
-                                  data-id="${escapeHtml(item.id)}"
-                                  data-index="${index}"
-                                >
-                                  Editar
-                                </button>
-                                <button
-                                  type="button"
-                                  class="compra-action-btn delete"
-                                  data-action="delete-compra"
-                                  data-id="${escapeHtml(item.id)}"
-                                  data-index="${index}"
-                                >
-                                  Excluir
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        `).join("")}
-                      </tbody>
-                    </table>
-                  `
-                  : `<div class="compras-empty">Nenhuma compra cadastrada neste cartão.</div>`
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: gridColor },
+              ticks: {
+                color: corTexto,
+                callback(value) { return formatarMoeda(value); }
               }
+            },
+            y: {
+              grid: { display: false },
+              ticks: {
+                color: corTexto,
+                font: { weight: "bold" }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderComprasDoCartao(item) {
+      const compras = normalizarCompras(item);
+      const totalCompras = getTotalCompras(item);
+
+      return `
+        <div class="compras-box">
+          <div class="compras-header">
+            <div>
+              <h4>Compras</h4>
+              <p>Detalhamento do cartão selecionado</p>
+            </div>
+            <div>
+              <strong>Compras lançadas: ${formatarMoeda(totalCompras)}</strong>
+            </div>
+          </div>
+
+          <div class="compras-table-wrap">
+            ${
+              compras.length
+                ? `
+                  <table class="compras-table">
+                    <thead>
+                      <tr>
+                        <th>Compra</th>
+                        <th>Categoria</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${compras.map((compra, index) => `
+                        <tr>
+                          <td>${escapeHtml(compra.nome)}</td>
+                          <td><span class="compra-categoria-badge">${escapeHtml(compra.categoria || "Sem categoria")}</span></td>
+                          <td>${formatarMoeda(compra.valor)}</td>
+                          <td>
+                            <div class="compra-actions">
+                              <button
+                                type="button"
+                                class="compra-action-btn"
+                                data-action="edit-compra"
+                                data-id="${escapeHtml(item.id)}"
+                                data-index="${index}"
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                class="compra-action-btn delete"
+                                data-action="delete-compra"
+                                data-id="${escapeHtml(item.id)}"
+                                data-index="${index}"
+                              >
+                                Excluir
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join("")}
+                    </tbody>
+                  </table>
+                `
+                : `<div class="compras-empty">Nenhuma compra cadastrada neste cartão.</div>`
+            }
+          </div>
+
+          <form class="compra-form" data-card-id="${escapeHtml(item.id)}">
+            <div class="field">
+              <label>Compra</label>
+              <input type="text" name="nome" placeholder="Ex: McDonald's, Cinema, Mercado" required />
             </div>
 
-            <form class="compra-form" data-card-id="${escapeHtml(item.id)}">
-              <div class="field">
-                <label>Compra</label>
-                <input type="text" name="nome" placeholder="Ex: McDonald's, Cinema, Mercado" required />
-              </div>
+            <div class="field">
+              <label>Categoria</label>
+              <select name="categoria" required>
+                ${getOptionsCategoriasCompra()}
+              </select>
+            </div>
 
-              <div class="field">
-                <label>Categoria</label>
-                <select name="categoria" required>
-                  ${getOptionsCategoriasCompra()}
-                </select>
-              </div>
+            <div class="field">
+              <label>Valor</label>
+              <input type="number" name="valor" step="0.01" min="0" placeholder="0,00" required />
+            </div>
 
-              <div class="field">
-                <label>Valor</label>
-                <input type="number" name="valor" step="0.01" min="0" placeholder="0,00" required />
-              </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button type="submit">Adicionar compra</button>
+            </div>
+          </form>
+        </div>
+      `;
+    }
 
-              <div class="field">
-                <label>&nbsp;</label>
-                <button type="submit">Adicionar compra</button>
-              </div>
-            </form>
-          </div>
+    function renderTabelaPrincipal() {
+      mainTableBody.innerHTML = "";
+      itensRenderizadosMap = new Map();
+
+      const lista = aplicarFiltros(despesasCache);
+      renderResumo(lista);
+      renderAlertaVencidas(lista);
+      monthHeader.textContent = formatarMesTitulo(monthTerm);
+
+      if (!lista.length) {
+        mainTableBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="empty-cell">Nenhuma despesa encontrada.</td>
+          </tr>
         `;
+        return;
       }
 
-      function renderTabelaPrincipal() {
-        mainTableBody.innerHTML = "";
+      const grupos = [
+        { nome: "Fixos", itens: lista.filter(i => getGrupoVisual(i) === "Fixos") },
+        { nome: "Cartões", itens: lista.filter(i => getGrupoVisual(i) === "Cartões") },
+        { nome: "Outros", itens: lista.filter(i => getGrupoVisual(i) === "Outros") }
+      ];
 
-        const lista = aplicarFiltros(despesasCache);
-        renderResumo(lista);
-        renderAlertaVencidas(lista);
-        monthHeader.textContent = formatarMesTitulo(monthTerm);
+      grupos.forEach(grupo => {
+        if (!grupo.itens.length) return;
 
-        if (!lista.length) {
-          mainTableBody.innerHTML = `
-            <tr>
-              <td colspan="7" class="empty-cell">Nenhuma despesa encontrada.</td>
-            </tr>
-          `;
-          return;
-        }
+        const groupRow = document.createElement("tr");
+        groupRow.innerHTML = `<td colspan="7" class="group-row">${grupo.nome}</td>`;
+        mainTableBody.appendChild(groupRow);
 
-        const grupos = [
-          { nome: "Fixos", itens: lista.filter(i => getGrupoVisual(i) === "Fixos") },
-          { nome: "Cartões", itens: lista.filter(i => getGrupoVisual(i) === "Cartões") },
-          { nome: "Outros", itens: lista.filter(i => getGrupoVisual(i) === "Outros") }
-        ];
+        grupo.itens.forEach(item => {
+          const status = getStatus(item);
+          const idReal = item.origemId || item.id;
+          const ehRecorrenteFuturo = Boolean(item.recorrenteMesFuturo);
+          const mesReferencia = item.mesReferencia || getMesFromDate(item.vencimento);
+          const key = `${idReal}__${mesReferencia}`;
+          const podeExpandirCompras = isCartao(item) && !ehRecorrenteFuturo;
+          const estaExpandido = cartoesExpandidos.has(idReal);
 
-        grupos.forEach(grupo => {
-          if (!grupo.itens.length) return;
+          itensRenderizadosMap.set(key, { ...item });
 
-          const groupRow = document.createElement("tr");
-          groupRow.innerHTML = `<td colspan="7" class="group-row">${grupo.nome}</td>`;
-          mainTableBody.appendChild(groupRow);
+          const observacaoExtra = item.recorrenteZerado
+            ? `${item.observacao ? `${item.observacao} | ` : ""}Próximo mês iniciado com valor zerado`
+            : (item.observacao || "-");
 
-          grupo.itens.forEach(item => {
-            const status = getStatus(item);
-            const idReal = item.origemId || item.id;
-            const ehRecorrenteFuturo = Boolean(item.recorrenteMesFuturo);
-            const mesReferencia = item.mesReferencia || getMesFromDate(item.vencimento);
-            const podeExpandirCompras = isCartao(item) && !ehRecorrenteFuturo;
-            const estaExpandido = cartoesExpandidos.has(idReal);
+          const totalCompras = getTotalCompras(item);
 
-            const observacaoExtra = item.recorrenteZerado
-              ? `${item.observacao ? `${item.observacao} | ` : ""}Próximo mês iniciado com valor zerado`
-              : (item.observacao || "-");
-
-            const totalCompras = getTotalCompras(item);
-
-            const tr = document.createElement("tr");
-            tr.className = item.pago ? "row-paid" : (isVencida(item) ? "row-overdue" : "");
-            tr.setAttribute("data-id", idReal);
-
-            tr.innerHTML = `
-              <td>
-                <input
-                  type="checkbox"
-                  class="pay-check"
-                  data-id="${idReal}"
-                  data-mes="${mesReferencia}"
-                  ${item.pago ? "checked" : ""}
-                  ${ehRecorrenteFuturo ? 'disabled title="Pagamento da recorrência futura bloqueado para não alterar o item original."' : ""}
-                />
-              </td>
-              <td>
-                <div class="descricao-cell-text">${escapeHtml(item.descricao)}</div>
-                <div class="parcelas-info">
-                  <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
-                  <small>${escapeHtml(getParcelasRestantes(item))}</small>
-                  ${podeExpandirCompras ? `<small><strong>Compras lançadas:</strong> ${formatarMoeda(totalCompras)}</small>` : ""}
-                  ${item.recorrenteZerado ? '<span class="recorrente-badge">Próximo mês com valor zerado</span>' : ""}
-                  ${ehRecorrenteFuturo && !item.recorrenteZerado ? '<span class="recorrente-badge">Recorrente do mês</span>' : ""}
-                </div>
-                ${podeExpandirCompras ? `
-                  <button
-                    class="toggle-compras-btn ${estaExpandido ? "expanded" : ""}"
-                    type="button"
-                    data-action="toggle-compras"
-                    data-id="${idReal}"
-                  >
-                    <span class="arrow">▼</span>
-                    <span>${estaExpandido ? "Ocultar compras" : "Ver compras"}</span>
-                  </button>
-                ` : ""}
-              </td>
-              <td class="valor-cell">${formatarMoedaTabela(item.valor)}</td>
-              <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
-              <td class="obs-cell">${escapeHtml(observacaoExtra)}</td>
-              <td class="status-cell">
-                <span class="status-badge ${status === "Pago" ? "paid" : (status === "Vencido" ? "overdue" : "pending")}">
-                  ${status}${status === "Pago" ? " ✅" : ""}
-                </span>
-              </td>
-              <td>
-                <div class="actions-cell">
-                  <button class="action-btn btn-edit" data-id="${idReal}" data-action="edit" type="button" title="Editar" aria-label="Editar">✏</button>
-                  <button class="action-btn btn-delete" data-id="${idReal}" data-mes="${mesReferencia}" data-action="delete" type="button" title="Excluir" aria-label="Excluir">🗑</button>
-                </div>
-              </td>
-            `;
-
-            mainTableBody.appendChild(tr);
-
-            if (podeExpandirCompras && estaExpandido) {
-              const compraRow = document.createElement("tr");
-              compraRow.className = "compras-row";
-              compraRow.innerHTML = `
-                <td colspan="7">
-                  ${renderComprasDoCartao(item)}
-                </td>
-              `;
-              mainTableBody.appendChild(compraRow);
-            }
-          });
-        });
-
-        if (lastEditedId) {
-          const row = document.querySelector(`tr[data-id="${lastEditedId}"]`);
-          if (row) {
-            row.classList.add("edited-highlight");
-            row.scrollIntoView({ behavior: "smooth", block: "center" });
-            setTimeout(() => row.classList.remove("edited-highlight"), 1800);
-          }
-          lastEditedId = null;
-        }
-      }
-
-      function renderIpva() {
-        ipvaTableBody.innerHTML = "";
-
-        const listaIpva = getIpvaVisivelPorMes();
-        const ultimoMesIpva = getUltimoMesIpva();
-
-        if (monthTerm && ultimoMesIpva && monthTerm > ultimoMesIpva) {
-          ipvaPanel.classList.add("hidden");
-          return;
-        }
-
-        ipvaPanel.classList.remove("hidden");
-
-        if (ultimoMesIpva) {
-          ipvaSubtitle.textContent = `Atualização em tempo real até ${formatarMesTitulo(ultimoMesIpva)}.`;
-        } else {
-          ipvaSubtitle.textContent = "Atualização em tempo real.";
-        }
-
-        if (!listaIpva.length) {
-          ipvaTableBody.innerHTML = `
-            <tr>
-              <td colspan="5" class="empty-cell">Nenhuma parcela de IPVA cadastrada para este período.</td>
-            </tr>
-          `;
-          return;
-        }
-
-        listaIpva.forEach((item, index) => {
-          const status = item.pago ? "Pago" : "Pendente";
           const tr = document.createElement("tr");
-          tr.className = item.pago ? "row-paid" : "";
+          tr.className = item.pago ? "row-paid" : (isVencida(item) ? "row-overdue" : "");
+          tr.setAttribute("data-id", idReal);
 
           tr.innerHTML = `
             <td>
               <input
                 type="checkbox"
-                class="ipva-check"
-                data-index-real="${item.indexReal}"
+                class="pay-check"
+                data-id="${idReal}"
+                data-mes="${mesReferencia}"
                 ${item.pago ? "checked" : ""}
+                ${ehRecorrenteFuturo ? 'disabled title="Pagamento da recorrência futura bloqueado para não alterar o item original."' : ""}
               />
             </td>
-            <td>${index + 1}</td>
-            <td class="valor-cell">${formatarMoedaTabela(item.valor)}</td>
-            <td>${formatarDataBR(item.data)}</td>
             <td>
-              <span class="status-badge ${item.pago ? "paid" : "pending"}">
-                ${status}${item.pago ? " ✅" : ""}
+              <div class="descricao-cell-text">${escapeHtml(item.descricao)}</div>
+              <div class="parcelas-info">
+                <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
+                <small>${escapeHtml(getParcelasRestantes(item))}</small>
+                ${podeExpandirCompras ? `<small><strong>Compras lançadas:</strong> ${formatarMoeda(totalCompras)}</small>` : ""}
+                ${item.recorrenteZerado ? '<span class="recorrente-badge">Próximo mês com valor zerado</span>' : ""}
+                ${ehRecorrenteFuturo && !item.recorrenteZerado ? '<span class="recorrente-badge">Recorrente do mês</span>' : ""}
+              </div>
+              ${podeExpandirCompras ? `
+                <button
+                  class="toggle-compras-btn ${estaExpandido ? "expanded" : ""}"
+                  type="button"
+                  data-action="toggle-compras"
+                  data-id="${idReal}"
+                >
+                  <span class="arrow">▼</span>
+                  <span>${estaExpandido ? "Ocultar compras" : "Ver compras"}</span>
+                </button>
+              ` : ""}
+            </td>
+            <td class="valor-cell">${formatarMoedaTabela(item.valor)}</td>
+            <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
+            <td class="obs-cell">${escapeHtml(observacaoExtra)}</td>
+            <td class="status-cell">
+              <span class="status-badge ${status === "Pago" ? "paid" : (status === "Vencido" ? "overdue" : "pending")}">
+                ${status}${status === "Pago" ? " ✅" : ""}
               </span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn btn-edit" data-id="${idReal}" data-mes="${mesReferencia}" data-action="edit" type="button" title="Editar" aria-label="Editar">✏</button>
+                <button class="action-btn btn-delete" data-id="${idReal}" data-mes="${mesReferencia}" data-action="delete" type="button" title="Excluir" aria-label="Excluir">🗑</button>
+              </div>
             </td>
           `;
 
-          ipvaTableBody.appendChild(tr);
+          mainTableBody.appendChild(tr);
+
+          if (podeExpandirCompras && estaExpandido) {
+            const compraRow = document.createElement("tr");
+            compraRow.className = "compras-row";
+            compraRow.innerHTML = `
+              <td colspan="7">
+                ${renderComprasDoCartao(item)}
+              </td>
+            `;
+            mainTableBody.appendChild(compraRow);
+          }
         });
+      });
+
+      if (lastEditedId) {
+        const row = document.querySelector(`tr[data-id="${lastEditedId}"]`);
+        if (row) {
+          row.classList.add("edited-highlight");
+          row.scrollIntoView({ behavior: "smooth", block: "center" });
+          setTimeout(() => row.classList.remove("edited-highlight"), 1800);
+        }
+        lastEditedId = null;
+      }
+    }
+
+    function renderIpva() {
+      ipvaTableBody.innerHTML = "";
+
+      const listaIpva = getIpvaVisivelPorMes();
+      const ultimoMesIpva = getUltimoMesIpva();
+
+      if (monthTerm && ultimoMesIpva && monthTerm > ultimoMesIpva) {
+        ipvaPanel.classList.add("hidden");
+        return;
       }
 
-      async function salvarDespesa(e) {
-        e.preventDefault();
+      ipvaPanel.classList.remove("hidden");
 
-        const descricao = document.getElementById("descricao").value.trim();
-        const valorDigitado = document.getElementById("valor").value;
-        const valor = converterValorInput(valorDigitado);
-        const vencimento = document.getElementById("vencimento").value.trim();
-        const observacao = document.getElementById("observacao").value.trim();
-        const parcelaAtual = Number(document.getElementById("parcela-atual").value || 0);
-        const parcelaTotal = Number(document.getElementById("parcela-total").value || 0);
-        const categoria = definirCategoriaAutomatica(descricao);
+      if (ultimoMesIpva) {
+        ipvaSubtitle.textContent = `Atualização em tempo real até ${formatarMesTitulo(ultimoMesIpva)}.`;
+      } else {
+        ipvaSubtitle.textContent = "Atualização em tempo real.";
+      }
 
-        if (!auth.currentUser) return;
-        if (Number.isNaN(valor)) {
-          alert("Digite um valor válido.");
+      if (!listaIpva.length) {
+        ipvaTableBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="empty-cell">Nenhuma parcela de IPVA cadastrada para este período.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      listaIpva.forEach((item, index) => {
+        const status = item.pago ? "Pago" : "Pendente";
+        const tr = document.createElement("tr");
+        tr.className = item.pago ? "row-paid" : "";
+
+        tr.innerHTML = `
+          <td>
+            <input
+              type="checkbox"
+              class="ipva-check"
+              data-index-real="${item.indexReal}"
+              ${item.pago ? "checked" : ""}
+            />
+          </td>
+          <td>${index + 1}</td>
+          <td class="valor-cell">${formatarMoedaTabela(item.valor)}</td>
+          <td>${formatarDataBR(item.data)}</td>
+          <td>
+            <span class="status-badge ${item.pago ? "paid" : "pending"}">
+              ${status}${item.pago ? " ✅" : ""}
+            </span>
+          </td>
+        `;
+
+        ipvaTableBody.appendChild(tr);
+      });
+    }
+
+    async function salvarDespesa(e) {
+      e.preventDefault();
+
+      const descricao = document.getElementById("descricao").value.trim();
+      const valorDigitado = document.getElementById("valor").value;
+      const valor = converterValorInput(valorDigitado);
+      const vencimento = document.getElementById("vencimento").value.trim();
+      const observacao = document.getElementById("observacao").value.trim();
+      const parcelaAtual = Number(document.getElementById("parcela-atual").value || 0);
+      const parcelaTotal = Number(document.getElementById("parcela-total").value || 0);
+      const categoria = definirCategoriaAutomatica(descricao);
+
+      if (!auth.currentUser) return;
+      if (Number.isNaN(valor)) {
+        alert("Digite um valor válido.");
+        return;
+      }
+      if (!validarParcelas(parcelaAtual, parcelaTotal)) return;
+
+      try {
+        await db.collection("despesas").add({
+          descricao,
+          categoria,
+          valor,
+          vencimento,
+          observacao,
+          parcelaAtual: parcelaAtual || null,
+          parcelaTotal: parcelaTotal || null,
+          mesesIgnorados: [],
+          compras: [],
+          ajustesMensais: {},
+          pago: false,
+          uid: auth.currentUser.uid,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        form.reset();
+        categoriaPreview.value = "Será definida automaticamente";
+        tipoPreview.value = "Será definido automaticamente";
+        expenseFormWrapper.classList.add("hidden");
+        toggleExpenseFormBtn.setAttribute("aria-expanded", "false");
+        expenseToggleIcon.textContent = "▼";
+      } catch (error) {
+        alert("Erro ao salvar despesa: " + error.message);
+      }
+    }
+
+    async function salvarEdicao(e) {
+      e.preventDefault();
+
+      const id = document.getElementById("edit-id").value;
+      const descricao = document.getElementById("edit-descricao").value.trim();
+      const categoria = document.getElementById("edit-categoria").value;
+      const valorDigitado = document.getElementById("edit-valor").value;
+      const valor = converterValorInput(valorDigitado);
+      const vencimento = document.getElementById("edit-vencimento").value.trim();
+      const observacao = document.getElementById("edit-observacao").value.trim();
+      const parcelaAtual = Number(document.getElementById("edit-parcela-atual").value || 0);
+      const parcelaTotal = Number(document.getElementById("edit-parcela-total").value || 0);
+      const mesReferencia = document.getElementById("edit-month-ref")?.value || "";
+      const isMonthlyEdit = document.getElementById("edit-is-monthly")?.value === "true";
+
+      if (Number.isNaN(valor)) {
+        alert("Digite um valor válido.");
+        return;
+      }
+      if (!validarParcelas(parcelaAtual, parcelaTotal)) return;
+
+      try {
+        const itemOriginal = despesasCache.find(d => d.id === id);
+        if (!itemOriginal) {
+          alert("Item não encontrado.");
           return;
         }
-        if (!validarParcelas(parcelaAtual, parcelaTotal)) return;
 
-        try {
-          await db.collection("despesas").add({
+        if (isMonthlyEdit && mesReferencia) {
+          const ajustesMensais = {
+            ...getAjustesMensais(itemOriginal)
+          };
+
+          const ajusteAnterior = ajustesMensais[mesReferencia] || {};
+
+          ajustesMensais[mesReferencia] = {
+            ...ajusteAnterior,
             descricao,
             categoria,
             valor,
@@ -1816,44 +1986,16 @@
             observacao,
             parcelaAtual: parcelaAtual || null,
             parcelaTotal: parcelaTotal || null,
-            mesesIgnorados: [],
-            compras: [],
-            pago: false,
-            uid: auth.currentUser.uid,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
+            pago: typeof ajusteAnterior.pago === "boolean"
+              ? ajusteAnterior.pago
+              : Boolean(ultimoContextoEdicao?.pago),
+            compras: Array.isArray(ajusteAnterior.compras)
+              ? ajusteAnterior.compras
+              : (Array.isArray(ultimoContextoEdicao?.compras) ? ultimoContextoEdicao.compras : [])
+          };
 
-          form.reset();
-          categoriaPreview.value = "Será definida automaticamente";
-          tipoPreview.value = "Será definido automaticamente";
-          expenseFormWrapper.classList.add("hidden");
-          toggleExpenseFormBtn.setAttribute("aria-expanded", "false");
-          expenseToggleIcon.textContent = "▼";
-        } catch (error) {
-          alert("Erro ao salvar despesa: " + error.message);
-        }
-      }
-
-      async function salvarEdicao(e) {
-        e.preventDefault();
-
-        const id = document.getElementById("edit-id").value;
-        const descricao = document.getElementById("edit-descricao").value.trim();
-        const categoria = document.getElementById("edit-categoria").value;
-        const valorDigitado = document.getElementById("edit-valor").value;
-        const valor = converterValorInput(valorDigitado);
-        const vencimento = document.getElementById("edit-vencimento").value.trim();
-        const observacao = document.getElementById("edit-observacao").value.trim();
-        const parcelaAtual = Number(document.getElementById("edit-parcela-atual").value || 0);
-        const parcelaTotal = Number(document.getElementById("edit-parcela-total").value || 0);
-
-        if (Number.isNaN(valor)) {
-          alert("Digite um valor válido.");
-          return;
-        }
-        if (!validarParcelas(parcelaAtual, parcelaTotal)) return;
-
-        try {
+          await db.collection("despesas").doc(id).update({ ajustesMensais });
+        } else {
           await db.collection("despesas").doc(id).update({
             descricao,
             categoria,
@@ -1863,436 +2005,438 @@
             parcelaAtual: parcelaAtual || null,
             parcelaTotal: parcelaTotal || null
           });
-
-          lastEditedId = id;
-          fecharModalEdicao();
-        } catch (error) {
-          alert("Erro ao editar despesa: " + error.message);
         }
+
+        lastEditedId = id;
+        fecharModalEdicao();
+      } catch (error) {
+        alert("Erro ao editar despesa: " + error.message);
       }
+    }
 
-      async function alternarPagamento(id) {
-        const item = despesasCache.find(d => d.id === id);
-        if (!item) return;
+    async function alternarPagamento(id) {
+      const item = despesasCache.find(d => d.id === id);
+      if (!item) return;
 
-        try {
-          await db.collection("despesas").doc(id).update({
-            pago: !item.pago
-          });
-        } catch (error) {
-          alert("Erro ao atualizar pagamento: " + error.message);
-        }
+      try {
+        await db.collection("despesas").doc(id).update({
+          pago: !item.pago
+        });
+      } catch (error) {
+        alert("Erro ao atualizar pagamento: " + error.message);
       }
+    }
 
-      async function excluirDespesa(id, mesReferencia) {
-        const item = despesasCache.find(d => d.id === id);
-        if (!item) return;
+    async function excluirDespesa(id, mesReferencia) {
+      const item = despesasCache.find(d => d.id === id);
+      if (!item) return;
 
-        try {
-          const itemNormalizado = normalizarCategoria(item);
+      try {
+        const itemNormalizado = normalizarCategoria(item);
 
-          if (isRecorrenteMensal(itemNormalizado)) {
-            const excluirApenasMes = confirm(
-              `Deseja excluir "${item.descricao}" apenas de ${formatarMesTitulo(mesReferencia)}?\n\nClique em OK para excluir só deste mês.\nClique em Cancelar para escolher excluir de todos os meses.`
-            );
+        if (isRecorrenteMensal(itemNormalizado)) {
+          const excluirApenasMes = confirm(
+            `Deseja excluir "${item.descricao}" apenas de ${formatarMesTitulo(mesReferencia)}?\n\nClique em OK para excluir só deste mês.\nClique em Cancelar para escolher excluir de todos os meses.`
+          );
 
-            if (excluirApenasMes) {
-              const mesesIgnorados = getMesesIgnorados(item);
-              if (!mesReferencia) {
-                alert("Não foi possível identificar o mês da linha.");
-                return;
-              }
-
-              if (!mesesIgnorados.includes(mesReferencia)) {
-                mesesIgnorados.push(mesReferencia);
-              }
-
-              await db.collection("despesas").doc(id).update({ mesesIgnorados });
+          if (excluirApenasMes) {
+            const mesesIgnorados = getMesesIgnorados(item);
+            if (!mesReferencia) {
+              alert("Não foi possível identificar o mês da linha.");
               return;
             }
 
-            const excluirTodos = confirm(
-              `Deseja excluir "${item.descricao}" de TODOS os meses?\n\nEssa ação apaga o item definitivamente.`
-            );
+            if (!mesesIgnorados.includes(mesReferencia)) {
+              mesesIgnorados.push(mesReferencia);
+            }
 
-            if (!excluirTodos) return;
-            await db.collection("despesas").doc(id).delete();
+            await db.collection("despesas").doc(id).update({ mesesIgnorados });
             return;
           }
 
-          const confirmarExclusao = confirm(`Deseja excluir "${item.descricao}"?`);
-          if (!confirmarExclusao) return;
+          const excluirTodos = confirm(
+            `Deseja excluir "${item.descricao}" de TODOS os meses?\n\nEssa ação apaga o item definitivamente.`
+          );
+
+          if (!excluirTodos) return;
           await db.collection("despesas").doc(id).delete();
-        } catch (error) {
-          alert("Erro ao excluir despesa: " + error.message);
+          return;
         }
+
+        const confirmarExclusao = confirm(`Deseja excluir "${item.descricao}"?`);
+        if (!confirmarExclusao) return;
+        await db.collection("despesas").doc(id).delete();
+      } catch (error) {
+        alert("Erro ao excluir despesa: " + error.message);
       }
+    }
 
-      async function alternarIpva(indexReal) {
-        const novaLista = ipvaData.map((item, i) => ({
-          data: item?.data || "",
-          valor: numeroSeguro(item?.valor),
-          pago: i === indexReal ? !Boolean(item?.pago) : Boolean(item?.pago)
-        })).filter(item => item.data);
+    async function alternarIpva(indexReal) {
+      const novaLista = ipvaData.map((item, i) => ({
+        data: item?.data || "",
+        valor: numeroSeguro(item?.valor),
+        pago: i === indexReal ? !Boolean(item?.pago) : Boolean(item?.pago)
+      })).filter(item => item.data);
 
-        try {
-          await db.collection("configuracoes").doc("ipva_carro").set({
-            parcelas: novaLista,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-        } catch (error) {
-          alert("Erro ao atualizar IPVA: " + error.message);
-        }
-      }
-
-      async function adicionarCompraAoCartao(cardId, nome, categoria, valor) {
-        const item = despesasCache.find(d => d.id === cardId);
-        if (!item) return;
-
-        const compras = normalizarCompras(item);
-        compras.push({
-          nome: String(nome || "").trim(),
-          categoria: String(categoria || "").trim(),
-          valor: numeroSeguro(valor)
+      try {
+        await db.collection("configuracoes").doc("ipva_carro").set({
+          parcelas: novaLista,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+      } catch (error) {
+        alert("Erro ao atualizar IPVA: " + error.message);
+      }
+    }
 
-        await db.collection("despesas").doc(cardId).update({ compras });
+    async function adicionarCompraAoCartao(cardId, nome, categoria, valor) {
+      const item = despesasCache.find(d => d.id === cardId);
+      if (!item) return;
+
+      const compras = normalizarCompras(item);
+      compras.push({
+        nome: String(nome || "").trim(),
+        categoria: String(categoria || "").trim(),
+        valor: numeroSeguro(valor)
+      });
+
+      await db.collection("despesas").doc(cardId).update({ compras });
+    }
+
+    async function excluirCompraDoCartao(cardId, index) {
+      const item = despesasCache.find(d => d.id === cardId);
+      if (!item) return;
+
+      const compras = normalizarCompras(item);
+      compras.splice(index, 1);
+
+      await db.collection("despesas").doc(cardId).update({ compras });
+    }
+
+    async function editarCompraDoCartao(cardId, index) {
+      const item = despesasCache.find(d => d.id === cardId);
+      if (!item) return;
+
+      const compras = normalizarCompras(item);
+      const compra = compras[index];
+      if (!compra) return;
+
+      const novoNome = prompt("Editar nome da compra:", compra.nome);
+      if (novoNome === null) return;
+
+      const novaCategoria = prompt(
+        `Editar categoria da compra:\n\nSugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
+        compra.categoria || ""
+      );
+      if (novaCategoria === null) return;
+
+      const novoValorTexto = prompt("Editar valor da compra:", String(compra.valor ?? ""));
+      if (novoValorTexto === null) return;
+
+      const novoValor = converterValorInput(novoValorTexto);
+
+      if (!String(novoNome).trim()) {
+        alert("Digite o nome da compra.");
+        return;
       }
 
-      async function excluirCompraDoCartao(cardId, index) {
-        const item = despesasCache.find(d => d.id === cardId);
-        if (!item) return;
-
-        const compras = normalizarCompras(item);
-        compras.splice(index, 1);
-
-        await db.collection("despesas").doc(cardId).update({ compras });
+      if (!String(novaCategoria).trim()) {
+        alert("Digite a categoria da compra.");
+        return;
       }
 
-      async function editarCompraDoCartao(cardId, index) {
-        const item = despesasCache.find(d => d.id === cardId);
-        if (!item) return;
-
-        const compras = normalizarCompras(item);
-        const compra = compras[index];
-        if (!compra) return;
-
-        const novoNome = prompt("Editar nome da compra:", compra.nome);
-        if (novoNome === null) return;
-
-        const novaCategoria = prompt(
-          `Editar categoria da compra:\n\nSugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
-          compra.categoria || ""
-        );
-        if (novaCategoria === null) return;
-
-        const novoValorTexto = prompt("Editar valor da compra:", String(compra.valor ?? ""));
-        if (novoValorTexto === null) return;
-
-        const novoValor = converterValorInput(novoValorTexto);
-
-        if (!String(novoNome).trim()) {
-          alert("Digite o nome da compra.");
-          return;
-        }
-
-        if (!String(novaCategoria).trim()) {
-          alert("Digite a categoria da compra.");
-          return;
-        }
-
-        if (Number.isNaN(novoValor) || novoValor === null) {
-          alert("Digite um valor válido.");
-          return;
-        }
-
-        compras[index] = {
-          nome: String(novoNome).trim(),
-          categoria: String(novaCategoria).trim(),
-          valor: numeroSeguro(novoValor)
-        };
-
-        await db.collection("despesas").doc(cardId).update({ compras });
+      if (Number.isNaN(novoValor) || novoValor === null) {
+        alert("Digite um valor válido.");
+        return;
       }
 
-      authForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+      compras[index] = {
+        nome: String(novoNome).trim(),
+        categoria: String(novaCategoria).trim(),
+        valor: numeroSeguro(novoValor)
+      };
 
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-        authMessage.textContent = "Processando...";
+      await db.collection("despesas").doc(cardId).update({ compras });
+    }
 
-        try {
-          await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-          await auth.signInWithEmailAndPassword(email, password);
-          authMessage.textContent = "";
-        } catch (error) {
-          authMessage.textContent = traduzirErroAuth(error.code || error.message);
-        }
-      });
+    authForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-      document.getElementById("descricao").addEventListener("input", atualizarPreviewCategoria);
-      toggleExpenseFormBtn.addEventListener("click", alternarFormularioDespesa);
-      toggleChartPanelBtn.addEventListener("click", alternarPainelGrafico);
-      toggleCategoryChartPanelBtn.addEventListener("click", alternarPainelGraficoCategoria);
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      authMessage.textContent = "Processando...";
 
-      form.addEventListener("submit", salvarDespesa);
-      editForm.addEventListener("submit", salvarEdicao);
+      try {
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        await auth.signInWithEmailAndPassword(email, password);
+        authMessage.textContent = "";
+      } catch (error) {
+        authMessage.textContent = traduzirErroAuth(error.code || error.message);
+      }
+    });
 
-      closeModalBtn.addEventListener("click", fecharModalEdicao);
-      cancelEditBtn.addEventListener("click", fecharModalEdicao);
+    document.getElementById("descricao").addEventListener("input", atualizarPreviewCategoria);
+    toggleExpenseFormBtn.addEventListener("click", alternarFormularioDespesa);
+    toggleChartPanelBtn.addEventListener("click", alternarPainelGrafico);
+    toggleCategoryChartPanelBtn.addEventListener("click", alternarPainelGraficoCategoria);
 
-      editModal.addEventListener("click", (e) => {
-        if (e.target === editModal) fecharModalEdicao();
-      });
+    form.addEventListener("submit", salvarDespesa);
+    editForm.addEventListener("submit", salvarEdicao);
 
-      editIpvaBtn.addEventListener("click", abrirModalIpva);
-      closeIpvaModal.addEventListener("click", fecharModalIpva);
+    closeModalBtn.addEventListener("click", fecharModalEdicao);
+    cancelEditBtn.addEventListener("click", fecharModalEdicao);
 
-      ipvaModal.addEventListener("click", (e) => {
-        if (e.target === ipvaModal) fecharModalIpva();
-      });
+    editModal.addEventListener("click", (e) => {
+      if (e.target === editModal) fecharModalEdicao();
+    });
 
-      addIpvaRowBtn.addEventListener("click", () => adicionarLinhaIpva());
+    editIpvaBtn.addEventListener("click", abrirModalIpva);
+    closeIpvaModal.addEventListener("click", fecharModalIpva);
 
-      ipvaForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+    ipvaModal.addEventListener("click", (e) => {
+      if (e.target === ipvaModal) fecharModalIpva();
+    });
 
-        const rows = [...ipvaFormList.querySelectorAll(".ipva-row")];
-        const parcelas = rows.map(row => {
-          const dataInput = row.querySelector(".ipva-data");
-          const valorInput = row.querySelector(".ipva-valor");
-          const pagoInput = row.querySelector(".ipva-pago");
+    addIpvaRowBtn.addEventListener("click", () => adicionarLinhaIpva());
 
-          const data = dataInput?.value || "";
-          const valor = numeroSeguro(valorInput?.value);
-          const pago = pagoInput?.value === "true";
+    ipvaForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-          return { data: data || null, valor, pago: Boolean(pago) };
-        }).filter(item => item.data !== null && item.valor > 0);
+      const rows = [...ipvaFormList.querySelectorAll(".ipva-row")];
+      const parcelas = rows.map(row => {
+        const dataInput = row.querySelector(".ipva-data");
+        const valorInput = row.querySelector(".ipva-valor");
+        const pagoInput = row.querySelector(".ipva-pago");
 
-        try {
-          await db.collection("configuracoes").doc("ipva_carro").set({
-            parcelas,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          fecharModalIpva();
-        } catch (error) {
-          alert("Erro ao salvar IPVA: " + error.message);
-        }
-      });
+        const data = dataInput?.value || "";
+        const valor = numeroSeguro(valorInput?.value);
+        const pago = pagoInput?.value === "true";
 
-      monthFilter.addEventListener("input", () => {
-        monthTerm = monthFilter.value;
-        renderTabelaPrincipal();
-        renderIpva();
-        renderGraficoMensal();
-        renderGraficoCategorias();
-      });
+        return { data: data || null, valor, pago: Boolean(pago) };
+      }).filter(item => item.data !== null && item.valor > 0);
 
-      searchInput.addEventListener("input", () => {
-        searchTerm = searchInput.value.trim();
-        renderTabelaPrincipal();
-        renderGraficoCategorias();
-      });
+      try {
+        await db.collection("configuracoes").doc("ipva_carro").set({
+          parcelas,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        fecharModalIpva();
+      } catch (error) {
+        alert("Erro ao salvar IPVA: " + error.message);
+      }
+    });
 
-      categoryFilter.addEventListener("change", () => {
-        categoryFilterTerm = categoryFilter.value.trim();
-        renderGraficoCategorias();
-      });
+    monthFilter.addEventListener("input", () => {
+      monthTerm = monthFilter.value;
+      renderTabelaPrincipal();
+      renderIpva();
+      renderGraficoMensal();
+      renderGraficoCategorias();
+    });
 
-      themeToggle.addEventListener("click", () => {
-        const current = document.documentElement.getAttribute("data-theme") || "light";
-        salvarTema(current === "dark" ? "light" : "dark");
-        renderGraficoMensal();
-        renderGraficoCategorias();
-      });
+    searchInput.addEventListener("input", () => {
+      searchTerm = searchInput.value.trim();
+      renderTabelaPrincipal();
+      renderGraficoCategorias();
+    });
 
-      logoutBtn.addEventListener("click", async () => {
-        try {
-          if (unsubscribe) unsubscribe();
-          if (unsubscribeIpva) unsubscribeIpva();
-          await auth.signOut();
-        } catch {
-          alert("Erro ao sair.");
-        }
-      });
+    categoryFilter.addEventListener("change", () => {
+      categoryFilterTerm = categoryFilter.value.trim();
+      renderGraficoCategorias();
+    });
 
-      mainTableBody.addEventListener("change", async (e) => {
-        const check = e.target.closest(".pay-check");
-        if (!check) return;
-        if (check.disabled) return;
-        await alternarPagamento(check.dataset.id);
-      });
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme") || "light";
+      salvarTema(current === "dark" ? "light" : "dark");
+      renderGraficoMensal();
+      renderGraficoCategorias();
+    });
 
-      mainTableBody.addEventListener("submit", async (e) => {
-        const compraForm = e.target.closest(".compra-form");
-        if (!compraForm) return;
-
-        e.preventDefault();
-
-        const cardId = compraForm.dataset.cardId;
-        const nome = compraForm.nome.value.trim();
-        const categoria = compraForm.categoria.value.trim();
-        const valor = converterValorInput(compraForm.valor.value);
-
-        if (!nome) {
-          alert("Digite o nome da compra.");
-          return;
-        }
-
-        if (!categoria) {
-          alert("Selecione a categoria da compra.");
-          return;
-        }
-
-        if (Number.isNaN(valor) || valor === null) {
-          alert("Digite um valor válido.");
-          return;
-        }
-
-        try {
-          await adicionarCompraAoCartao(cardId, nome, categoria, valor);
-          compraForm.reset();
-          renderGraficoCategorias();
-        } catch (error) {
-          alert("Erro ao adicionar compra: " + error.message);
-        }
-      });
-
-      mainTableBody.addEventListener("click", async (e) => {
-        const btn = e.target.closest("button");
-        if (!btn) return;
-
-        const id = btn.dataset.id;
-        const mes = btn.dataset.mes;
-        const action = btn.dataset.action;
-
-        if (action === "toggle-compras") {
-          if (cartoesExpandidos.has(id)) {
-            cartoesExpandidos.delete(id);
-          } else {
-            cartoesExpandidos.add(id);
-          }
-          renderTabelaPrincipal();
-          return;
-        }
-
-        if (action === "edit") {
-          const item = despesasCache.find(d => d.id === id);
-          if (item) abrirModalEdicao(normalizarCategoria(item));
-          return;
-        }
-
-        if (action === "delete") {
-          await excluirDespesa(id, mes);
-          return;
-        }
-
-        if (action === "delete-compra") {
-          const compraIndex = Number(btn.dataset.index);
-          if (!Number.isInteger(compraIndex)) return;
-
-          const confirmar = confirm("Deseja excluir esta compra?");
-          if (!confirmar) return;
-
-          try {
-            await excluirCompraDoCartao(id, compraIndex);
-            renderGraficoCategorias();
-          } catch (error) {
-            alert("Erro ao excluir compra: " + error.message);
-          }
-          return;
-        }
-
-        if (action === "edit-compra") {
-          const compraIndex = Number(btn.dataset.index);
-          if (!Number.isInteger(compraIndex)) return;
-
-          try {
-            await editarCompraDoCartao(id, compraIndex);
-            renderGraficoCategorias();
-          } catch (error) {
-            alert("Erro ao editar compra: " + error.message);
-          }
-        }
-      });
-
-      ipvaTableBody.addEventListener("change", async (e) => {
-        const check = e.target.closest(".ipva-check");
-        if (check) await alternarIpva(Number(check.dataset.indexReal));
-      });
-
-      auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-          if (unsubscribe) unsubscribe();
-          if (unsubscribeIpva) unsubscribeIpva();
-          mostrarApp(false);
-          return;
-        }
-
-        mostrarApp(true);
-        userEmail.textContent = user.email || "Usuário logado";
-
+    logoutBtn.addEventListener("click", async () => {
+      try {
         if (unsubscribe) unsubscribe();
         if (unsubscribeIpva) unsubscribeIpva();
+        await auth.signOut();
+      } catch {
+        alert("Erro ao sair.");
+      }
+    });
+
+    mainTableBody.addEventListener("change", async (e) => {
+      const check = e.target.closest(".pay-check");
+      if (!check) return;
+      if (check.disabled) return;
+      await alternarPagamento(check.dataset.id);
+    });
+
+    mainTableBody.addEventListener("submit", async (e) => {
+      const compraForm = e.target.closest(".compra-form");
+      if (!compraForm) return;
+
+      e.preventDefault();
+
+      const cardId = compraForm.dataset.cardId;
+      const nome = compraForm.nome.value.trim();
+      const categoria = compraForm.categoria.value.trim();
+      const valor = converterValorInput(compraForm.valor.value);
+
+      if (!nome) {
+        alert("Digite o nome da compra.");
+        return;
+      }
+
+      if (!categoria) {
+        alert("Selecione a categoria da compra.");
+        return;
+      }
+
+      if (Number.isNaN(valor) || valor === null) {
+        alert("Digite um valor válido.");
+        return;
+      }
+
+      try {
+        await adicionarCompraAoCartao(cardId, nome, categoria, valor);
+        compraForm.reset();
+        renderGraficoCategorias();
+      } catch (error) {
+        alert("Erro ao adicionar compra: " + error.message);
+      }
+    });
+
+    mainTableBody.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+
+      const id = btn.dataset.id;
+      const mes = btn.dataset.mes;
+      const action = btn.dataset.action;
+
+      if (action === "toggle-compras") {
+        if (cartoesExpandidos.has(id)) {
+          cartoesExpandidos.delete(id);
+        } else {
+          cartoesExpandidos.add(id);
+        }
+        renderTabelaPrincipal();
+        return;
+      }
+
+      if (action === "edit") {
+        const key = `${id}__${mes || ""}`;
+        const itemRenderizado = itensRenderizadosMap.get(key);
+        if (itemRenderizado) abrirModalEdicao(itemRenderizado);
+        return;
+      }
+
+      if (action === "delete") {
+        await excluirDespesa(id, mes);
+        return;
+      }
+
+      if (action === "delete-compra") {
+        const compraIndex = Number(btn.dataset.index);
+        if (!Number.isInteger(compraIndex)) return;
+
+        const confirmar = confirm("Deseja excluir esta compra?");
+        if (!confirmar) return;
 
         try {
-          await garantirIpvaInicial();
-          await garantirDespesasIniciais();
-        } catch {
-          alert("Erro ao preparar dados iniciais.");
+          await excluirCompraDoCartao(id, compraIndex);
+          renderGraficoCategorias();
+        } catch (error) {
+          alert("Erro ao excluir compra: " + error.message);
         }
+        return;
+      }
 
-        unsubscribe = db.collection("despesas")
-          .orderBy("createdAt", "desc")
-          .onSnapshot((snapshot) => {
-            despesasCache = snapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }));
-            renderTabelaPrincipal();
-            renderGraficoMensal();
-            renderGraficoCategorias();
-          }, (error) => {
-            if (
-              error.code === "failed-precondition" ||
-              String(error.message).toLowerCase().includes("index")
-            ) {
-              alert("O Firestore precisa de um índice. Abra o link no console e crie o índice.");
-              return;
-            }
+      if (action === "edit-compra") {
+        const compraIndex = Number(btn.dataset.index);
+        if (!Number.isInteger(compraIndex)) return;
 
-            alert("Erro ao carregar despesas.");
-          });
+        try {
+          await editarCompraDoCartao(id, compraIndex);
+          renderGraficoCategorias();
+        } catch (error) {
+          alert("Erro ao editar compra: " + error.message);
+        }
+      }
+    });
 
-        unsubscribeIpva = db.collection("configuracoes")
-          .doc("ipva_carro")
-          .onSnapshot((doc) => {
-            ipvaData = (doc.data()?.parcelas || [])
-              .map((item, index) => ({
-                indexReal: index,
-                data: item?.data || "",
-                valor: numeroSeguro(item?.valor),
-                pago: Boolean(item?.pago)
-              }))
-              .filter(item => item.data && item.valor > 0);
+    ipvaTableBody.addEventListener("change", async (e) => {
+      const check = e.target.closest(".ipva-check");
+      if (check) await alternarIpva(Number(check.dataset.indexReal));
+    });
 
-            renderIpva();
-          }, () => {
-            alert("Erro ao carregar IPVA.");
-          });
-      });
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        if (unsubscribe) unsubscribe();
+        if (unsubscribeIpva) unsubscribeIpva();
+        mostrarApp(false);
+        return;
+      }
 
-      carregarTema();
+      mostrarApp(true);
+      userEmail.textContent = user.email || "Usuário logado";
 
-      const hoje = new Date();
-      const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
-      monthFilter.value = mesAtual;
-      monthTerm = mesAtual;
-      monthHeader.textContent = formatarMesTitulo(mesAtual);
-      atualizarPreviewCategoria();
-    })();
-  </script>
+      if (unsubscribe) unsubscribe();
+      if (unsubscribeIpva) unsubscribeIpva();
+
+      try {
+        await garantirIpvaInicial();
+        await garantirDespesasIniciais();
+      } catch {
+        alert("Erro ao preparar dados iniciais.");
+      }
+
+      unsubscribe = db.collection("despesas")
+        .orderBy("createdAt", "desc")
+        .onSnapshot((snapshot) => {
+          despesasCache = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          renderTabelaPrincipal();
+          renderGraficoMensal();
+          renderGraficoCategorias();
+        }, (error) => {
+          if (
+            error.code === "failed-precondition" ||
+            String(error.message).toLowerCase().includes("index")
+          ) {
+            alert("O Firestore precisa de um índice. Abra o link no console e crie o índice.");
+            return;
+          }
+
+          alert("Erro ao carregar despesas.");
+        });
+
+      unsubscribeIpva = db.collection("configuracoes")
+        .doc("ipva_carro")
+        .onSnapshot((doc) => {
+          ipvaData = (doc.data()?.parcelas || [])
+            .map((item, index) => ({
+              indexReal: index,
+              data: item?.data || "",
+              valor: numeroSeguro(item?.valor),
+              pago: Boolean(item?.pago)
+            }))
+            .filter(item => item.data && item.valor > 0);
+
+          renderIpva();
+        }, () => {
+          alert("Erro ao carregar IPVA.");
+        });
+    });
+
+    carregarTema();
+
+    const hoje = new Date();
+    const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
+    monthFilter.value = mesAtual;
+    monthTerm = mesAtual;
+    monthHeader.textContent = formatarMesTitulo(mesAtual);
+    atualizarPreviewCategoria();
+  })();
+</script>
 </body>
 </html>
