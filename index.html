@@ -1523,47 +1523,49 @@
     const estilo = getComputedStyle(document.documentElement);
     const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
     const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
-    const gridColor = "rgba(148, 163, 184, 0.15)";
     const ctx = categoryChartCanvas.getContext("2d");
+
+    const criarCoresPizza = (total) => {
+      const cores = [];
+      for (let i = 0; i < total; i++) {
+        const hue = Math.round((360 / Math.max(total, 1)) * i);
+        cores.push(`hsla(${hue}, 72%, 55%, 0.88)`);
+      }
+      return cores;
+    };
 
     if (!dados.length) {
       categoryChart = new Chart(ctx, {
-        type: "bar",
+        type: "pie",
         data: {
           labels: ["Sem compras cadastradas"],
           datasets: [{
             label: "Total por categoria",
-            data: [0],
-            backgroundColor: primary,
-            borderRadius: 10,
-            borderSkipped: false,
-            maxBarThickness: 38
+            data: [1],
+            backgroundColor: [primary],
+            borderWidth: 2,
+            borderColor: document.documentElement.getAttribute("data-theme") === "dark" ? "#111827" : "#ffffff",
+            hoverOffset: 8
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          indexAxis: "y",
           plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label() { return " R$ 0,00"; }
-              }
-            }
-          },
-          scales: {
-            x: {
-              beginAtZero: true,
-              grid: { color: gridColor },
-              ticks: {
+            legend: {
+              position: "bottom",
+              labels: {
                 color: corTexto,
-                callback(value) { return formatarMoeda(value); }
+                padding: 16,
+                font: { weight: "bold" }
               }
             },
-            y: {
-              grid: { display: false },
-              ticks: { color: corTexto }
+            tooltip: {
+              callbacks: {
+                label() {
+                  return " R$ 0,00";
+                }
+              }
             }
           }
         }
@@ -1573,153 +1575,49 @@
 
     const labels = dados.map(item => item.categoria);
     const valores = dados.map(item => item.total);
+    const cores = criarCoresPizza(labels.length);
 
     categoryChart = new Chart(ctx, {
-      type: "bar",
+      type: "pie",
       data: {
         labels,
         datasets: [{
           label: "Total por categoria",
           data: valores,
-          backgroundColor: primary,
-          borderRadius: 10,
-          borderSkipped: false,
-          maxBarThickness: 38
+          backgroundColor: cores,
+          borderWidth: 2,
+          borderColor: document.documentElement.getAttribute("data-theme") === "dark" ? "#111827" : "#ffffff",
+          hoverOffset: 10
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        indexAxis: "y",
         plugins: {
-          legend: { display: false },
+          legend: {
+            position: "bottom",
+            labels: {
+              color: corTexto,
+              padding: 16,
+              font: { weight: "bold" }
+            }
+          },
           tooltip: {
             backgroundColor: "rgba(15, 23, 42, 0.92)",
             titleColor: "#ffffff",
             bodyColor: "#ffffff",
             callbacks: {
               label(context) {
-                return ` ${formatarMoeda(context.raw || 0)}`;
+                const total = context.dataset.data.reduce((acc, valor) => acc + Number(valor || 0), 0);
+                const valor = Number(context.raw || 0);
+                const percentual = total ? ((valor / total) * 100).toFixed(1) : "0.0";
+                return ` ${context.label}: ${formatarMoeda(valor)} (${percentual}%)`;
               }
-            }
-          }
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            grid: { color: gridColor },
-            ticks: {
-              color: corTexto,
-              callback(value) { return formatarMoeda(value); }
-            }
-          },
-          y: {
-            grid: { display: false },
-            ticks: {
-              color: corTexto,
-              font: { weight: "bold" }
             }
           }
         }
       }
     });
-  }
-
-  function renderComprasDoCartao(item) {
-    const compras = normalizarCompras(item);
-    const totalCompras = getTotalCompras(item);
-    const cardId = item.origemId || item.id;
-    const mesRef = item.mesReferencia || "";
-
-    return `
-      <div class="compras-box">
-        <div class="compras-header">
-          <div>
-            <h4>Compras</h4>
-            <p>Detalhamento do cartão em ${escapeHtml(formatarMesTitulo(mesRef || getMesOriginalItem(item)))}</p>
-          </div>
-          <div>
-            <strong>Compras lançadas: ${formatarMoeda(totalCompras)}</strong>
-          </div>
-        </div>
-
-        <div class="compras-table-wrap">
-          ${
-            compras.length
-              ? `
-                <table class="compras-table">
-                  <thead>
-                    <tr>
-                      <th>Compra</th>
-                      <th>Categoria</th>
-                      <th>Valor</th>
-                      <th>Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${compras.map((compra, index) => `
-                      <tr>
-                        <td>${escapeHtml(compra.nome)}</td>
-                        <td><span class="compra-categoria-badge">${escapeHtml(compra.categoria || "Sem categoria")}</span></td>
-                        <td>${formatarMoeda(compra.valor)}</td>
-                        <td>
-                          <div class="compra-actions">
-                            <button
-                              type="button"
-                              class="compra-action-btn"
-                              data-action="edit-compra"
-                              data-id="${escapeHtml(cardId)}"
-                              data-mes="${escapeHtml(mesRef)}"
-                              data-index="${index}"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              class="compra-action-btn delete"
-                              data-action="delete-compra"
-                              data-id="${escapeHtml(cardId)}"
-                              data-mes="${escapeHtml(mesRef)}"
-                              data-index="${index}"
-                            >
-                              Excluir
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    `).join("")}
-                  </tbody>
-                </table>
-              `
-              : `<div class="compras-empty">Nenhuma compra cadastrada neste cartão neste mês.</div>`
-          }
-        </div>
-
-        <form class="compra-form" data-card-id="${escapeHtml(cardId)}" data-mes="${escapeHtml(mesRef)}">
-          <div class="field">
-            <label>Compra</label>
-            <input type="text" name="nome" placeholder="Ex: McDonald's, Cinema, Mercado" required />
-          </div>
-
-          <div class="field">
-            <label>Categoria</label>
-            <select name="categoria" required>
-              ${getOptionsCategoriasCompra()}
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Valor</label>
-            <input type="number" name="valor" step="0.01" min="0" placeholder="0,00" required />
-          </div>
-
-          <div class="field">
-            <label>&nbsp;</label>
-            <button type="submit">Adicionar compra</button>
-          </div>
-        </form>
-      </div>
-    `;
   }
 
   function renderTabelaPrincipal() {
@@ -1763,9 +1661,9 @@
 
         itensRenderizadosMap.set(key, { ...item });
 
-        const observacaoExtra = item.recorrenteZerado
-          ? `${item.observacao ? `${item.observacao} | ` : ""}Próximo mês iniciado com valor zerado`
-          : (item.observacao || "-");
+        const observacaoExtra = item.observacao && item.observacao.trim()
+          ? item.observacao.trim()
+          : "-";
 
         const totalCompras = getTotalCompras(item);
 
@@ -1789,7 +1687,9 @@
               <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
               <small>${escapeHtml(getParcelasRestantes(item))}</small>
               ${podeExpandirCompras ? `<small><strong>Compras lançadas:</strong> ${formatarMoeda(totalCompras)}</small>` : ""}
-              ${item.recorrenteZerado ? '<span class="recorrente-badge">Próximo mês com valor zerado</span>' : ""}
+              ${item.recorrenteZerado && !(item.observacao && item.observacao.trim())
+                ? '<span class="recorrente-badge">Próximo mês com valor zerado</span>'
+                : ""}
               ${item.recorrenteMesFuturo && !item.recorrenteZerado ? '<span class="recorrente-badge">Recorrente do mês</span>' : ""}
             </div>
             ${podeExpandirCompras ? `
