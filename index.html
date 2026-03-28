@@ -336,53 +336,53 @@
         <button type="button" class="modal-close" id="close-modal" aria-label="Fechar modal">&times;</button>
       </div>
 
-     <form id="edit-form" class="form-grid">
-  <input type="hidden" id="edit-id" />
+      <form id="edit-form" class="form-grid">
+        <input type="hidden" id="edit-id" />
 
-  <div class="field">
-    <label for="edit-descricao">Descrição</label>
-    <input list="gastos-list" type="text" id="edit-descricao" required />
-  </div>
+        <div class="field">
+          <label for="edit-descricao">Descrição</label>
+          <input list="gastos-list" type="text" id="edit-descricao" required />
+        </div>
 
-  <div class="field">
-    <label for="edit-categoria">Categoria principal</label>
-    <select id="edit-categoria" required>
-      <option value="Gastos fixos">Gastos fixos</option>
-      <option value="Cartões">Cartões</option>
-      <option value="Gastos comuns">Gastos comuns</option>
-    </select>
-  </div>
+        <div class="field">
+          <label for="edit-categoria">Categoria principal</label>
+          <select id="edit-categoria" required>
+            <option value="Gastos fixos">Gastos fixos</option>
+            <option value="Cartões">Cartões</option>
+            <option value="Gastos comuns">Gastos comuns</option>
+          </select>
+        </div>
 
-  <div class="field">
-    <label for="edit-valor">Valor</label>
-    <input type="number" id="edit-valor" step="0.01" min="0" inputmode="decimal" />
-  </div>
+        <div class="field">
+          <label for="edit-valor">Valor</label>
+          <input type="number" id="edit-valor" step="0.01" min="0" inputmode="decimal" />
+        </div>
 
-  <div class="field">
-    <label for="edit-vencimento">Vencimento</label>
-    <input type="date" id="edit-vencimento" />
-  </div>
+        <div class="field">
+          <label for="edit-vencimento">Vencimento</label>
+          <input type="date" id="edit-vencimento" />
+        </div>
 
-  <div class="field">
-    <label for="edit-parcela-atual">Parcela atual</label>
-    <input type="number" id="edit-parcela-atual" min="1" />
-  </div>
+        <div class="field">
+          <label for="edit-parcela-atual">Parcela atual</label>
+          <input type="number" id="edit-parcela-atual" min="1" />
+        </div>
 
-  <div class="field">
-    <label for="edit-parcela-total">Total de parcelas</label>
-    <input type="number" id="edit-parcela-total" min="1" />
-  </div>
+        <div class="field">
+          <label for="edit-parcela-total">Total de parcelas</label>
+          <input type="number" id="edit-parcela-total" min="1" />
+        </div>
 
-  <div class="field full">
-    <label for="edit-observacao">Observação</label>
-    <input type="text" id="edit-observacao" />
-  </div>
+        <div class="field full">
+          <label for="edit-observacao">Observação</label>
+          <input type="text" id="edit-observacao" />
+        </div>
 
-  <div class="modal-actions full">
-    <button type="button" class="btn-light" id="cancel-edit">Cancelar</button>
-    <button type="submit" class="btn-primary">Salvar alterações</button>
-  </div>
-</form>
+        <div class="modal-actions full">
+          <button type="button" class="btn-light" id="cancel-edit">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar alterações</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -403,6 +403,7 @@
       </form>
     </div>
   </div>
+
   <script>
 (() => {
   const firebaseConfig = {
@@ -1620,6 +1621,108 @@
     });
   }
 
+  function renderComprasDoCartao(item) {
+    const compras = normalizarCompras(item);
+    const totalCompras = compras.reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
+    const cardId = item.origemId || item.id;
+    const mesReferencia = item.mesReferencia || "";
+
+    return `
+      <div class="compras-box">
+        <div class="compras-header">
+          <div>
+            <h4>Compras do cartão</h4>
+            <p>Adicione, edite ou exclua compras deste cartão.</p>
+          </div>
+          <div>
+            <strong>Total das compras: ${formatarMoeda(totalCompras)}</strong>
+          </div>
+        </div>
+
+        ${
+          compras.length
+            ? `
+              <div class="compras-table-wrap">
+                <table class="compras-table compras-subtable">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Categoria</th>
+                      <th>Valor</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${compras.map((compra, index) => `
+                      <tr>
+                        <td>${escapeHtml(compra.nome)}</td>
+                        <td>
+                          <span class="compra-categoria-badge">
+                            ${escapeHtml(compra.categoria || "Sem categoria")}
+                          </span>
+                        </td>
+                        <td class="valor-cell">${formatarMoeda(compra.valor)}</td>
+                        <td>
+                          <div class="compra-actions">
+                            <button
+                              type="button"
+                              class="compra-action-btn"
+                              data-action="edit-compra"
+                              data-id="${cardId}"
+                              data-mes="${mesReferencia}"
+                              data-index="${index}"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              class="compra-action-btn delete"
+                              data-action="delete-compra"
+                              data-id="${cardId}"
+                              data-mes="${mesReferencia}"
+                              data-index="${index}"
+                            >
+                              Excluir
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join("")}
+                  </tbody>
+                </table>
+              </div>
+            `
+            : `
+              <div class="compras-empty">
+                Nenhuma compra cadastrada para este cartão ainda.
+              </div>
+            `
+        }
+
+        <form class="compra-form form-add-compra" data-card-id="${cardId}" data-mes="${mesReferencia}">
+          <div class="field">
+            <label>Nome da compra</label>
+            <input type="text" name="nome" placeholder="Ex: Mercado, farmácia, lanche" required />
+          </div>
+
+          <div class="field">
+            <label>Categoria</label>
+            <select name="categoria" required>
+              ${getOptionsCategoriasCompra()}
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Valor</label>
+            <input type="number" name="valor" step="0.01" min="0" placeholder="0,00" required />
+          </div>
+
+          <button type="submit">Adicionar</button>
+        </form>
+      </div>
+    `;
+  }
+
   function renderTabelaPrincipal() {
     mainTableBody.innerHTML = "";
     itensRenderizadosMap = new Map();
@@ -1692,6 +1795,11 @@
                 : ""}
               ${item.recorrenteMesFuturo && !item.recorrenteZerado ? '<span class="recorrente-badge">Recorrente do mês</span>' : ""}
             </div>
+
+            <div class="mobile-obs">
+              <small><strong>Obs:</strong> ${escapeHtml(observacaoExtra)}</small>
+            </div>
+
             ${podeExpandirCompras ? `
               <button
                 class="toggle-compras-btn ${estaExpandido ? "expanded" : ""}"
@@ -2409,6 +2517,6 @@
   monthHeader.textContent = formatarMesTitulo(mesAtual);
   atualizarPreviewCategoria();
 })();
-</script>
+  </script>
 </body>
 </html>
