@@ -897,7 +897,7 @@ input[type="checkbox"] {
 .compra-form {
   width: 100%;
   display: grid;
-  grid-template-columns: 1.4fr 1fr 0.8fr auto;
+  grid-template-columns: 1.35fr 1fr 0.85fr 0.7fr auto;
   gap: 10px;
   align-items: end;
 }
@@ -932,6 +932,23 @@ input[type="checkbox"] {
   color: var(--primary);
   font-size: 12px;
   font-weight: 700;
+}
+
+.compra-parcela-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.compra-parcela-info small,
+.compra-total-info {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  display: block;
+  margin-top: 3px;
 }
 
 @media (max-width: 920px) {
