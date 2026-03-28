@@ -790,14 +790,31 @@
     return resultado;
   }
 
-  function normalizarCompras(item) {
+  
+function normalizarCompras(item) {
     if (!Array.isArray(item?.compras)) return [];
     return item.compras
-      .map(compra => ({
-        nome: String(compra?.nome || "").trim(),
-        categoria: String(compra?.categoria || "").trim(),
-        valor: numeroSeguro(compra?.valor)
-      }))
+      .map((compra, index) => {
+        const parcelaTotal = Math.max(1, Number(compra?.parcelaTotal || compra?.parcelas || 1));
+        const parcelaAtualBruta = Number(compra?.parcelaAtual || (parcelaTotal > 1 ? 1 : 0));
+        const parcelaAtual = parcelaAtualBruta > 0 ? Math.min(parcelaAtualBruta, parcelaTotal) : 1;
+        const valorParcela = numeroSeguro(compra?.valor);
+        const valorTotal = compra?.valorTotal !== undefined && compra?.valorTotal !== null && compra?.valorTotal !== ""
+          ? numeroSeguro(compra.valorTotal)
+          : valorParcela * parcelaTotal;
+
+        return {
+          id: String(compra?.id || compra?.parcelamentoId || `compra_${index}`).trim(),
+          parcelamentoId: String(compra?.parcelamentoId || compra?.id || "").trim(),
+          nome: String(compra?.nome || "").trim(),
+          categoria: String(compra?.categoria || "").trim(),
+          valor: valorParcela,
+          valorTotal,
+          parcelaAtual,
+          parcelaTotal,
+          mesOrigem: String(compra?.mesOrigem || "").trim()
+        };
+      })
       .filter(compra => compra.nome);
   }
 
@@ -950,13 +967,106 @@
     return normalizarCompras(item).reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
   }
 
-  function getOptionsCategoriasCompra(selected = "") {
+  function getValorPrincipalItem(item) {
+    const valorBase = valorNumerico(item?.valor);
+    if (!isCartao(item)) return valorBase;
+
+    const totalCompras = getTotalCompras(item);
+    if (totalCompras > 0) {
+      return Number(totalCompras.toFixed(2));
+    }
+
+    return valorBase;
+  }
+
+  function usaValorAutomaticoCartao(item) {
+    return isCartao(item) && getTotalCompras(item) > 0;
+  }
+
+  
+function getOptionsCategoriasCompra(selected = "") {
     return `
       <option value="">Selecione</option>
       ${CATEGORIAS_COMPRA.map(cat => `
         <option value="${escapeHtml(cat)}" ${cat === selected ? "selected" : ""}>${escapeHtml(cat)}</option>
       `).join("")}
     `;
+  }
+
+  function adicionarMesAoYyyyMm(yyyyMm, quantidade) {
+    if (!yyyyMm) return "";
+    const [ano, mes] = yyyyMm.split("-").map(Number);
+    const data = new Date(ano, (mes - 1) + Number(quantidade || 0), 1);
+    return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
+  }
+
+  function gerarIdCompra() {
+    return `compra_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  function calcularValorParcelaCompra(valorTotal, parcelaAtual, parcelaTotal) {
+    const totalCentavos = Math.round(numeroSeguro(valorTotal) * 100);
+    const totalParcelas = Math.max(1, Number(parcelaTotal || 1));
+    const indiceParcela = Math.max(1, Number(parcelaAtual || 1));
+    const base = Math.floor(totalCentavos / totalParcelas);
+    const resto = totalCentavos % totalParcelas;
+    const valorCentavos = base + (indiceParcela <= resto ? 1 : 0);
+    return Number((valorCentavos / 100).toFixed(2));
+  }
+
+  function criarParcelasCompra({ nome, categoria, valorTotal, parcelas, mesOrigem, parcelamentoId }) {
+    const totalParcelas = Math.max(1, Number(parcelas || 1));
+    const origem = mesOrigem || monthTerm || "";
+    const grupoId = parcelamentoId || gerarIdCompra();
+
+    return Array.from({ length: totalParcelas }, (_, index) => ({
+      id: `${grupoId}_${index + 1}`,
+      parcelamentoId: grupoId,
+      nome: String(nome || "").trim(),
+      categoria: String(categoria || "").trim(),
+      valor: calcularValorParcelaCompra(valorTotal, index + 1, totalParcelas),
+      valorTotal: numeroSeguro(valorTotal),
+      parcelaAtual: index + 1,
+      parcelaTotal: totalParcelas,
+      mesOrigem: origem,
+      mesDestino: adicionarMesAoYyyyMm(origem, index)
+    }));
+  }
+
+  function getMesesRelacionadosCompra(compra, mesReferencia, item) {
+    const meses = new Set();
+    const mesOriginal = getMesOriginalItem(item);
+
+    if (mesReferencia) meses.add(mesReferencia);
+    if (mesOriginal) meses.add(mesOriginal);
+    if (compra?.mesOrigem) meses.add(compra.mesOrigem);
+
+    const totalParcelas = Math.max(1, Number(compra?.parcelaTotal || 1));
+    const mesBase = compra?.mesOrigem || mesReferencia || mesOriginal || "";
+
+    if (mesBase) {
+      for (let i = 0; i < totalParcelas; i++) {
+        meses.add(adicionarMesAoYyyyMm(mesBase, i));
+      }
+    }
+
+    Object.keys(getAjustesMensais(item)).forEach(mes => meses.add(mes));
+    return [...meses].filter(Boolean).sort((a, b) => a.localeCompare(b));
+  }
+
+  async function salvarComprasPorMes(cardId, item, mapaCompras) {
+    const ajustesMensais = { ...getAjustesMensais(item) };
+
+    Object.entries(mapaCompras).forEach(([mes, compras]) => {
+      if (!mes) return;
+      const ajusteAnterior = ajustesMensais[mes] || {};
+      ajustesMensais[mes] = {
+        ...ajusteAnterior,
+        compras: normalizarCompras({ compras })
+      };
+    });
+
+    await db.collection("despesas").doc(cardId).update({ ajustesMensais });
   }
 
   async function garantirIpvaInicial() {
@@ -1341,7 +1451,7 @@
     let qtdPendentes = 0;
 
     lista.forEach(item => {
-      const valor = valorNumerico(item.valor);
+      const valor = getValorPrincipalItem(item);
       totalGeral += valor;
       if (item.pago) {
         totalPago += valor;
@@ -1361,7 +1471,7 @@
 
   function renderAlertaVencidas(lista) {
     const vencidas = lista.filter(item => isVencida(item));
-    const total = vencidas.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+    const total = vencidas.reduce((acc, item) => acc + getValorPrincipalItem(item), 0);
 
     if (!vencidas.length) {
       alertaVencidas.classList.add("hidden");
@@ -1386,9 +1496,9 @@
 
     mesesOrdenados.forEach(mes => {
       const itens = mapaMeses.get(mes) || [];
-      const totalMes = itens.reduce((acc, item) => acc + valorNumerico(item.valor), 0);
-      const totalPago = itens.filter(i => i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
-      const totalPendente = itens.filter(i => !i.pago).reduce((acc, item) => acc + valorNumerico(item.valor), 0);
+      const totalMes = itens.reduce((acc, item) => acc + getValorPrincipalItem(item), 0);
+      const totalPago = itens.filter(i => i.pago).reduce((acc, item) => acc + getValorPrincipalItem(item), 0);
+      const totalPendente = itens.filter(i => !i.pago).reduce((acc, item) => acc + getValorPrincipalItem(item), 0);
 
       labels.push(formatarMesCurto(mes));
       totais.push(Number(totalMes.toFixed(2)));
@@ -1621,9 +1731,11 @@
     });
   }
 
-  function renderComprasDoCartao(item) {
+  
+function renderComprasDoCartao(item) {
     const compras = normalizarCompras(item);
     const totalCompras = compras.reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
+    const valorPrincipal = getValorPrincipalItem(item);
     const cardId = item.origemId || item.id;
     const mesReferencia = item.mesReferencia || "";
 
@@ -1632,10 +1744,11 @@
         <div class="compras-header">
           <div>
             <h4>Compras do cartão</h4>
-            <p>Adicione, edite ou exclua compras deste cartão.</p>
+            <p>Adicione, edite ou exclua compras deste cartão, inclusive parceladas.</p>
           </div>
           <div>
-            <strong>Total das compras: ${formatarMoeda(totalCompras)}</strong>
+            <strong>Total das compras do mês: ${formatarMoeda(totalCompras)}</strong>
+            <p>Valor mostrado na tabela principal: ${formatarMoeda(valorPrincipal)}</p>
           </div>
         </div>
 
@@ -1648,46 +1761,70 @@
                     <tr>
                       <th>Nome</th>
                       <th>Categoria</th>
+                      <th>Parcela</th>
                       <th>Valor</th>
                       <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
-                    ${compras.map((compra, index) => `
-                      <tr>
-                        <td>${escapeHtml(compra.nome)}</td>
-                        <td>
-                          <span class="compra-categoria-badge">
-                            ${escapeHtml(compra.categoria || "Sem categoria")}
-                          </span>
-                        </td>
-                        <td class="valor-cell">${formatarMoeda(compra.valor)}</td>
-                        <td>
-                          <div class="compra-actions">
-                            <button
-                              type="button"
-                              class="compra-action-btn"
-                              data-action="edit-compra"
-                              data-id="${cardId}"
-                              data-mes="${mesReferencia}"
-                              data-index="${index}"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              class="compra-action-btn delete"
-                              data-action="delete-compra"
-                              data-id="${cardId}"
-                              data-mes="${mesReferencia}"
-                              data-index="${index}"
-                            >
-                              Excluir
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    `).join("")}
+                    ${compras.map((compra, index) => {
+                      const textoParcela = Number(compra.parcelaTotal || 1) > 1
+                        ? `${compra.parcelaAtual}/${compra.parcelaTotal}`
+                        : "À vista";
+
+                      const detalheValor = Number(compra.parcelaTotal || 1) > 1
+                        ? `<small class="compra-total-info">Total: ${formatarMoeda(compra.valorTotal)}</small>`
+                        : "";
+
+                      return `
+                        <tr>
+                          <td>
+                            <strong>${escapeHtml(compra.nome)}</strong>
+                          </td>
+                          <td>
+                            <span class="compra-categoria-badge">
+                              ${escapeHtml(compra.categoria || "Sem categoria")}
+                            </span>
+                          </td>
+                          <td>
+                            <div class="compra-parcela-info">
+                              <strong>${escapeHtml(textoParcela)}</strong>
+                              ${Number(compra.parcelaTotal || 1) > 1
+                                ? `<small>Origem: ${escapeHtml(formatarMesCurto(compra.mesOrigem || mesReferencia))}</small>`
+                                : ""}
+                            </div>
+                          </td>
+                          <td class="valor-cell">
+                            ${formatarMoeda(compra.valor)}
+                            ${detalheValor}
+                          </td>
+                          <td>
+                            <div class="compra-actions">
+                              <button
+                                type="button"
+                                class="compra-action-btn"
+                                data-action="edit-compra"
+                                data-id="${cardId}"
+                                data-mes="${mesReferencia}"
+                                data-index="${index}"
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                class="compra-action-btn delete"
+                                data-action="delete-compra"
+                                data-id="${cardId}"
+                                data-mes="${mesReferencia}"
+                                data-index="${index}"
+                              >
+                                Excluir
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `;
+                    }).join("")}
                   </tbody>
                 </table>
               </div>
@@ -1713,8 +1850,13 @@
           </div>
 
           <div class="field">
-            <label>Valor</label>
+            <label>Valor total</label>
             <input type="number" name="valor" step="0.01" min="0" placeholder="0,00" required />
+          </div>
+
+          <div class="field">
+            <label>Parcelas</label>
+            <input type="number" name="parcelas" min="1" step="1" value="1" required />
           </div>
 
           <button type="submit">Adicionar</button>
@@ -1769,6 +1911,8 @@
           : "-";
 
         const totalCompras = getTotalCompras(item);
+        const valorPrincipal = getValorPrincipalItem(item);
+        const valorAutomatico = usaValorAutomaticoCartao(item);
 
         const tr = document.createElement("tr");
         tr.className = item.pago ? "row-paid" : (isVencida(item) ? "row-overdue" : "");
@@ -1790,6 +1934,7 @@
               <small><strong>Parcela:</strong> ${escapeHtml(getTextoParcelas(item))}</small>
               <small>${escapeHtml(getParcelasRestantes(item))}</small>
               ${podeExpandirCompras ? `<small><strong>Compras lançadas:</strong> ${formatarMoeda(totalCompras)}</small>` : ""}
+              ${valorAutomatico ? `<small><strong>Valor do cartão:</strong> automático pelas compras do mês</small>` : ""}
               ${item.recorrenteZerado && !(item.observacao && item.observacao.trim())
                 ? '<span class="recorrente-badge">Próximo mês com valor zerado</span>'
                 : ""}
@@ -1813,7 +1958,7 @@
               </button>
             ` : ""}
           </td>
-          <td class="valor-cell">${formatarMoedaTabela(item.valor)}</td>
+          <td class="valor-cell">${formatarMoedaTabela(valorPrincipal)}</td>
           <td>${escapeHtml(formatarDataBR(item.vencimento || "-"))}</td>
           <td class="obs-cell">${escapeHtml(observacaoExtra)}</td>
           <td class="status-cell">
@@ -2128,85 +2273,107 @@
     }
   }
 
-  async function adicionarCompraAoCartao(cardId, mesReferencia, nome, categoria, valor) {
+  
+async function adicionarCompraAoCartao(cardId, mesReferencia, nome, categoria, valor, parcelas = 1) {
     const item = despesasCache.find(d => d.id === cardId);
     if (!item) return;
 
-    const novaCompra = {
-      nome: String(nome || "").trim(),
-      categoria: String(categoria || "").trim(),
-      valor: numeroSeguro(valor)
-    };
-
-    if (mesReferencia) {
-      const ajustesMensais = { ...getAjustesMensais(item) };
-      const ajusteAnterior = ajustesMensais[mesReferencia] || {};
-      const compras = getComprasBasePorMes(item, mesReferencia);
-      compras.push(novaCompra);
-
-      ajustesMensais[mesReferencia] = {
-        ...ajusteAnterior,
-        compras
-      };
-
-      await db.collection("despesas").doc(cardId).update({ ajustesMensais });
+    const mesBase = mesReferencia || getMesOriginalItem(item) || monthTerm;
+    if (!mesBase) {
+      alert("Não foi possível identificar o mês da compra.");
       return;
     }
 
-    const compras = normalizarCompras(item);
-    compras.push(novaCompra);
-    await db.collection("despesas").doc(cardId).update({ compras });
+    const novasParcelas = criarParcelasCompra({
+      nome,
+      categoria,
+      valorTotal: valor,
+      parcelas,
+      mesOrigem: mesBase
+    });
+
+    const mapaAtualizado = {};
+
+    novasParcelas.forEach(compra => {
+      const mesDestino = compra.mesDestino;
+      const comprasDoMes = getComprasBasePorMes(item, mesDestino);
+      comprasDoMes.push({
+        id: compra.id,
+        parcelamentoId: compra.parcelamentoId,
+        nome: compra.nome,
+        categoria: compra.categoria,
+        valor: compra.valor,
+        valorTotal: compra.valorTotal,
+        parcelaAtual: compra.parcelaAtual,
+        parcelaTotal: compra.parcelaTotal,
+        mesOrigem: compra.mesOrigem
+      });
+      mapaAtualizado[mesDestino] = comprasDoMes;
+    });
+
+    await salvarComprasPorMes(cardId, item, mapaAtualizado);
   }
 
-  async function excluirCompraDoCartao(cardId, mesReferencia, index) {
+  
+async function excluirCompraDoCartao(cardId, mesReferencia, index) {
     const item = despesasCache.find(d => d.id === cardId);
     if (!item) return;
 
-    if (mesReferencia) {
-      const ajustesMensais = { ...getAjustesMensais(item) };
-      const ajusteAnterior = ajustesMensais[mesReferencia] || {};
-      const compras = getComprasBasePorMes(item, mesReferencia);
-      compras.splice(index, 1);
+    const comprasMesAtual = getComprasBasePorMes(item, mesReferencia);
+    const compraAtual = comprasMesAtual[index];
+    if (!compraAtual) return;
 
-      ajustesMensais[mesReferencia] = {
-        ...ajusteAnterior,
-        compras
-      };
+    const compraNormalizada = normalizarCompras({ compras: [compraAtual] })[0];
+    const mapaAtualizado = {};
 
-      await db.collection("despesas").doc(cardId).update({ ajustesMensais });
+    if (compraNormalizada.parcelaTotal > 1 && compraNormalizada.parcelamentoId) {
+      getMesesRelacionadosCompra(compraNormalizada, mesReferencia, item).forEach(mes => {
+        const comprasDoMes = getComprasBasePorMes(item, mes)
+          .filter(compra => String(compra?.parcelamentoId || compra?.id || "") !== compraNormalizada.parcelamentoId);
+
+        mapaAtualizado[mes] = comprasDoMes;
+      });
+
+      await salvarComprasPorMes(cardId, item, mapaAtualizado);
       return;
     }
 
-    const compras = normalizarCompras(item);
-    compras.splice(index, 1);
-
-    await db.collection("despesas").doc(cardId).update({ compras });
+    comprasMesAtual.splice(index, 1);
+    mapaAtualizado[mesReferencia] = comprasMesAtual;
+    await salvarComprasPorMes(cardId, item, mapaAtualizado);
   }
 
-  async function editarCompraDoCartao(cardId, mesReferencia, index) {
+  
+async function editarCompraDoCartao(cardId, mesReferencia, index) {
     const item = despesasCache.find(d => d.id === cardId);
     if (!item) return;
 
-    const comprasBase = mesReferencia
-      ? getComprasBasePorMes(item, mesReferencia)
-      : normalizarCompras(item);
-
-    const compra = comprasBase[index];
+    const comprasBase = getComprasBasePorMes(item, mesReferencia);
+    const compra = normalizarCompras({ compras: [comprasBase[index]] })[0];
     if (!compra) return;
 
     const novoNome = prompt("Editar nome da compra:", compra.nome);
     if (novoNome === null) return;
 
     const novaCategoria = prompt(
-      `Editar categoria da compra:\n\nSugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
+      `Editar categoria da compra:
+
+Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
       compra.categoria || ""
     );
     if (novaCategoria === null) return;
 
-    const novoValorTexto = prompt("Editar valor da compra:", String(compra.valor ?? ""));
+    const novoValorTexto = prompt(
+      compra.parcelaTotal > 1 ? "Editar valor total da compra:" : "Editar valor da compra:",
+      String(compra.valorTotal ?? compra.valor ?? "")
+    );
     if (novoValorTexto === null) return;
 
+    const novasParcelasTexto = prompt("Editar total de parcelas:", String(compra.parcelaTotal || 1));
+    if (novasParcelasTexto === null) return;
+
     const novoValor = converterValorInput(novoValorTexto);
+    const novasParcelas = Math.max(1, Number(novasParcelasTexto || 1));
 
     if (!String(novoNome).trim()) {
       alert("Digite o nome da compra.");
@@ -2223,26 +2390,68 @@
       return;
     }
 
-    comprasBase[index] = {
-      nome: String(novoNome).trim(),
-      categoria: String(novaCategoria).trim(),
-      valor: numeroSeguro(novoValor)
-    };
-
-    if (mesReferencia) {
-      const ajustesMensais = { ...getAjustesMensais(item) };
-      const ajusteAnterior = ajustesMensais[mesReferencia] || {};
-
-      ajustesMensais[mesReferencia] = {
-        ...ajusteAnterior,
-        compras: comprasBase
-      };
-
-      await db.collection("despesas").doc(cardId).update({ ajustesMensais });
+    if (!Number.isInteger(novasParcelas) || novasParcelas < 1) {
+      alert("Digite uma quantidade de parcelas válida.");
       return;
     }
 
-    await db.collection("despesas").doc(cardId).update({ compras: comprasBase });
+    const mesOrigem = compra.mesOrigem || mesReferencia || getMesOriginalItem(item) || monthTerm;
+    const parcelamentoId = compra.parcelamentoId || compra.id || gerarIdCompra();
+    const mapaAtualizado = {};
+
+    if (compra.parcelaTotal > 1 || novasParcelas > 1) {
+      getMesesRelacionadosCompra(compra, mesReferencia, item).forEach(mes => {
+        mapaAtualizado[mes] = getComprasBasePorMes(item, mes)
+          .filter(itemCompra => String(itemCompra?.parcelamentoId || itemCompra?.id || "") !== parcelamentoId);
+      });
+
+      const novasCompras = criarParcelasCompra({
+        nome: novoNome,
+        categoria: novaCategoria,
+        valorTotal: novoValor,
+        parcelas: novasParcelas,
+        mesOrigem,
+        parcelamentoId
+      });
+
+      novasCompras.forEach(compraGerada => {
+        const mesDestino = compraGerada.mesDestino;
+        const listaMes = mapaAtualizado[mesDestino] || getComprasBasePorMes(item, mesDestino)
+          .filter(itemCompra => String(itemCompra?.parcelamentoId || itemCompra?.id || "") !== parcelamentoId);
+
+        listaMes.push({
+          id: compraGerada.id,
+          parcelamentoId: compraGerada.parcelamentoId,
+          nome: compraGerada.nome,
+          categoria: compraGerada.categoria,
+          valor: compraGerada.valor,
+          valorTotal: compraGerada.valorTotal,
+          parcelaAtual: compraGerada.parcelaAtual,
+          parcelaTotal: compraGerada.parcelaTotal,
+          mesOrigem: compraGerada.mesOrigem
+        });
+
+        mapaAtualizado[mesDestino] = listaMes;
+      });
+
+      await salvarComprasPorMes(cardId, item, mapaAtualizado);
+      return;
+    }
+
+    comprasBase[index] = {
+      id: compra.id || gerarIdCompra(),
+      parcelamentoId: "",
+      nome: String(novoNome).trim(),
+      categoria: String(novaCategoria).trim(),
+      valor: numeroSeguro(novoValor),
+      valorTotal: numeroSeguro(novoValor),
+      parcelaAtual: 1,
+      parcelaTotal: 1,
+      mesOrigem
+    };
+
+    mapaAtualizado[mesReferencia] = comprasBase;
+    await salvarComprasPorMes(cardId, item, mapaAtualizado);
   }
 
   authForm.addEventListener("submit", async (e) => {
@@ -2365,6 +2574,7 @@
     const nome = compraForm.nome.value.trim();
     const categoria = compraForm.categoria.value.trim();
     const valor = converterValorInput(compraForm.valor.value);
+    const parcelas = Math.max(1, Number(compraForm.parcelas.value || 1));
 
     if (!nome) {
       alert("Digite o nome da compra.");
@@ -2381,9 +2591,15 @@
       return;
     }
 
+    if (!Number.isInteger(parcelas) || parcelas < 1) {
+      alert("Digite uma quantidade de parcelas válida.");
+      return;
+    }
+
     try {
-      await adicionarCompraAoCartao(cardId, mesRef, nome, categoria, valor);
+      await adicionarCompraAoCartao(cardId, mesRef, nome, categoria, valor, parcelas);
       compraForm.reset();
+      if (compraForm.parcelas) compraForm.parcelas.value = "1";
       renderGraficoCategorias();
     } catch (error) {
       alert("Erro ao adicionar compra: " + error.message);
