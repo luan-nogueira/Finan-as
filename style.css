@@ -204,11 +204,6 @@ body {
   padding: 14px;
 }
 
-.chart-toggle-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
 
 .collapse-toggle-btn {
   width: 100%;
@@ -225,9 +220,6 @@ body {
   cursor: pointer;
 }
 
-.half-toggle {
-  min-width: 0;
-}
 
 .collapsible-content {
   padding-top: 16px;
@@ -975,8 +967,7 @@ input[type="checkbox"] {
 
   .form-grid,
   .filters-grid-two,
-  .ipva-row,
-  .chart-toggle-row {
+  .ipva-row {
     grid-template-columns: 1fr;
   }
 
@@ -1355,7 +1346,16 @@ input[type="checkbox"] {
   margin-bottom: 16px;
 }
 
+.central-graph-filters {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
 @media (max-width: 920px) {
+  .central-graph-filters {
+    grid-template-columns: 1fr;
+  }
+
   .card-dashboard-grid {
     grid-template-columns: 1fr;
   }
