@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -260,6 +261,85 @@
         </div>
       </section>
 
+      <button id="floating-card-btn" class="floating-card-btn" type="button" aria-label="Abrir painel dos cartões" title="Abrir painel dos cartões">
+        <span class="floating-card-btn-icon">💳</span>
+      </button>
+
+      <section class="panel card-dashboard-panel hidden" id="card-dashboard-panel">
+        <div class="panel-header card-dashboard-header">
+          <div>
+            <span class="badge">💳 Área dos cartões</span>
+            <h2>Painel de cartões</h2>
+            <p>Veja as próximas faturas, os valores por cartão e as categorias das compras sem alterar a tabela principal.</p>
+          </div>
+          <button id="close-card-dashboard" type="button" class="btn-light">Fechar painel</button>
+        </div>
+
+        <div class="summary-grid card-summary-grid">
+          <div class="summary-card">
+            <p>Fatura do mês</p>
+            <h3 id="cards-total-current">R$ 0,00</h3>
+          </div>
+          <div class="summary-card">
+            <p>Próximo mês</p>
+            <h3 id="cards-total-next">R$ 0,00</h3>
+          </div>
+          <div class="summary-card">
+            <p>Próximos 6 meses</p>
+            <h3 id="cards-total-six">R$ 0,00</h3>
+          </div>
+          <div class="summary-card">
+            <p>Cartões com saldo</p>
+            <h3 id="cards-active-count">0</h3>
+          </div>
+        </div>
+
+        <div class="filters-grid filters-grid-two card-dashboard-filters">
+          <div class="field">
+            <label for="card-dashboard-filter">Filtrar cartão</label>
+            <select id="card-dashboard-filter">
+              <option value="">Todos os cartões</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="card-dashboard-month-info">Mês base</label>
+            <input id="card-dashboard-month-info" type="text" value="Carregando..." readonly />
+          </div>
+        </div>
+
+        <div class="card-dashboard-grid">
+          <div class="chart-card">
+            <div class="panel-header collapsible-header">
+              <h2>Próximas faturas</h2>
+              <p>Mostra a projeção das faturas dos cartões a partir do mês selecionado.</p>
+            </div>
+            <div class="chart-box card-chart-box">
+              <canvas id="card-future-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="panel-header collapsible-header">
+              <h2>Valores por cartão</h2>
+              <p>Total dos cartões no mês filtrado.</p>
+            </div>
+            <div class="chart-box card-chart-box">
+              <canvas id="card-breakdown-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card chart-card-full">
+            <div class="panel-header collapsible-header">
+              <h2>Categorias das compras no cartão</h2>
+              <p>Resumo das categorias lançadas dentro de “Ver compras” dos cartões.</p>
+            </div>
+            <div class="chart-box card-chart-box">
+              <canvas id="card-category-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="panel">
         <div class="panel-header">
           <h2>Tabela principal</h2>
@@ -482,6 +562,19 @@
   const ipvaFormList = document.getElementById("ipva-form-list");
   const addIpvaRowBtn = document.getElementById("add-ipva-row");
 
+  const floatingCardBtn = document.getElementById("floating-card-btn");
+  const cardDashboardPanel = document.getElementById("card-dashboard-panel");
+  const closeCardDashboardBtn = document.getElementById("close-card-dashboard");
+  const cardDashboardFilter = document.getElementById("card-dashboard-filter");
+  const cardDashboardMonthInfo = document.getElementById("card-dashboard-month-info");
+  const cardsTotalCurrentEl = document.getElementById("cards-total-current");
+  const cardsTotalNextEl = document.getElementById("cards-total-next");
+  const cardsTotalSixEl = document.getElementById("cards-total-six");
+  const cardsActiveCountEl = document.getElementById("cards-active-count");
+  const cardFutureChartCanvas = document.getElementById("card-future-chart");
+  const cardBreakdownChartCanvas = document.getElementById("card-breakdown-chart");
+  const cardCategoryChartCanvas = document.getElementById("card-category-chart");
+
   let despesasCache = [];
   let ipvaData = [];
   let unsubscribe = null;
@@ -495,6 +588,10 @@
   let categoryFilterTerm = "";
   let itensRenderizadosMap = new Map();
   let ultimoContextoEdicao = null;
+  let cardDashboardFilterTerm = "";
+  let cardFutureChart = null;
+  let cardBreakdownChart = null;
+  let cardCategoryChart = null;
 
   const CATEGORIA_FIXA = "Gastos fixos";
   const CATEGORIA_CARTOES = "Cartões";
@@ -1441,6 +1538,284 @@ function getOptionsCategoriasCompra(selected = "") {
       categoryFilter.value = "";
       categoryFilterTerm = "";
     }
+  }
+
+  function getMesBaseCartoes() {
+    if (monthTerm) return monthTerm;
+    const hoje = new Date();
+    return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
+  }
+
+  function getNomeExibicaoCartao(descricao) {
+    const texto = String(descricao || "").trim();
+    return texto.replace(/^cart[aã]o\s+/i, "").trim() || texto || "Cartão";
+  }
+
+  function getListaCartoesDoMes() {
+    return aplicarFiltros(despesasCache).filter(item => isCartao(item));
+  }
+
+  function atualizarFiltroPainelCartoes(listaCartoes) {
+    if (!cardDashboardFilter) return;
+
+    const nomes = [...new Set(listaCartoes.map(item => String(item.descricao || "").trim()).filter(Boolean))]
+      .sort((a, b) => getNomeExibicaoCartao(a).localeCompare(getNomeExibicaoCartao(b), "pt-BR"));
+
+    const valorAtual = cardDashboardFilter.value;
+    cardDashboardFilter.innerHTML = `
+      <option value="">Todos os cartões</option>
+      ${nomes.map(nome => `<option value="${escapeHtml(nome)}">${escapeHtml(getNomeExibicaoCartao(nome))}</option>`).join("")}
+    `;
+
+    if (nomes.includes(valorAtual)) {
+      cardDashboardFilter.value = valorAtual;
+      cardDashboardFilterTerm = valorAtual;
+    } else {
+      cardDashboardFilter.value = "";
+      cardDashboardFilterTerm = "";
+    }
+  }
+
+  function getListaCartoesFiltradaPainel() {
+    const lista = getListaCartoesDoMes();
+    atualizarFiltroPainelCartoes(lista);
+
+    return lista.filter(item => {
+      if (!cardDashboardFilterTerm) return true;
+      return String(item.descricao || "").trim() === cardDashboardFilterTerm;
+    });
+  }
+
+  function gerarDadosFaturasCartoes() {
+    const mapaMeses = gerarListaParaGraficoMensal();
+    const mesBase = getMesBaseCartoes();
+
+    return [...mapaMeses.entries()]
+      .filter(([mes]) => mes >= mesBase)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(0, 6)
+      .map(([mes, itens]) => {
+        const itensCartao = itens.filter(item => isCartao(item))
+          .filter(item => !cardDashboardFilterTerm || String(item.descricao || "").trim() === cardDashboardFilterTerm);
+
+        const total = itensCartao.reduce((acc, item) => acc + getValorPrincipalItem(item), 0);
+        return {
+          mes,
+          label: formatarMesCurto(mes),
+          total: Number(total.toFixed(2))
+        };
+      });
+  }
+
+  function gerarDadosPorCartao(listaCartoes) {
+    const mapa = new Map();
+
+    listaCartoes.forEach(item => {
+      const nome = getNomeExibicaoCartao(item.descricao);
+      mapa.set(nome, (mapa.get(nome) || 0) + getValorPrincipalItem(item));
+    });
+
+    return [...mapa.entries()]
+      .map(([nome, total]) => ({ nome, total: Number(total.toFixed(2)) }))
+      .filter(item => item.total > 0)
+      .sort((a, b) => b.total - a.total);
+  }
+
+  function gerarDadosCategoriasCartoes(listaCartoes) {
+    const mapa = new Map();
+
+    listaCartoes.forEach(item => {
+      normalizarCompras(item).forEach(compra => {
+        const categoria = String(compra.categoria || "Sem categoria").trim();
+        mapa.set(categoria, (mapa.get(categoria) || 0) + numeroSeguro(compra.valor));
+      });
+    });
+
+    return [...mapa.entries()]
+      .map(([categoria, total]) => ({ categoria, total: Number(total.toFixed(2)) }))
+      .filter(item => item.total > 0)
+      .sort((a, b) => b.total - a.total);
+  }
+
+  function renderResumoCartoes(listaCartoes) {
+    const dadosFuturos = gerarDadosFaturasCartoes();
+    const totalAtual = dadosFuturos[0]?.total || 0;
+    const totalProximo = dadosFuturos[1]?.total || 0;
+    const totalSeis = dadosFuturos.reduce((acc, item) => acc + item.total, 0);
+    const ativos = listaCartoes.filter(item => getValorPrincipalItem(item) > 0).length;
+
+    if (cardsTotalCurrentEl) cardsTotalCurrentEl.textContent = formatarMoeda(totalAtual);
+    if (cardsTotalNextEl) cardsTotalNextEl.textContent = formatarMoeda(totalProximo);
+    if (cardsTotalSixEl) cardsTotalSixEl.textContent = formatarMoeda(totalSeis);
+    if (cardsActiveCountEl) cardsActiveCountEl.textContent = String(ativos);
+    if (cardDashboardMonthInfo) cardDashboardMonthInfo.value = formatarMesTitulo(getMesBaseCartoes());
+  }
+
+  function destruirGraficosCartoes() {
+    [
+      [cardFutureChart, 'cardFutureChart'],
+      [cardBreakdownChart, 'cardBreakdownChart'],
+      [cardCategoryChart, 'cardCategoryChart']
+    ].forEach(([chart, nome]) => {
+      if (chart) {
+        chart.destroy();
+        if (nome === 'cardFutureChart') cardFutureChart = null;
+        if (nome === 'cardBreakdownChart') cardBreakdownChart = null;
+        if (nome === 'cardCategoryChart') cardCategoryChart = null;
+      }
+    });
+  }
+
+  function renderPainelCartoes() {
+    if (typeof Chart === "undefined") return;
+
+    const listaCartoes = getListaCartoesFiltradaPainel();
+    renderResumoCartoes(listaCartoes);
+
+    const estilo = getComputedStyle(document.documentElement);
+    const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
+    const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
+    const green = estilo.getPropertyValue("--green").trim() || "#16a34a";
+    const orange = estilo.getPropertyValue("--orange").trim() || "#d97706";
+    const borderColor = document.documentElement.getAttribute("data-theme") === "dark" ? "#111827" : "#ffffff";
+
+    destruirGraficosCartoes();
+
+    if (cardFutureChartCanvas) {
+      const dados = gerarDadosFaturasCartoes();
+      const ctx = cardFutureChartCanvas.getContext("2d");
+      const gradient = ctx.createLinearGradient(0, 0, 0, cardFutureChartCanvas.height || 320);
+      gradient.addColorStop(0, primary);
+      gradient.addColorStop(1, "rgba(29, 78, 216, 0.20)");
+
+      cardFutureChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: dados.length ? dados.map(item => item.label) : ["Sem dados"],
+          datasets: [{
+            label: "Fatura prevista",
+            data: dados.length ? dados.map(item => item.total) : [0],
+            backgroundColor: gradient,
+            borderRadius: 10,
+            borderSkipped: false,
+            maxBarThickness: 42
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label(context) { return ` ${formatarMoeda(context.raw || 0)}`; }
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { color: corTexto, font: { weight: "bold" } }, grid: { display: false } },
+            y: {
+              beginAtZero: true,
+              ticks: { color: corTexto, callback(value) { return formatarMoeda(value); } },
+              grid: { color: "rgba(148, 163, 184, 0.15)" }
+            }
+          }
+        }
+      });
+    }
+
+    if (cardBreakdownChartCanvas) {
+      const dados = gerarDadosPorCartao(listaCartoes);
+      const ctx = cardBreakdownChartCanvas.getContext("2d");
+      const cores = dados.map((_, i) => `hsla(${Math.round((360 / Math.max(dados.length, 1)) * i)}, 72%, 55%, 0.88)`);
+
+      cardBreakdownChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: dados.length ? dados.map(item => item.nome) : ["Sem cartões no mês"],
+          datasets: [{
+            label: "Total por cartão",
+            data: dados.length ? dados.map(item => item.total) : [1],
+            backgroundColor: dados.length ? cores : [orange],
+            borderColor,
+            borderWidth: 2,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: corTexto, padding: 14, font: { weight: "bold" } }
+            },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  return dados.length ? ` ${context.label}: ${formatarMoeda(context.raw || 0)}` : " R$ 0,00";
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    if (cardCategoryChartCanvas) {
+      const dados = gerarDadosCategoriasCartoes(listaCartoes);
+      const ctx = cardCategoryChartCanvas.getContext("2d");
+
+      cardCategoryChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: dados.length ? dados.map(item => item.categoria) : ["Sem compras cadastradas"],
+          datasets: [{
+            label: "Categoria",
+            data: dados.length ? dados.map(item => item.total) : [0],
+            backgroundColor: green,
+            borderRadius: 10,
+            borderSkipped: false,
+            maxBarThickness: 42
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label(context) { return ` ${formatarMoeda(context.raw || 0)}`; }
+              }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: { color: corTexto, callback(value) { return formatarMoeda(value); } },
+              grid: { color: "rgba(148, 163, 184, 0.15)" }
+            },
+            y: { ticks: { color: corTexto, font: { weight: "bold" } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+  }
+
+  function abrirPainelCartoes() {
+    if (!cardDashboardPanel) return;
+    cardDashboardPanel.classList.remove("hidden");
+    renderPainelCartoes();
+    setTimeout(() => {
+      cardDashboardPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  }
+
+  function fecharPainelCartoes() {
+    if (!cardDashboardPanel) return;
+    cardDashboardPanel.classList.add("hidden");
   }
 
   function renderResumo(lista) {
@@ -2527,12 +2902,14 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
     renderIpva();
     renderGraficoMensal();
     renderGraficoCategorias();
+    renderPainelCartoes();
   });
 
   searchInput.addEventListener("input", () => {
     searchTerm = searchInput.value.trim();
     renderTabelaPrincipal();
     renderGraficoCategorias();
+    renderPainelCartoes();
   });
 
   categoryFilter.addEventListener("change", () => {
@@ -2540,11 +2917,25 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
     renderGraficoCategorias();
   });
 
+  cardDashboardFilter?.addEventListener("change", () => {
+    cardDashboardFilterTerm = cardDashboardFilter.value.trim();
+    renderPainelCartoes();
+  });
+
+  floatingCardBtn?.addEventListener("click", () => {
+    abrirPainelCartoes();
+  });
+
+  closeCardDashboardBtn?.addEventListener("click", () => {
+    fecharPainelCartoes();
+  });
+
   themeToggle.addEventListener("click", () => {
     const current = document.documentElement.getAttribute("data-theme") || "light";
     salvarTema(current === "dark" ? "light" : "dark");
     renderGraficoMensal();
     renderGraficoCategorias();
+    renderPainelCartoes();
   });
 
   logoutBtn.addEventListener("click", async () => {
@@ -2601,6 +2992,7 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
       compraForm.reset();
       if (compraForm.parcelas) compraForm.parcelas.value = "1";
       renderGraficoCategorias();
+      renderPainelCartoes();
     } catch (error) {
       alert("Erro ao adicionar compra: " + error.message);
     }
@@ -2702,6 +3094,7 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
         renderTabelaPrincipal();
         renderGraficoMensal();
         renderGraficoCategorias();
+        renderPainelCartoes();
       }, (error) => {
         alert("Erro ao carregar despesas: " + (error.message || error.code || "desconhecido"));
       });
