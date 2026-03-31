@@ -204,8 +204,9 @@
         </div>
       </section>
 
-      <button id="floating-card-btn" class="floating-card-btn" type="button" aria-label="Abrir central de gráficos" title="Abrir central de gráficos">
+      <button id="floating-card-btn" class="floating-card-btn" type="button" aria-label="Abrir ou fechar central de gráficos" title="Abrir ou fechar central de gráficos" aria-expanded="false" aria-controls="card-dashboard-panel">
         <span class="floating-card-btn-icon">💳</span>
+        <span class="floating-card-btn-text">Gráficos</span>
       </button>
 
       <section class="panel card-dashboard-panel hidden" id="card-dashboard-panel">
@@ -215,7 +216,7 @@
             <h2>Todos os gráficos em um só lugar</h2>
             <p>Aqui ficam os gráficos gerais e os gráficos dos cartões, sem mudar o restante do site.</p>
           </div>
-          <button id="close-card-dashboard" type="button" class="btn-light">Fechar painel</button>
+          <button id="close-card-dashboard" type="button" class="btn-light">Fechar gráficos</button>
         </div>
 
         <div class="summary-grid card-summary-grid">
@@ -1752,6 +1753,8 @@ function getOptionsCategoriasCompra(selected = "") {
   function abrirPainelCartoes() {
     if (!cardDashboardPanel) return;
     cardDashboardPanel.classList.remove("hidden");
+    floatingCardBtn?.classList.add("is-open");
+    floatingCardBtn?.setAttribute("aria-expanded", "true");
     renderPainelCartoes();
     setTimeout(() => {
       cardDashboardPanel.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1761,6 +1764,19 @@ function getOptionsCategoriasCompra(selected = "") {
   function fecharPainelCartoes() {
     if (!cardDashboardPanel) return;
     cardDashboardPanel.classList.add("hidden");
+    floatingCardBtn?.classList.remove("is-open");
+    floatingCardBtn?.setAttribute("aria-expanded", "false");
+    destruirGraficosCartoes();
+  }
+
+  function alternarPainelCartoes() {
+    if (!cardDashboardPanel) return;
+    const aberto = !cardDashboardPanel.classList.contains("hidden");
+    if (aberto) {
+      fecharPainelCartoes();
+      return;
+    }
+    abrirPainelCartoes();
   }
 
   function renderResumo(lista) {
@@ -2865,7 +2881,7 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
   });
 
   floatingCardBtn?.addEventListener("click", () => {
-    abrirPainelCartoes();
+    alternarPainelCartoes();
   });
 
   closeCardDashboardBtn?.addEventListener("click", () => {
