@@ -204,73 +204,16 @@
         </div>
       </section>
 
-      <section class="panel collapsible-panel">
-        <div class="chart-toggle-row">
-          <button
-            id="toggle-chart-panel"
-            type="button"
-            class="collapse-toggle-btn half-toggle"
-            aria-expanded="false"
-            aria-controls="chart-panel-wrapper"
-          >
-            <span>📊 Ver gráfico mensal</span>
-            <span id="chart-toggle-icon">▼</span>
-          </button>
-
-          <button
-            id="toggle-category-chart-panel"
-            type="button"
-            class="collapse-toggle-btn half-toggle"
-            aria-expanded="false"
-            aria-controls="category-chart-panel-wrapper"
-          >
-            <span>📈 Ver gráfico por categoria</span>
-            <span id="category-chart-toggle-icon">▼</span>
-          </button>
-        </div>
-
-        <div id="chart-panel-wrapper" class="collapsible-content hidden">
-          <div class="panel-header collapsible-header">
-            <h2>Gráfico mensal</h2>
-            <p>Total, pago e pendente por mês.</p>
-          </div>
-
-          <div class="chart-box">
-            <canvas id="finance-chart"></canvas>
-          </div>
-        </div>
-
-        <div id="category-chart-panel-wrapper" class="collapsible-content hidden">
-          <div class="panel-header collapsible-header">
-            <h2>Gráfico por categoria</h2>
-            <p>Mostra apenas as compras lançadas dentro de “Ver compras”.</p>
-          </div>
-
-          <div class="filters-grid filters-grid-two category-chart-filters">
-            <div class="field">
-              <label for="category-filter">Filtrar categoria</label>
-              <select id="category-filter">
-                <option value="">Todas as categorias</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="chart-box">
-            <canvas id="category-chart"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <button id="floating-card-btn" class="floating-card-btn" type="button" aria-label="Abrir painel dos cartões" title="Abrir painel dos cartões">
+      <button id="floating-card-btn" class="floating-card-btn" type="button" aria-label="Abrir central de gráficos" title="Abrir central de gráficos">
         <span class="floating-card-btn-icon">💳</span>
       </button>
 
       <section class="panel card-dashboard-panel hidden" id="card-dashboard-panel">
         <div class="panel-header card-dashboard-header">
           <div>
-            <span class="badge">💳 Área dos cartões</span>
-            <h2>Painel de cartões</h2>
-            <p>Veja as próximas faturas, os valores por cartão e as categorias das compras sem alterar a tabela principal.</p>
+            <span class="badge">📊 Central de gráficos</span>
+            <h2>Todos os gráficos em um só lugar</h2>
+            <p>Aqui ficam os gráficos gerais e os gráficos dos cartões, sem mudar o restante do site.</p>
           </div>
           <button id="close-card-dashboard" type="button" class="btn-light">Fechar painel</button>
         </div>
@@ -294,11 +237,17 @@
           </div>
         </div>
 
-        <div class="filters-grid filters-grid-two card-dashboard-filters">
+        <div class="filters-grid central-graph-filters">
           <div class="field">
             <label for="card-dashboard-filter">Filtrar cartão</label>
             <select id="card-dashboard-filter">
               <option value="">Todos os cartões</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="category-filter">Filtrar categoria</label>
+            <select id="category-filter">
+              <option value="">Todas as categorias</option>
             </select>
           </div>
           <div class="field">
@@ -308,6 +257,26 @@
         </div>
 
         <div class="card-dashboard-grid">
+          <div class="chart-card">
+            <div class="panel-header collapsible-header">
+              <h2>Gráfico mensal</h2>
+              <p>Total, pago e pendente por mês.</p>
+            </div>
+            <div class="chart-box card-chart-box">
+              <canvas id="finance-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="panel-header collapsible-header">
+              <h2>Gráfico por categoria</h2>
+              <p>Mostra apenas as compras lançadas dentro de “Ver compras”.</p>
+            </div>
+            <div class="chart-box card-chart-box">
+              <canvas id="category-chart"></canvas>
+            </div>
+          </div>
+
           <div class="chart-card">
             <div class="panel-header collapsible-header">
               <h2>Próximas faturas</h2>
@@ -339,7 +308,6 @@
           </div>
         </div>
       </section>
-
       <section class="panel">
         <div class="panel-header">
           <h2>Tabela principal</h2>
@@ -519,14 +487,7 @@
   const expenseFormWrapper = document.getElementById("expense-form-wrapper");
   const expenseToggleIcon = document.getElementById("expense-toggle-icon");
 
-  const toggleChartPanelBtn = document.getElementById("toggle-chart-panel");
-  const chartPanelWrapper = document.getElementById("chart-panel-wrapper");
-  const chartToggleIcon = document.getElementById("chart-toggle-icon");
   const financeChartCanvas = document.getElementById("finance-chart");
-
-  const toggleCategoryChartPanelBtn = document.getElementById("toggle-category-chart-panel");
-  const categoryChartPanelWrapper = document.getElementById("category-chart-panel-wrapper");
-  const categoryChartToggleIcon = document.getElementById("category-chart-toggle-icon");
   const categoryChartCanvas = document.getElementById("category-chart");
   const categoryFilter = document.getElementById("category-filter");
 
@@ -841,22 +802,6 @@
     expenseFormWrapper.classList.toggle("hidden");
     toggleExpenseFormBtn.setAttribute("aria-expanded", String(!aberto));
     expenseToggleIcon.textContent = aberto ? "▼" : "▲";
-  }
-
-  function alternarPainelGrafico() {
-    const aberto = !chartPanelWrapper.classList.contains("hidden");
-    chartPanelWrapper.classList.toggle("hidden");
-    toggleChartPanelBtn.setAttribute("aria-expanded", String(!aberto));
-    chartToggleIcon.textContent = aberto ? "▼" : "▲";
-    if (!aberto) setTimeout(() => renderGraficoMensal(), 50);
-  }
-
-  function alternarPainelGraficoCategoria() {
-    const aberto = !categoryChartPanelWrapper.classList.contains("hidden");
-    categoryChartPanelWrapper.classList.toggle("hidden");
-    toggleCategoryChartPanelBtn.setAttribute("aria-expanded", String(!aberto));
-    categoryChartToggleIcon.textContent = aberto ? "▼" : "▲";
-    if (!aberto) setTimeout(() => renderGraficoCategorias(), 50);
   }
 
   function getAjustesMensais(item) {
@@ -2847,9 +2792,6 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
 
   document.getElementById("descricao").addEventListener("input", atualizarPreviewCategoria);
   toggleExpenseFormBtn.addEventListener("click", alternarFormularioDespesa);
-  toggleChartPanelBtn.addEventListener("click", alternarPainelGrafico);
-  toggleCategoryChartPanelBtn.addEventListener("click", alternarPainelGraficoCategoria);
-
   form.addEventListener("submit", salvarDespesa);
   editForm.addEventListener("submit", salvarEdicao);
 
