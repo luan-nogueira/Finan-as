@@ -282,8 +282,8 @@
 
           <div class="chart-card">
             <div class="panel-header collapsible-header">
-              <h2>Próximas faturas</h2>
-              <p>Mostra a projeção das faturas dos cartões a partir do mês selecionado.</p>
+              <h2>Cartões no próximo mês</h2>
+              <p>Mostra quanto cada cartão ficará no mês seguinte com base no mês selecionado.</p>
             </div>
             <div class="chart-box card-chart-box">
               <canvas id="card-future-chart"></canvas>
@@ -1561,6 +1561,30 @@ function getOptionsCategoriasCompra(selected = "") {
       });
   }
 
+  function gerarDadosCartoesProximoMes() {
+    const mapaMeses = gerarListaParaGraficoMensal();
+    const proximoMes = adicionarMesAoYyyyMm(getMesBaseCartoes(), 1);
+    const itensProximoMes = mapaMeses.get(proximoMes) || [];
+    const mapaCartoes = new Map();
+
+    itensProximoMes
+      .filter(item => isCartao(item))
+      .filter(item => !cardDashboardFilterTerm || String(item.descricao || "").trim() === cardDashboardFilterTerm)
+      .forEach(item => {
+        const nome = getNomeExibicaoCartao(item.descricao);
+        const totalAtual = mapaCartoes.get(nome) || 0;
+        mapaCartoes.set(nome, totalAtual + getValorPrincipalItem(item));
+      });
+
+    return [...mapaCartoes.entries()]
+      .map(([nome, total]) => ({
+        nome,
+        total: Number(total.toFixed(2))
+      }))
+      .filter(item => item.total > 0)
+      .sort((a, b) => b.total - a.total);
+  }
+
   function gerarDadosPorCartao(listaCartoes) {
     const mapa = new Map();
 
@@ -1636,7 +1660,7 @@ function getOptionsCategoriasCompra(selected = "") {
     destruirGraficosCartoes();
 
     if (cardFutureChartCanvas) {
-      const dados = gerarDadosFaturasCartoes();
+      const dados = gerarDadosCartoesProximoMes();
       const ctx = cardFutureChartCanvas.getContext("2d");
       const gradient = ctx.createLinearGradient(0, 0, 0, cardFutureChartCanvas.height || 320);
       gradient.addColorStop(0, primary);
@@ -1645,9 +1669,9 @@ function getOptionsCategoriasCompra(selected = "") {
       cardFutureChart = new Chart(ctx, {
         type: "bar",
         data: {
-          labels: dados.length ? dados.map(item => item.label) : ["Sem dados"],
+          labels: dados.length ? dados.map(item => item.nome) : ["Sem cartões"],
           datasets: [{
-            label: "Fatura prevista",
+            label: "Próximo mês por cartão",
             data: dados.length ? dados.map(item => item.total) : [0],
             backgroundColor: gradient,
             borderRadius: 10,
@@ -1662,12 +1686,19 @@ function getOptionsCategoriasCompra(selected = "") {
             legend: { display: false },
             tooltip: {
               callbacks: {
+                title(items) {
+                  const item = items?.[0];
+                  return item?.label ? `${item.label} · ${formatarMesTitulo(adicionarMesAoYyyyMm(getMesBaseCartoes(), 1))}` : "";
+                },
                 label(context) { return ` ${formatarMoeda(context.raw || 0)}`; }
               }
             }
           },
           scales: {
-            x: { ticks: { color: corTexto, font: { weight: "bold" } }, grid: { display: false } },
+            x: {
+              ticks: { color: corTexto, font: { weight: "bold" } },
+              grid: { display: false }
+            },
             y: {
               beginAtZero: true,
               ticks: { color: corTexto, callback(value) { return formatarMoeda(value); } },
