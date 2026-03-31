@@ -283,11 +283,12 @@
           <div class="chart-card">
             <div class="panel-header collapsible-header">
               <h2>Cartões no próximo mês</h2>
-              <p>Mostra quanto cada cartão ficará no mês seguinte com base no mês selecionado.</p>
+              <p>Mostra quanto cada cartão ficará no mês seguinte com base no mês selecionado. No celular, além do gráfico, aparece uma lista com os valores para ficar mais fácil de ler.</p>
             </div>
-            <div class="chart-box card-chart-box">
+            <div class="chart-box card-chart-box card-next-chart-box">
               <canvas id="card-future-chart"></canvas>
             </div>
+            <div id="card-next-month-list" class="card-next-month-list"></div>
           </div>
 
           <div class="chart-card">
@@ -540,6 +541,7 @@
   const cardFutureChartCanvas = document.getElementById("card-future-chart");
   const cardBreakdownChartCanvas = document.getElementById("card-breakdown-chart");
   const cardCategoryChartCanvas = document.getElementById("card-category-chart");
+  const cardNextMonthList = document.getElementById("card-next-month-list");
 
   let despesasCache = [];
   let ipvaData = [];
@@ -1629,6 +1631,45 @@ function getOptionsCategoriasCompra(selected = "") {
     if (cardDashboardMonthInfo) cardDashboardMonthInfo.value = formatarMesTitulo(getMesBaseCartoes());
   }
 
+  function renderListaCartoesProximoMes(dados) {
+    if (!cardNextMonthList) return;
+
+    const mesTitulo = formatarMesTitulo(adicionarMesAoYyyyMm(getMesBaseCartoes(), 1));
+
+    if (!dados.length) {
+      cardNextMonthList.innerHTML = `
+        <div class="card-next-empty">Nenhuma fatura de cartão encontrada para ${mesTitulo}.</div>
+      `;
+      return;
+    }
+
+    const maiorValor = Math.max(...dados.map(item => numeroSeguro(item.total)), 0);
+
+    cardNextMonthList.innerHTML = `
+      <div class="card-next-month-header">
+        <strong>${escapeHtml(mesTitulo)}</strong>
+        <span>${dados.length} cartão${dados.length > 1 ? 'ões' : ''}</span>
+      </div>
+      <div class="card-next-month-items">
+        ${dados.map(item => {
+          const total = numeroSeguro(item.total);
+          const percentual = maiorValor > 0 ? Math.max(8, Math.round((total / maiorValor) * 100)) : 0;
+          return `
+            <div class="card-next-item">
+              <div class="card-next-item-top">
+                <span class="card-next-item-name">${escapeHtml(item.nome)}</span>
+                <strong class="card-next-item-value">${escapeHtml(formatarMoeda(total))}</strong>
+              </div>
+              <div class="card-next-item-bar">
+                <span style="width:${percentual}%"></span>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
   function destruirGraficosCartoes() {
     [
       [cardFutureChart, 'cardFutureChart'],
@@ -1661,8 +1702,22 @@ function getOptionsCategoriasCompra(selected = "") {
 
     if (cardFutureChartCanvas) {
       const dados = gerarDadosCartoesProximoMes();
+      renderListaCartoesProximoMes(dados);
+
+      const chartWrapper = cardFutureChartCanvas.closest(".card-next-chart-box");
+      const isMobile = window.innerWidth <= 640;
+      const quantidade = Math.max(dados.length, 1);
+
+      if (chartWrapper) {
+        chartWrapper.style.height = isMobile
+          ? `${Math.max(320, quantidade * 64)}px`
+          : "360px";
+      }
+
       const ctx = cardFutureChartCanvas.getContext("2d");
-      const gradient = ctx.createLinearGradient(0, 0, 0, cardFutureChartCanvas.height || 320);
+      const gradient = isMobile
+        ? ctx.createLinearGradient(0, 0, cardFutureChartCanvas.width || 320, 0)
+        : ctx.createLinearGradient(0, 0, 0, cardFutureChartCanvas.height || 320);
       gradient.addColorStop(0, primary);
       gradient.addColorStop(1, "rgba(29, 78, 216, 0.20)");
 
@@ -1676,12 +1731,17 @@ function getOptionsCategoriasCompra(selected = "") {
             backgroundColor: gradient,
             borderRadius: 10,
             borderSkipped: false,
-            maxBarThickness: 42
+            maxBarThickness: isMobile ? 28 : 42,
+            barThickness: isMobile ? 24 : undefined
           }]
         },
         options: {
+          indexAxis: isMobile ? "y" : "x",
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: isMobile ? { left: 4, right: 8, top: 8, bottom: 8 } : 0
+          },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -1696,13 +1756,20 @@ function getOptionsCategoriasCompra(selected = "") {
           },
           scales: {
             x: {
-              ticks: { color: corTexto, font: { weight: "bold" } },
-              grid: { display: false }
+              beginAtZero: true,
+              ticks: {
+                color: corTexto,
+                font: { weight: "bold", size: isMobile ? 11 : 12 },
+                callback(value) { return formatarMoeda(value); }
+              },
+              grid: { color: "rgba(148, 163, 184, 0.15)" }
             },
             y: {
-              beginAtZero: true,
-              ticks: { color: corTexto, callback(value) { return formatarMoeda(value); } },
-              grid: { color: "rgba(148, 163, 184, 0.15)" }
+              ticks: {
+                color: corTexto,
+                font: { weight: "bold", size: isMobile ? 11 : 12 }
+              },
+              grid: { display: false }
             }
           }
         }
