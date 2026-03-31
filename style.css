@@ -1515,3 +1515,89 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
     height: 300px;
   }
 }
+
+.card-next-month-list {
+  margin-top: 14px;
+  display: none;
+  gap: 10px;
+}
+
+.card-next-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.card-next-month-header strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.card-next-month-items {
+  display: grid;
+  gap: 10px;
+}
+
+.card-next-item {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--card-2);
+}
+
+.card-next-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.card-next-item-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.card-next-item-value {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.card-next-item-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-soft);
+  overflow: hidden;
+}
+
+.card-next-item-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--primary-strong));
+}
+
+.card-next-empty {
+  padding: 14px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+  text-align: center;
+  background: var(--card-2);
+}
+
+@media (max-width: 640px) {
+  .card-next-chart-box {
+    height: auto !important;
+    min-height: 320px;
+  }
+
+  .card-next-month-list {
+    display: grid;
+  }
+}
