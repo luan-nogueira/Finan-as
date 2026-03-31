@@ -206,6 +206,7 @@
 
       <button id="floating-card-btn" class="floating-card-btn" type="button" aria-label="Abrir ou fechar central de gráficos" title="Abrir ou fechar central de gráficos" aria-expanded="false" aria-controls="card-dashboard-panel">
         <span class="floating-card-btn-icon">💳</span>
+        <span class="floating-card-btn-text">Gráficos</span>
       </button>
 
       <section class="panel card-dashboard-panel hidden" id="card-dashboard-panel">
@@ -270,10 +271,12 @@
           <div class="chart-card">
             <div class="panel-header collapsible-header">
               <h2>Gráfico por categoria</h2>
-              <p>Mostra apenas as compras lançadas dentro de “Ver compras”.</p>
+              <p>Mostra apenas as compras lançadas dentro de “Ver compras”. No celular, arraste para o lado se necessário.</p>
             </div>
-            <div class="chart-box card-chart-box">
-              <canvas id="category-chart"></canvas>
+            <div class="chart-scroll-x">
+              <div class="chart-box card-chart-box chart-box-wide chart-box-category">
+                <canvas id="category-chart"></canvas>
+              </div>
             </div>
           </div>
 
@@ -300,10 +303,12 @@
           <div class="chart-card chart-card-full">
             <div class="panel-header collapsible-header">
               <h2>Categorias das compras no cartão</h2>
-              <p>Resumo das categorias lançadas dentro de “Ver compras” dos cartões.</p>
+              <p>Resumo das categorias lançadas dentro de “Ver compras” dos cartões. No celular, arraste para o lado se necessário.</p>
             </div>
-            <div class="chart-box card-chart-box">
-              <canvas id="card-category-chart"></canvas>
+            <div class="chart-scroll-x">
+              <div class="chart-box card-chart-box chart-box-wide chart-box-category">
+                <canvas id="card-category-chart"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -570,6 +575,10 @@
     "Casa",
     "Educação",
     "Beleza",
+    "Zoe",
+    "Eletrônicos",
+    "Papelaria",
+    "Presente",
     "Outros"
   ];
 
@@ -1751,17 +1760,19 @@ function getOptionsCategoriasCompra(selected = "") {
 
   function abrirPainelCartoes() {
     if (!cardDashboardPanel) return;
+    document.body.classList.add("card-dashboard-open");
     cardDashboardPanel.classList.remove("hidden");
     floatingCardBtn?.classList.add("is-open");
     floatingCardBtn?.setAttribute("aria-expanded", "true");
     renderPainelCartoes();
     setTimeout(() => {
-      cardDashboardPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      cardDashboardPanel.scrollTo({ top: 0, behavior: "smooth" });
     }, 60);
   }
 
   function fecharPainelCartoes() {
     if (!cardDashboardPanel) return;
+    document.body.classList.remove("card-dashboard-open");
     cardDashboardPanel.classList.add("hidden");
     floatingCardBtn?.classList.remove("is-open");
     floatingCardBtn?.setAttribute("aria-expanded", "false");
@@ -2885,6 +2896,12 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
 
   closeCardDashboardBtn?.addEventListener("click", () => {
     fecharPainelCartoes();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && document.body.classList.contains("card-dashboard-open")) {
+      fecharPainelCartoes();
+    }
   });
 
   themeToggle.addEventListener("click", () => {
