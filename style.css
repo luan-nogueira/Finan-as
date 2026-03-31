@@ -1452,3 +1452,66 @@ input[type="checkbox"] {
     border-radius: 16px;
   }
 }
+
+
+body.card-dashboard-open {
+  overflow: hidden;
+}
+
+body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboard-panel) {
+  visibility: hidden;
+}
+
+.card-dashboard-panel {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 24px;
+  border-radius: 0;
+  border: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 940;
+  background: var(--bg);
+  box-shadow: none;
+}
+
+.chart-scroll-x {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 6px;
+}
+
+.chart-box-wide {
+  min-width: 720px;
+}
+
+.chart-box-category {
+  height: 380px;
+}
+
+@media (max-width: 920px) {
+  .card-dashboard-panel {
+    padding: 18px 16px 90px;
+  }
+}
+
+@media (max-width: 640px) {
+  .card-dashboard-panel {
+    padding: 16px 12px 84px;
+  }
+
+  .chart-box-wide {
+    min-width: 860px;
+  }
+
+  .chart-box-category {
+    height: 300px;
+  }
+}
