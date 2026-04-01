@@ -1753,3 +1753,22 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
     min-height: clamp(280px, 72vw, 560px);
   }
 }
+
+
+/* ===== CORREÇÃO FINAL MOBILE: não prender o toque no canvas ===== */
+@media (max-width: 640px) {
+  .chart-box,
+  .card-chart-box,
+  .chart-box-category,
+  .card-next-chart-box,
+  .chart-scroll-x {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chart-box canvas,
+  .card-chart-box canvas,
+  .chart-box-category canvas,
+  .card-next-chart-box canvas {
+    pointer-events: none;
+  }
+}
