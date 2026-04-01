@@ -229,7 +229,7 @@
             <h3 id="cards-total-next">R$ 0,00</h3>
           </div>
           <div class="summary-card">
-            <p>Próximos 6 meses</p>
+            <p>Até o final do ano</p>
             <h3 id="cards-total-six">R$ 0,00</h3>
           </div>
           <div class="summary-card">
@@ -282,8 +282,8 @@
 
           <div class="chart-card">
             <div class="panel-header collapsible-header">
-              <h2>Cartões nos próximos meses</h2>
-              <p>Escolha um cartão no filtro acima para ver a projeção da fatura dele nos próximos meses. Se deixar em “Todos os cartões”, o gráfico mostra o total consolidado de todos os cartões. No celular, o gráfico se ajusta automaticamente e a lista abaixo facilita a leitura.</p>
+              <h2>Cartões até o final do ano</h2>
+              <p>Escolha um cartão no filtro acima para ver a projeção da fatura dele até o final do ano. Se deixar em “Todos os cartões”, o gráfico mostra o total consolidado de todos os cartões até dezembro. No celular, o gráfico se ajusta automaticamente e a lista abaixo facilita a leitura.</p>
             </div>
             <div class="chart-box card-chart-box card-next-chart-box">
               <canvas id="card-future-chart"></canvas>
@@ -1547,14 +1547,20 @@ function getOptionsCategoriasCompra(selected = "") {
     return getNomeExibicaoCartao(cardDashboardFilterTerm);
   }
 
+  function getUltimoMesDoAno(yyyyMm) {
+    if (!yyyyMm) return "";
+    const [ano] = yyyyMm.split("-");
+    return `${ano}-12`;
+  }
+
   function gerarDadosFaturasCartoes() {
     const mapaMeses = gerarListaParaGraficoMensal();
     const mesBase = getMesBaseCartoes();
+    const ultimoMesAno = getUltimoMesDoAno(mesBase);
 
     return [...mapaMeses.entries()]
-      .filter(([mes]) => mes >= mesBase)
+      .filter(([mes]) => mes >= mesBase && mes <= ultimoMesAno)
       .sort((a, b) => a[0].localeCompare(b[0]))
-      .slice(0, 6)
       .map(([mes, itens]) => {
         const itensCartao = itens.filter(item => isCartao(item))
           .filter(item => !cardDashboardFilterTerm || String(item.descricao || "").trim() === cardDashboardFilterTerm);
@@ -1625,7 +1631,7 @@ function getOptionsCategoriasCompra(selected = "") {
     const dadosFuturos = gerarDadosFaturasCartoes();
     const totalAtual = dadosFuturos[0]?.total || 0;
     const totalProximo = dadosFuturos[1]?.total || 0;
-    const totalSeis = dadosFuturos.reduce((acc, item) => acc + item.total, 0);
+    const totalAno = dadosFuturos.reduce((acc, item) => acc + item.total, 0);
     const ativosUnicos = new Set(
       listaCartoes
         .filter(item => getValorPrincipalItem(item) > 0)
@@ -1636,7 +1642,7 @@ function getOptionsCategoriasCompra(selected = "") {
 
     if (cardsTotalCurrentEl) cardsTotalCurrentEl.textContent = formatarMoeda(totalAtual);
     if (cardsTotalNextEl) cardsTotalNextEl.textContent = formatarMoeda(totalProximo);
-    if (cardsTotalSixEl) cardsTotalSixEl.textContent = formatarMoeda(totalSeis);
+    if (cardsTotalSixEl) cardsTotalSixEl.textContent = formatarMoeda(totalAno);
     if (cardsActiveCountEl) cardsActiveCountEl.textContent = String(ativosUnicos);
     if (cardDashboardMonthInfo) {
       cardDashboardMonthInfo.value = cartaoSelecionado
@@ -1652,19 +1658,19 @@ function getOptionsCategoriasCompra(selected = "") {
 
     if (!dados.length) {
       cardNextMonthList.innerHTML = `
-        <div class="card-next-empty">${cartaoSelecionado ? `Nenhuma fatura encontrada para ${escapeHtml(cartaoSelecionado)} nos próximos meses.` : "Nenhuma fatura de cartão encontrada nos próximos meses."}</div>
+        <div class="card-next-empty">${cartaoSelecionado ? `Nenhuma fatura encontrada para ${escapeHtml(cartaoSelecionado)} até o final do ano.` : "Nenhuma fatura de cartão encontrada até o final do ano."}</div>
       `;
       return;
     }
 
     const maiorValor = Math.max(...dados.map(item => numeroSeguro(item.total)), 0);
     const resumoQuantidade = cartaoSelecionado
-      ? `Projeção de ${escapeHtml(cartaoSelecionado)}`
-      : `Projeção consolidada de ${dados.length} mês${dados.length > 1 ? "es" : ""}`;
+      ? `Projeção de ${escapeHtml(cartaoSelecionado)} até dezembro`
+      : `Projeção consolidada até dezembro`;
 
     cardNextMonthList.innerHTML = `
       <div class="card-next-month-header">
-        <strong>Próximos meses</strong>
+        <strong>Até o final do ano</strong>
         <span>${resumoQuantidade}</span>
       </div>
       <div class="card-next-month-items">
@@ -1738,7 +1744,7 @@ function getOptionsCategoriasCompra(selected = "") {
         data: {
           labels: dados.length ? dados.map(item => item.labelCurto || item.label) : ["Sem projeção"],
           datasets: [{
-            label: cardDashboardFilterTerm ? "Projeção do cartão nos próximos meses" : "Projeção consolidada dos cartões",
+            label: cardDashboardFilterTerm ? "Projeção do cartão até o final do ano" : "Projeção consolidada dos cartões até o final do ano",
             data: dados.length ? dados.map(item => item.total) : [0],
             backgroundColor: gradient,
             borderRadius: 10,
