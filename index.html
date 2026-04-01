@@ -282,8 +282,8 @@
 
           <div class="chart-card">
             <div class="panel-header collapsible-header">
-              <h2>Cartões no próximo mês</h2>
-              <p>Escolha um cartão no filtro acima para ver quanto a fatura dele ficará no mês seguinte. Se deixar em “Todos os cartões”, o gráfico mostra todos. No celular, além do gráfico, aparece uma lista com os valores para ficar mais fácil de ler.</p>
+              <h2>Cartões nos próximos meses</h2>
+              <p>Escolha um cartão no filtro acima para ver a projeção da fatura dele nos próximos meses. Se deixar em “Todos os cartões”, o gráfico mostra o total consolidado de todos os cartões. No celular, o gráfico se ajusta automaticamente e a lista abaixo facilita a leitura.</p>
             </div>
             <div class="chart-box card-chart-box card-next-chart-box">
               <canvas id="card-future-chart"></canvas>
@@ -1568,28 +1568,27 @@ function getOptionsCategoriasCompra(selected = "") {
       });
   }
 
-  function gerarDadosCartoesProximoMes() {
-    const mapaMeses = gerarListaParaGraficoMensal();
-    const proximoMes = adicionarMesAoYyyyMm(getMesBaseCartoes(), 1);
-    const itensProximoMes = mapaMeses.get(proximoMes) || [];
-    const mapaCartoes = new Map();
+  function gerarDadosCartoesProximosMeses() {
+    const dadosFuturos = gerarDadosFaturasCartoes();
 
-    itensProximoMes
-      .filter(item => isCartao(item))
-      .filter(item => !cardDashboardFilterTerm || String(item.descricao || "").trim() === cardDashboardFilterTerm)
-      .forEach(item => {
-        const nome = getNomeExibicaoCartao(item.descricao);
-        const totalAtual = mapaCartoes.get(nome) || 0;
-        mapaCartoes.set(nome, totalAtual + getValorPrincipalItem(item));
-      });
+    return dadosFuturos.map(item => ({
+      mes: item.mes,
+      label: formatarMesTitulo(item.mes),
+      labelCurto: item.label,
+      total: Number(numeroSeguro(item.total).toFixed(2))
+    }));
+  }
 
-    return [...mapaCartoes.entries()]
-      .map(([nome, total]) => ({
-        nome,
-        total: Number(total.toFixed(2))
-      }))
-      .filter(item => item.total > 0)
-      .sort((a, b) => b.total - a.total);
+  function gerarAlturaDinamicaGrafico(wrapper, quantidade, isMobile) {
+    if (!wrapper) return;
+    const total = Math.max(Number(quantidade) || 1, 1);
+
+    if (isMobile) {
+      wrapper.style.height = `${Math.min(520, Math.max(240, total * 58))}px`;
+      return;
+    }
+
+    wrapper.style.height = `${Math.min(440, Math.max(280, total * 42))}px`;
   }
 
   function gerarDadosPorCartao(listaCartoes) {
@@ -1646,28 +1645,27 @@ function getOptionsCategoriasCompra(selected = "") {
     }
   }
 
-  function renderListaCartoesProximoMes(dados) {
+  function renderListaCartoesProximosMeses(dados) {
     if (!cardNextMonthList) return;
 
-    const mesTitulo = formatarMesTitulo(adicionarMesAoYyyyMm(getMesBaseCartoes(), 1));
     const cartaoSelecionado = getCartaoSelecionadoPainel();
 
     if (!dados.length) {
       cardNextMonthList.innerHTML = `
-        <div class="card-next-empty">${cartaoSelecionado ? `Nenhuma fatura encontrada para ${escapeHtml(cartaoSelecionado)} em ${escapeHtml(mesTitulo)}.` : `Nenhuma fatura de cartão encontrada para ${escapeHtml(mesTitulo)}.`}</div>
+        <div class="card-next-empty">${cartaoSelecionado ? `Nenhuma fatura encontrada para ${escapeHtml(cartaoSelecionado)} nos próximos meses.` : "Nenhuma fatura de cartão encontrada nos próximos meses."}</div>
       `;
       return;
     }
 
     const maiorValor = Math.max(...dados.map(item => numeroSeguro(item.total)), 0);
     const resumoQuantidade = cartaoSelecionado
-      ? 'Cartão selecionado'
-      : `${dados.length} cartão${dados.length > 1 ? 'ões' : ''}`;
+      ? `Projeção de ${escapeHtml(cartaoSelecionado)}`
+      : `Projeção consolidada de ${dados.length} mês${dados.length > 1 ? "es" : ""}`;
 
     cardNextMonthList.innerHTML = `
       <div class="card-next-month-header">
-        <strong>${escapeHtml(mesTitulo)}</strong>
-        <span>${escapeHtml(resumoQuantidade)}</span>
+        <strong>Próximos meses</strong>
+        <span>${resumoQuantidade}</span>
       </div>
       <div class="card-next-month-items">
         ${dados.map(item => {
@@ -1676,7 +1674,7 @@ function getOptionsCategoriasCompra(selected = "") {
           return `
             <div class="card-next-item">
               <div class="card-next-item-top">
-                <span class="card-next-item-name">${escapeHtml(item.nome)}</span>
+                <span class="card-next-item-name">${escapeHtml(item.label)}</span>
                 <strong class="card-next-item-value">${escapeHtml(formatarMoeda(total))}</strong>
               </div>
               <div class="card-next-item-bar">
@@ -1720,18 +1718,13 @@ function getOptionsCategoriasCompra(selected = "") {
     destruirGraficosCartoes();
 
     if (cardFutureChartCanvas) {
-      const dados = gerarDadosCartoesProximoMes();
-      renderListaCartoesProximoMes(dados);
+      const dados = gerarDadosCartoesProximosMeses();
+      renderListaCartoesProximosMeses(dados);
 
       const chartWrapper = cardFutureChartCanvas.closest(".card-next-chart-box");
       const isMobile = window.innerWidth <= 640;
       const quantidade = Math.max(dados.length, 1);
-
-      if (chartWrapper) {
-        chartWrapper.style.height = isMobile
-          ? `${Math.max(320, quantidade * 64)}px`
-          : "360px";
-      }
+      gerarAlturaDinamicaGrafico(chartWrapper, quantidade, isMobile);
 
       const ctx = cardFutureChartCanvas.getContext("2d");
       const gradient = isMobile
@@ -1743,9 +1736,9 @@ function getOptionsCategoriasCompra(selected = "") {
       cardFutureChart = new Chart(ctx, {
         type: "bar",
         data: {
-          labels: dados.length ? dados.map(item => item.nome) : [cardDashboardFilterTerm ? "Sem fatura" : "Sem cartões"],
+          labels: dados.length ? dados.map(item => item.labelCurto || item.label) : ["Sem projeção"],
           datasets: [{
-            label: cardDashboardFilterTerm ? "Fatura do cartão no próximo mês" : "Próximo mês por cartão",
+            label: cardDashboardFilterTerm ? "Projeção do cartão nos próximos meses" : "Projeção consolidada dos cartões",
             data: dados.length ? dados.map(item => item.total) : [0],
             backgroundColor: gradient,
             borderRadius: 10,
@@ -1767,9 +1760,10 @@ function getOptionsCategoriasCompra(selected = "") {
               callbacks: {
                 title(items) {
                   const item = items?.[0];
-                  if (!item?.label) return "";
-                  const complemento = cardDashboardFilterTerm ? "Fatura selecionada" : item.label;
-                  return `${complemento} · ${formatarMesTitulo(adicionarMesAoYyyyMm(getMesBaseCartoes(), 1))}`;
+                  if (!item) return "";
+                  return cardDashboardFilterTerm
+                    ? `${getCartaoSelecionadoPainel()} · ${item.label}`
+                    : `Todos os cartões · ${item.label}`;
                 },
                 label(context) { return ` ${formatarMoeda(context.raw || 0)}`; }
               }
@@ -3209,6 +3203,17 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
         alert("Erro ao carregar IPVA.");
       });
   });
+
+  let resizeChartsTimeout = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeChartsTimeout);
+    resizeChartsTimeout = setTimeout(() => {
+      renderGraficoMensal();
+      renderGraficoCategorias();
+      renderPainelCartoes();
+    }, 180);
+  });
+
 
   carregarTema();
 
