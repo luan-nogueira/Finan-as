@@ -271,12 +271,10 @@
           <div class="chart-card">
             <div class="panel-header collapsible-header">
               <h2>Gráfico por categoria</h2>
-              <p>Mostra apenas as compras lançadas dentro de “Ver compras”. No celular, arraste para o lado se necessário.</p>
+              <p>Mostra apenas as compras lançadas dentro de “Ver compras”.</p>
             </div>
-            <div class="chart-scroll-x">
-              <div class="chart-box card-chart-box chart-box-wide chart-box-category">
-                <canvas id="category-chart"></canvas>
-              </div>
+            <div class="chart-box card-chart-box chart-box-category category-pie-box">
+              <canvas id="category-chart"></canvas>
             </div>
           </div>
 
@@ -2155,13 +2153,21 @@ function getOptionsCategoriasCompra(selected = "") {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: 8
+          },
           plugins: {
             legend: {
               position: "bottom",
               labels: {
                 color: corTexto,
-                padding: 16,
-                font: { weight: "bold" }
+                padding: window.innerWidth <= 640 ? 10 : 16,
+                boxWidth: window.innerWidth <= 640 ? 12 : 18,
+                boxHeight: window.innerWidth <= 640 ? 12 : 18,
+                font: {
+                  weight: "bold",
+                  size: window.innerWidth <= 640 ? 11 : 12
+                }
               }
             },
             tooltip: {
@@ -2197,13 +2203,21 @@ function getOptionsCategoriasCompra(selected = "") {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: 8
+        },
         plugins: {
           legend: {
             position: "bottom",
             labels: {
               color: corTexto,
-              padding: 16,
-              font: { weight: "bold" }
+              padding: window.innerWidth <= 640 ? 10 : 16,
+              boxWidth: window.innerWidth <= 640 ? 12 : 18,
+              boxHeight: window.innerWidth <= 640 ? 12 : 18,
+              font: {
+                weight: "bold",
+                size: window.innerWidth <= 640 ? 11 : 12
+              }
             }
           },
           tooltip: {
