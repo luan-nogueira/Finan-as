@@ -778,12 +778,16 @@
   }
 
   function escapeHtml(texto) {
-    return String(texto ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+    return String(texto == null ? "" : texto).replace(/[&<>"']/g, (caractere) => {
+      const mapa = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      };
+      return mapa[caractere] || caractere;
+    });
   }
 
   function salvarTema(theme) {
@@ -1137,26 +1141,50 @@ function getOptionsCategoriasCompra(selected = "") {
     const snap = await db.collection("despesas").limit(1).get();
     if (!snap.empty) return;
 
-    const batch = db.batch();
-    DESPESAS_INICIAIS.forEach(item => {
-      const ref = db.collection("despesas").doc();
-      batch.set(ref, {
-        descricao: item.descricao,
-        categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
-        valor: item.valor ?? null,
-        vencimento: item.vencimento || "",
-        observacao: item.observacao || "",
-        parcelaAtual: item.parcelaAtual || null,
-        parcelaTotal: item.parcelaTotal || null,
-        mesesIgnorados: [],
-        compras: Array.isArray(item.compras) ? item.compras : [],
-        ajustesMensais: {},
-        pago: Boolean(item.pago),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+    const criarPayload = (item) => ({
+      descricao: item.descricao,
+      categoria: item.categoria || definirCategoriaAutomatica(item.descricao),
+      valor: item.valor ?? null,
+      vencimento: item.vencimento || "",
+      observacao: item.observacao || "",
+      parcelaAtual: item.parcelaAtual || null,
+      parcelaTotal: item.parcelaTotal || null,
+      mesesIgnorados: [],
+      compras: Array.isArray(item.compras) ? item.compras : [],
+      ajustesMensais: {},
+      pago: Boolean(item.pago),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    await batch.commit();
+    try {
+      const batch = db.batch();
+      DESPESAS_INICIAIS.forEach(item => {
+        const ref = db.collection("despesas").doc();
+        batch.set(ref, criarPayload(item));
+      });
+      await batch.commit();
+    } catch (error) {
+      console.warn("Falha no batch inicial de despesas. Tentando modo alternativo.", error);
+      for (const item of DESPESAS_INICIAIS) {
+        await db.collection("despesas").add(criarPayload(item));
+      }
+    }
+  }
+
+  async function prepararDadosIniciaisComResiliencia() {
+    const resultados = await Promise.allSettled([
+      garantirIpvaInicial(),
+      garantirDespesasIniciais()
+    ]);
+
+    const falhas = resultados.filter(resultado => resultado.status === "rejected");
+    if (falhas.length) {
+      falhas.forEach(falha => {
+        console.warn("Falha ao preparar dado inicial:", falha.reason);
+      });
+    }
+
+    return falhas.length === 0;
   }
 
   function ajustarDataParaMes(dataOriginal, yyyyMm) {
@@ -1885,7 +1913,7 @@ function getOptionsCategoriasCompra(selected = "") {
     floatingCardBtn?.setAttribute("aria-expanded", "true");
     renderPainelCartoes();
     setTimeout(() => {
-      cardDashboardPanel.scrollTo({ top: 0, behavior: "smooth" });
+      cardDashboardPanel.scrollTo({ top: 0, behavior: "auto" });
     }, 60);
   }
 
@@ -3170,11 +3198,9 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
     if (unsubscribe) unsubscribe();
     if (unsubscribeIpva) unsubscribeIpva();
 
-    try {
-      await garantirIpvaInicial();
-      await garantirDespesasIniciais();
-    } catch {
-      alert("Erro ao preparar dados iniciais.");
+    const dadosIniciaisOk = await prepararDadosIniciaisComResiliencia();
+    if (!dadosIniciaisOk) {
+      console.warn("Nem todos os dados iniciais puderam ser preparados neste acesso.");
     }
 
     unsubscribe = db.collection("despesas")
