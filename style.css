@@ -1903,3 +1903,68 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
     touch-action: pan-x;
   }
 }
+
+/* ===== CORREÇÃO FINAL MOBILE: PAINEL DE CARTÕES COM ROLAGEM ===== */
+body.card-dashboard-open {
+  overflow: hidden;
+  height: 100dvh;
+}
+
+#card-dashboard-panel.card-dashboard-panel {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#card-dashboard-panel .card-dashboard-grid,
+#card-dashboard-panel .chart-card,
+#card-dashboard-panel .chart-box,
+#card-dashboard-panel .card-chart-box {
+  min-width: 0;
+}
+
+#card-dashboard-panel .chart-scroll-x {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+#card-dashboard-panel .chart-scroll-x > .chart-box-wide {
+  min-width: 720px;
+}
+
+@media (max-width: 768px) {
+  #card-dashboard-panel.card-dashboard-panel {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-bottom: 96px;
+    touch-action: pan-y;
+  }
+
+  #card-dashboard-panel .chart-card,
+  #card-dashboard-panel .panel {
+    overflow: visible;
+  }
+
+  #card-dashboard-panel .chart-scroll-x {
+    touch-action: pan-x;
+  }
+
+  #card-dashboard-panel canvas {
+    pointer-events: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #card-dashboard-panel .chart-scroll-x > .chart-box-wide {
+    min-width: 680px;
+  }
+
+  #card-dashboard-panel .card-next-month-list {
+    display: grid;
+  }
+}
