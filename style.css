@@ -1968,3 +1968,24 @@ body.card-dashboard-open {
     display: grid;
   }
 }
+
+
+/* ===== Ajuste do gráfico de pizza por categoria no celular ===== */
+.category-pie-box {
+  min-width: 0 !important;
+  width: 100% !important;
+  overflow: hidden;
+}
+
+.category-pie-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .category-pie-box {
+    height: 360px !important;
+    padding: 12px !important;
+  }
+}
