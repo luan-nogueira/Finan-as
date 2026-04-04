@@ -1,3 +1,5 @@
+
+
 :root {
   --bg: #f4f7fb;
   --bg-soft: #eef3f8;
@@ -2049,3 +2051,63 @@ body.card-dashboard-open {
     padding: 12px !important;
   }
 }
+
+
+/* ===== AJUSTES FINAIS MOBILE: CAMPO MÊS E SCROLL DO GRÁFICO ===== */
+.filters-grid,
+.filters-grid-two,
+.field {
+  min-width: 0;
+}
+
+input[type="month"],
+input[type="date"] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 14px;
+}
+
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator {
+  margin: 0;
+  padding: 0;
+}
+
+#card-dashboard-panel .chart-scroll-x {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+#card-dashboard-panel .chart-scroll-x > .chart-box-wide {
+  min-width: 900px;
+}
+
+@media (max-width: 920px) {
+  .filters-grid.filters-grid-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    overflow-x: hidden;
+  }
+
+  #month-filter,
+  #vencimento,
+  #edit-vencimento,
+  .ipva-data {
+    font-size: 16px;
+  }
+
+  #card-dashboard-panel .chart-scroll-x > .chart-box-wide {
+    min-width: 860px;
+  }
+}
+
