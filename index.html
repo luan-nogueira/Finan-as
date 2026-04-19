@@ -112,6 +112,16 @@
         </div>
       </section>
 
+      <div class="month-progress" id="month-progress" style="display: none;">
+        <div class="progress-header">
+          <span class="progress-title">Progresso financeiro do mês (valor pago)</span>
+          <span class="progress-percent" id="progress-percent">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
       <section class="panel collapsible-panel">
         <button
           id="toggle-expense-form"
@@ -174,7 +184,7 @@
 
             <div class="field">
               <label for="valor">Valor</label>
-              <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" inputmode="decimal" />
+              <input type="text" id="valor" placeholder="0,00" inputmode="numeric" />
             </div>
 
             <div class="field">
@@ -330,6 +340,13 @@
           </div>
         </div>
 
+        <div class="quick-filters">
+          <button type="button" class="quick-filter-btn active" data-filter="all">Todos</button>
+          <button type="button" class="quick-filter-btn" data-filter="pending">Pendentes</button>
+          <button type="button" class="quick-filter-btn" data-filter="paid">Pagos</button>
+          <button type="button" class="quick-filter-btn" data-filter="overdue">Vencidos</button>
+        </div>
+
         <div class="month-header" id="month-header">Mês</div>
 
         <div class="table-wrap">
@@ -407,7 +424,7 @@
 
         <div class="field">
           <label for="edit-valor">Valor</label>
-          <input type="number" id="edit-valor" step="0.01" min="0" inputmode="decimal" />
+          <input type="text" id="edit-valor" placeholder="0,00" inputmode="numeric" />
         </div>
 
         <div class="field">
@@ -547,6 +564,7 @@
   let unsubscribeIpva = null;
   let searchTerm = "";
   let monthTerm = "";
+  let currentQuickFilter = "all";
   let lastEditedId = null;
   let financeChart = null;
   let categoryChart = null;
@@ -644,8 +662,15 @@
   }
 
   function converterValorInput(valorDigitado) {
-    const texto = String(valorDigitado ?? "").trim().replace(",", ".");
+    let texto = String(valorDigitado ?? "").trim();
     if (texto === "") return null;
+    
+    if (!texto.includes(",") && texto.includes(".")) {
+      const num = Number(texto);
+      if (!Number.isNaN(num)) return num < 0 ? NaN : num;
+    }
+
+    texto = texto.replace(/\./g, "").replace(",", ".");
     const numero = Number(texto);
     if (!Number.isFinite(numero) || numero < 0) return NaN;
     return numero;
@@ -830,16 +855,17 @@
     Object.entries(ajustes).forEach(([mes, ajuste]) => {
       if (!mes || !ajuste || typeof ajuste !== "object") return;
 
-      resultado[mes] = {
+      const novoAjuste = {
         ...ajuste,
-        valor: ajuste.valor === null || ajuste.valor === undefined || ajuste.valor === ""
-          ? null
-          : numeroSeguro(ajuste.valor),
         parcelaAtual: ajuste.parcelaAtual || null,
         parcelaTotal: ajuste.parcelaTotal || null,
         pago: typeof ajuste.pago === "boolean" ? ajuste.pago : undefined,
         compras: Array.isArray(ajuste.compras) ? ajuste.compras : undefined
       };
+      if (ajuste.valor !== undefined) {
+        novoAjuste.valor = ajuste.valor === null || ajuste.valor === "" ? null : numeroSeguro(ajuste.valor);
+      }
+      resultado[mes] = novoAjuste;
     });
 
     return resultado;
@@ -948,7 +974,9 @@ function normalizarCompras(item) {
     document.getElementById("edit-id").value = item.origemId || item.id;
     document.getElementById("edit-descricao").value = item.descricao || "";
     document.getElementById("edit-categoria").value = item.categoria || definirCategoriaAutomatica(item.descricao);
-    document.getElementById("edit-valor").value = item.valor ?? "";
+    document.getElementById("edit-valor").value = item.valor !== null && item.valor !== undefined 
+      ? Number(item.valor).toLocaleString("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2}) 
+      : "";
     document.getElementById("edit-vencimento").value = item.vencimento || "";
     document.getElementById("edit-observacao").value = item.observacao || "";
     document.getElementById("edit-parcela-atual").value = item.parcelaAtual || "";
@@ -1000,7 +1028,7 @@ function normalizarCompras(item) {
       </div>
       <div class="field">
         <label>Valor</label>
-        <input type="number" step="0.01" class="ipva-valor" value="${item.valor ?? ""}">
+        <input type="text" class="ipva-valor" inputmode="numeric" placeholder="0,00" value="${item.valor !== null && item.valor !== undefined ? Number(item.valor).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) : ""}">
       </div>
       <div class="field">
         <label>Pago</label>
@@ -1373,6 +1401,16 @@ function getOptionsCategoriasCompra(selected = "") {
           normalizarTexto(compra.categoria).includes(termo)
         )
       );
+    }
+
+    if (currentQuickFilter !== "all") {
+      resultado = resultado.filter(item => {
+        const status = getStatus(item);
+        if (currentQuickFilter === "paid") return status === "Pago";
+        if (currentQuickFilter === "pending") return status === "Pendente";
+        if (currentQuickFilter === "overdue") return status === "Vencido";
+        return true;
+      });
     }
 
     resultado.sort((a, b) => {
@@ -1789,6 +1827,11 @@ function getOptionsCategoriasCompra(selected = "") {
           plugins: {
             legend: { display: false },
             tooltip: {
+              backgroundColor: "rgba(15, 23, 42, 0.92)",
+              titleColor: "#ffffff",
+              bodyColor: "#ffffff",
+              cornerRadius: 12,
+              padding: 14,
               callbacks: {
                 title(items) {
                   const item = items?.[0];
@@ -1809,7 +1852,7 @@ function getOptionsCategoriasCompra(selected = "") {
                 font: { weight: "bold", size: isMobile ? 11 : 12 },
                 callback(value) { return formatarMoeda(value); }
               },
-              grid: { color: "rgba(148, 163, 184, 0.15)" }
+              grid: { color: "rgba(148, 163, 184, 0.15)", borderDash: [5, 5] }
             },
             y: {
               ticks: {
@@ -1818,7 +1861,8 @@ function getOptionsCategoriasCompra(selected = "") {
               },
               grid: { display: false }
             }
-          }
+          },
+          animation: { duration: 1200, easing: "easeOutQuart" }
         }
       });
     }
@@ -1844,12 +1888,19 @@ function getOptionsCategoriasCompra(selected = "") {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          cutout: "65%",
+          animation: { duration: 1200, easing: "easeOutBounce" },
           plugins: {
             legend: {
               position: "bottom",
               labels: { color: corTexto, padding: 14, font: { weight: "bold" } }
             },
             tooltip: {
+              backgroundColor: "rgba(15, 23, 42, 0.92)",
+              titleColor: "#ffffff",
+              bodyColor: "#ffffff",
+              cornerRadius: 12,
+              padding: 14,
               callbacks: {
                 label(context) {
                   return dados.length ? ` ${context.label}: ${formatarMoeda(context.raw || 0)}` : " R$ 0,00";
@@ -1958,6 +2009,30 @@ function getOptionsCategoriasCompra(selected = "") {
     totalPendenteEl.textContent = formatarMoeda(totalPendente);
     qtdPagosEl.textContent = String(qtdPagos);
     qtdPendentesEl.textContent = String(qtdPendentes);
+
+    const totalGeralParaProgresso = totalPago + totalPendente;
+    const porcentagem = totalGeralParaProgresso > 0 ? Math.round((totalPago / totalGeralParaProgresso) * 100) : 0;
+    
+    const progressEl = document.getElementById("month-progress");
+    const progressPercentEl = document.getElementById("progress-percent");
+    const progressFillEl = document.getElementById("progress-fill");
+
+    if (progressEl && progressPercentEl && progressFillEl) {
+      if (totalGeralParaProgresso > 0) {
+        progressEl.style.display = "block";
+        progressPercentEl.textContent = `${porcentagem}%`;
+        progressFillEl.style.width = `${porcentagem}%`;
+        if (porcentagem === 100) {
+          progressFillEl.style.background = "var(--primary)";
+          progressPercentEl.style.color = "var(--primary)";
+        } else {
+          progressFillEl.style.background = "var(--green)";
+          progressPercentEl.style.color = "var(--green)";
+        }
+      } else {
+        progressEl.style.display = "none";
+      }
+    }
   }
 
   function renderAlertaVencidas(lista) {
@@ -2034,9 +2109,9 @@ function getOptionsCategoriasCompra(selected = "") {
             label: "Pago",
             data: pagos,
             borderColor: green,
-            backgroundColor: green,
-            tension: 0.35,
-            fill: false,
+            backgroundColor: "rgba(22, 163, 74, 0.15)",
+            tension: 0.45,
+            fill: true,
             borderWidth: 3,
             pointRadius: 4,
             pointHoverRadius: 6,
@@ -2050,9 +2125,9 @@ function getOptionsCategoriasCompra(selected = "") {
             label: "Pendente",
             data: pendentes,
             borderColor: orange,
-            backgroundColor: orange,
-            tension: 0.35,
-            fill: false,
+            backgroundColor: "rgba(217, 119, 6, 0.15)",
+            tension: 0.45,
+            fill: true,
             borderWidth: 3,
             pointRadius: 4,
             pointHoverRadius: 6,
@@ -2083,8 +2158,10 @@ function getOptionsCategoriasCompra(selected = "") {
             backgroundColor: "rgba(15, 23, 42, 0.92)",
             titleColor: "#ffffff",
             bodyColor: "#ffffff",
-            padding: 12,
+            cornerRadius: 12,
+            padding: 14,
             displayColors: true,
+            usePointStyle: true,
             callbacks: {
               label(context) {
                 return `${context.dataset.label}: ${formatarMoeda(context.raw || 0)}`;
@@ -2103,7 +2180,7 @@ function getOptionsCategoriasCompra(selected = "") {
               color: corTexto,
               callback(value) { return formatarMoeda(value); }
             },
-            grid: { color: gridColor }
+            grid: { color: gridColor, borderDash: [5, 5] }
           }
         }
       }
@@ -2138,7 +2215,7 @@ function getOptionsCategoriasCompra(selected = "") {
 
     if (!dados.length) {
       categoryChart = new Chart(ctx, {
-        type: "pie",
+        type: "doughnut",
         data: {
           labels: ["Sem compras cadastradas"],
           datasets: [{
@@ -2153,6 +2230,8 @@ function getOptionsCategoriasCompra(selected = "") {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          cutout: "65%",
+          animation: { duration: 1200, easing: "easeOutBounce" },
           interaction: {
             mode: "nearest",
             intersect: true
@@ -2165,9 +2244,10 @@ function getOptionsCategoriasCompra(selected = "") {
               position: "bottom",
               labels: {
                 color: corTexto,
+                usePointStyle: true,
                 padding: window.innerWidth <= 640 ? 10 : 16,
-                boxWidth: window.innerWidth <= 640 ? 12 : 18,
-                boxHeight: window.innerWidth <= 640 ? 12 : 18,
+                boxWidth: window.innerWidth <= 640 ? 10 : 12,
+                boxHeight: window.innerWidth <= 640 ? 10 : 12,
                 font: {
                   weight: "bold",
                   size: window.innerWidth <= 640 ? 11 : 12
@@ -2175,6 +2255,11 @@ function getOptionsCategoriasCompra(selected = "") {
               }
             },
             tooltip: {
+              backgroundColor: "rgba(15, 23, 42, 0.92)",
+              titleColor: "#ffffff",
+              bodyColor: "#ffffff",
+              cornerRadius: 12,
+              padding: 14,
               callbacks: {
                 label() {
                   return " R$ 0,00";
@@ -2192,7 +2277,7 @@ function getOptionsCategoriasCompra(selected = "") {
     const cores = criarCoresPizza(labels.length);
 
     categoryChart = new Chart(ctx, {
-      type: "pie",
+      type: "doughnut",
       data: {
         labels,
         datasets: [{
@@ -2207,6 +2292,8 @@ function getOptionsCategoriasCompra(selected = "") {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        cutout: "65%",
+        animation: { duration: 1200, easing: "easeOutBounce" },
         interaction: {
           mode: "nearest",
           intersect: true
@@ -2219,9 +2306,10 @@ function getOptionsCategoriasCompra(selected = "") {
             position: "bottom",
             labels: {
               color: corTexto,
+              usePointStyle: true,
               padding: window.innerWidth <= 640 ? 10 : 16,
-              boxWidth: window.innerWidth <= 640 ? 12 : 18,
-              boxHeight: window.innerWidth <= 640 ? 12 : 18,
+              boxWidth: window.innerWidth <= 640 ? 10 : 12,
+              boxHeight: window.innerWidth <= 640 ? 10 : 12,
               font: {
                 weight: "bold",
                 size: window.innerWidth <= 640 ? 11 : 12
@@ -2232,6 +2320,9 @@ function getOptionsCategoriasCompra(selected = "") {
             backgroundColor: "rgba(15, 23, 42, 0.92)",
             titleColor: "#ffffff",
             bodyColor: "#ffffff",
+            cornerRadius: 12,
+            padding: 14,
+            usePointStyle: true,
             callbacks: {
               label(context) {
                 const total = context.dataset.data.reduce((acc, valor) => acc + Number(valor || 0), 0);
@@ -2366,7 +2457,7 @@ function renderComprasDoCartao(item) {
 
           <div class="field">
             <label>Valor total</label>
-            <input type="number" name="valor" step="0.01" min="0" placeholder="0,00" required />
+            <input type="text" name="valor" placeholder="0,00" inputmode="numeric" required />
           </div>
 
           <div class="field">
@@ -2878,9 +2969,10 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
     );
     if (novaCategoria === null) return;
 
+    const valorParaEdicao = compra.valorTotal ?? compra.valor ?? 0;
     const novoValorTexto = prompt(
       compra.parcelaTotal > 1 ? "Editar valor total da compra:" : "Editar valor da compra:",
-      String(compra.valorTotal ?? compra.valor ?? "")
+      Number(valorParaEdicao).toLocaleString("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2})
     );
     if (novoValorTexto === null) return;
 
@@ -3016,7 +3108,7 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
       const pagoInput = row.querySelector(".ipva-pago");
 
       const data = dataInput?.value || "";
-      const valor = numeroSeguro(valorInput?.value);
+      const valor = converterValorInput(valorInput?.value) || 0;
       const pago = pagoInput?.value === "true";
 
       return { data: data || null, valor, pago: Boolean(pago) };
@@ -3047,6 +3139,15 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
     renderTabelaPrincipal();
     renderGraficoCategorias();
     renderPainelCartoes();
+  });
+
+  document.querySelectorAll(".quick-filter-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      document.querySelectorAll(".quick-filter-btn").forEach(b => b.classList.remove("active"));
+      e.target.classList.add("active");
+      currentQuickFilter = e.target.dataset.filter;
+      renderTabelaPrincipal();
+    });
   });
 
   categoryFilter.addEventListener("change", () => {
@@ -3088,6 +3189,23 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
       await auth.signOut();
     } catch {
       alert("Erro ao sair.");
+    }
+  });
+
+  document.addEventListener("input", (e) => {
+    if (
+      e.target.id === "valor" ||
+      e.target.id === "edit-valor" ||
+      e.target.classList.contains("ipva-valor") ||
+      (e.target.name === "valor" && e.target.closest(".compra-form"))
+    ) {
+      let value = e.target.value.replace(/\D/g, "");
+      if (!value) {
+        e.target.value = "";
+        return;
+      }
+      value = (Number(value) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      e.target.value = value;
     }
   });
 

@@ -245,6 +245,35 @@ body {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.quick-filters {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.quick-filter-btn {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-filter-btn:hover {
+  background: var(--border);
+}
+
+.quick-filter-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
 .summary-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-bottom: 18px;
@@ -256,6 +285,51 @@ body {
   border-radius: 18px;
   padding: 16px;
   box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.month-progress {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.progress-percent {
+  color: var(--green);
+  transition: color 0.3s ease;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-soft);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  width: 0%;
+  border-radius: 99px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
 }
 
 .summary-card p {
@@ -410,8 +484,9 @@ html[data-theme="dark"] .btn-delete {
 
 .table-wrap {
   width: 100%;
+  max-height: 70vh;
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -420,7 +495,8 @@ html[data-theme="dark"] .btn-delete {
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   table-layout: auto;
 }
 
@@ -443,9 +519,32 @@ th {
   white-space: nowrap;
 }
 
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+thead th::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+}
+
 td {
   word-break: normal;
   overflow-wrap: break-word;
+}
+
+.table-wrap tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.table-wrap tbody tr:hover {
+  background-color: var(--bg-soft);
 }
 
 tr:last-child td {
@@ -526,6 +625,11 @@ tr:last-child td {
   font-weight: 700;
   background: var(--card-2);
   color: var(--text);
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  transform: scale(1.05);
 }
 
 .btn-edit.action-btn {
@@ -553,11 +657,11 @@ html[data-theme="dark"] .btn-delete.action-btn {
 }
 
 .row-paid {
-  background: rgba(22, 163, 74, 0.03);
+  background: rgba(22, 163, 74, 0.05) !important;
 }
 
 .row-overdue {
-  background: rgba(220, 38, 38, 0.03);
+  background: rgba(220, 38, 38, 0.05) !important;
 }
 
 .edited-highlight {
