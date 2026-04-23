@@ -483,6 +483,49 @@
     </div>
   </div>
 
+  <div id="edit-compra-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar compra do cartão</h2>
+        <button type="button" class="modal-close" id="close-edit-compra-modal" aria-label="Fechar modal">&times;</button>
+      </div>
+      <form id="edit-compra-form" class="form-grid">
+        <input type="hidden" id="edit-compra-card-id" />
+        <input type="hidden" id="edit-compra-mes-ref" />
+        <input type="hidden" id="edit-compra-index" />
+
+        <div class="field full">
+          <label for="edit-compra-nome">Nome da compra</label>
+          <input type="text" id="edit-compra-nome" required />
+        </div>
+
+        <div class="field">
+          <label for="edit-compra-categoria">Categoria</label>
+          <div style="display:flex; gap: 8px;">
+            <select id="edit-compra-categoria" required style="flex:1;">
+            </select>
+            <button type="button" class="btn-light" onclick="window.adicionarNovaCategoria(document.getElementById('edit-compra-categoria'))" style="padding: 0 12px; font-weight: bold; width: auto; font-size: 18px;" title="Adicionar nova categoria">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="edit-compra-valor" id="edit-compra-valor-label">Valor</label>
+          <input type="text" id="edit-compra-valor" placeholder="0,00" inputmode="numeric" required />
+        </div>
+
+        <div class="field full">
+          <label for="edit-compra-parcelas">Total de parcelas</label>
+          <input type="number" id="edit-compra-parcelas" min="1" required />
+        </div>
+
+        <div class="modal-actions full">
+          <button type="button" class="btn-light" id="cancel-edit-compra">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
 (() => {
   const firebaseConfig = {
@@ -1081,13 +1124,33 @@ function normalizarCompras(item) {
 
   
 function getOptionsCategoriasCompra(selected = "") {
+    const categoriasSet = new Set(CATEGORIAS_COMPRA);
+    despesasCache.forEach(item => {
+      normalizarCompras(item).forEach(compra => {
+        if (compra.categoria && compra.categoria !== "Sem categoria") {
+          categoriasSet.add(compra.categoria.trim());
+        }
+      });
+    });
+    const categoriasOrdenadas = [...categoriasSet].sort((a, b) => a.localeCompare(b, "pt-BR"));
     return `
       <option value="">Selecione</option>
-      ${CATEGORIAS_COMPRA.map(cat => `
+      ${categoriasOrdenadas.map(cat => `
         <option value="${escapeHtml(cat)}" ${cat === selected ? "selected" : ""}>${escapeHtml(cat)}</option>
       `).join("")}
     `;
   }
+
+  window.adicionarNovaCategoria = function(selectElement) {
+    const nova = prompt("Digite o nome da nova categoria:");
+    if (!nova || !nova.trim()) return;
+    const nomeNormalizado = nova.trim();
+    const option = document.createElement("option");
+    option.value = nomeNormalizado;
+    option.textContent = nomeNormalizado;
+    selectElement.appendChild(option);
+    selectElement.value = nomeNormalizado;
+  };
 
   function adicionarMesAoYyyyMm(yyyyMm, quantidade) {
     if (!yyyyMm) return "";
@@ -2537,9 +2600,12 @@ function renderComprasDoCartao(item) {
 
           <div class="field">
             <label>Categoria</label>
-            <select name="categoria" required>
-              ${getOptionsCategoriasCompra()}
-            </select>
+            <div style="display:flex; gap: 8px;">
+              <select name="categoria" required style="flex:1;">
+                ${getOptionsCategoriasCompra()}
+              </select>
+              <button type="button" class="btn-light" onclick="window.adicionarNovaCategoria(this.previousElementSibling)" style="padding: 0 12px; font-weight: bold; width: auto; font-size: 18px;" title="Adicionar nova categoria">+</button>
+            </div>
           </div>
 
           <div class="field">
@@ -3045,107 +3111,32 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     const compra = normalizarCompras({ compras: [comprasBase[index]] })[0];
     if (!compra) return;
 
-    const novoNome = prompt("Editar nome da compra:", compra.nome);
-    if (novoNome === null) return;
+    const modal = document.getElementById("edit-compra-modal");
+    if (!modal) return;
 
-    const novaCategoria = prompt(
-      `Editar categoria da compra:
+    document.getElementById("edit-compra-card-id").value = cardId;
+    document.getElementById("edit-compra-mes-ref").value = mesReferencia;
+    document.getElementById("edit-compra-index").value = index;
 
-Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
-      compra.categoria || ""
-    );
-    if (novaCategoria === null) return;
+    document.getElementById("edit-compra-nome").value = compra.nome || "";
+    
+    const catSelect = document.getElementById("edit-compra-categoria");
+    catSelect.innerHTML = getOptionsCategoriasCompra(compra.categoria);
+    if (compra.categoria && !catSelect.querySelector(`option[value="${escapeHtml(compra.categoria)}"]`)) {
+      const opt = document.createElement("option");
+      opt.value = compra.categoria;
+      opt.textContent = compra.categoria;
+      catSelect.appendChild(opt);
+      catSelect.value = compra.categoria;
+    }
 
     const valorParaEdicao = compra.valorTotal ?? compra.valor ?? 0;
-    const novoValorTexto = prompt(
-      compra.parcelaTotal > 1 ? "Editar valor total da compra:" : "Editar valor da compra:",
-      Number(valorParaEdicao).toLocaleString("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2})
-    );
-    if (novoValorTexto === null) return;
+    document.getElementById("edit-compra-valor").value = Number(valorParaEdicao).toLocaleString("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById("edit-compra-valor-label").textContent = compra.parcelaTotal > 1 ? "Valor total da compra" : "Valor da compra";
 
-    const novasParcelasTexto = prompt("Editar total de parcelas:", String(compra.parcelaTotal || 1));
-    if (novasParcelasTexto === null) return;
+    document.getElementById("edit-compra-parcelas").value = compra.parcelaTotal || 1;
 
-    const novoValor = converterValorInput(novoValorTexto);
-    const novasParcelas = Math.max(1, Number(novasParcelasTexto || 1));
-
-    if (!String(novoNome).trim()) {
-      alert("Digite o nome da compra.");
-      return;
-    }
-
-    if (!String(novaCategoria).trim()) {
-      alert("Digite a categoria da compra.");
-      return;
-    }
-
-    if (Number.isNaN(novoValor) || novoValor === null) {
-      alert("Digite um valor válido.");
-      return;
-    }
-
-    if (!Number.isInteger(novasParcelas) || novasParcelas < 1) {
-      alert("Digite uma quantidade de parcelas válida.");
-      return;
-    }
-
-    const mesOrigem = compra.mesOrigem || mesReferencia || getMesOriginalItem(item) || monthTerm;
-    const parcelamentoId = compra.parcelamentoId || compra.id || gerarIdCompra();
-    const mapaAtualizado = {};
-
-    if (compra.parcelaTotal > 1 || novasParcelas > 1) {
-      getMesesRelacionadosCompra(compra, mesReferencia, item).forEach(mes => {
-        mapaAtualizado[mes] = getComprasBasePorMes(item, mes)
-          .filter(itemCompra => String(itemCompra?.parcelamentoId || itemCompra?.id || "") !== parcelamentoId);
-      });
-
-      const novasCompras = criarParcelasCompra({
-        nome: novoNome,
-        categoria: novaCategoria,
-        valorTotal: novoValor,
-        parcelas: novasParcelas,
-        mesOrigem,
-        parcelamentoId
-      });
-
-      novasCompras.forEach(compraGerada => {
-        const mesDestino = compraGerada.mesDestino;
-        const listaMes = mapaAtualizado[mesDestino] || getComprasBasePorMes(item, mesDestino)
-          .filter(itemCompra => String(itemCompra?.parcelamentoId || itemCompra?.id || "") !== parcelamentoId);
-
-        listaMes.push({
-          id: compraGerada.id,
-          parcelamentoId: compraGerada.parcelamentoId,
-          nome: compraGerada.nome,
-          categoria: compraGerada.categoria,
-          valor: compraGerada.valor,
-          valorTotal: compraGerada.valorTotal,
-          parcelaAtual: compraGerada.parcelaAtual,
-          parcelaTotal: compraGerada.parcelaTotal,
-          mesOrigem: compraGerada.mesOrigem
-        });
-
-        mapaAtualizado[mesDestino] = listaMes;
-      });
-
-      await salvarComprasPorMes(cardId, item, mapaAtualizado);
-      return;
-    }
-
-    comprasBase[index] = {
-      id: compra.id || gerarIdCompra(),
-      parcelamentoId: "",
-      nome: String(novoNome).trim(),
-      categoria: String(novaCategoria).trim(),
-      valor: numeroSeguro(novoValor),
-      valorTotal: numeroSeguro(novoValor),
-      parcelaAtual: 1,
-      parcelaTotal: 1,
-      mesOrigem
-    };
-
-    mapaAtualizado[mesReferencia] = comprasBase;
-    await salvarComprasPorMes(cardId, item, mapaAtualizado);
+    modal.classList.remove("hidden");
   }
 
   authForm.addEventListener("submit", async (e) => {
@@ -3184,6 +3175,111 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
   });
 
   addIpvaRowBtn.addEventListener("click", () => adicionarLinhaIpva());
+
+  const editCompraForm = document.getElementById("edit-compra-form");
+  const editCompraModal = document.getElementById("edit-compra-modal");
+  
+  if (editCompraForm) {
+    editCompraForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const cardId = document.getElementById("edit-compra-card-id").value;
+      const mesReferencia = document.getElementById("edit-compra-mes-ref").value;
+      const index = Number(document.getElementById("edit-compra-index").value);
+      
+      const novoNome = document.getElementById("edit-compra-nome").value.trim();
+      const novaCategoria = document.getElementById("edit-compra-categoria").value.trim();
+      const novoValorDigitado = document.getElementById("edit-compra-valor").value;
+      const novasParcelas = Math.max(1, Number(document.getElementById("edit-compra-parcelas").value || 1));
+      
+      const novoValor = converterValorInput(novoValorDigitado);
+      
+      if (!novoNome) return alert("Digite o nome da compra.");
+      if (!novaCategoria) return alert("Selecione a categoria da compra.");
+      if (Number.isNaN(novoValor) || novoValor === null) return alert("Digite um valor válido.");
+      if (!Number.isInteger(novasParcelas) || novasParcelas < 1) return alert("Digite uma quantidade de parcelas válida.");
+      
+      const item = despesasCache.find(d => d.id === cardId);
+      if (!item) return;
+      
+      const comprasBase = getComprasBasePorMes(item, mesReferencia);
+      const compra = normalizarCompras({ compras: [comprasBase[index]] })[0];
+      if (!compra) return;
+      
+      const mesOrigem = compra.mesOrigem || mesReferencia || getMesOriginalItem(item) || monthTerm;
+      const parcelamentoId = compra.parcelamentoId || compra.id || gerarIdCompra();
+      const mapaAtualizado = {};
+
+      if (compra.parcelaTotal > 1 || novasParcelas > 1) {
+        getMesesRelacionadosCompra(compra, mesReferencia, item).forEach(mes => {
+          mapaAtualizado[mes] = getComprasBasePorMes(item, mes)
+            .filter(itemCompra => String(itemCompra?.parcelamentoId || itemCompra?.id || "") !== parcelamentoId);
+        });
+
+        const novasCompras = criarParcelasCompra({
+          nome: novoNome,
+          categoria: novaCategoria,
+          valorTotal: novoValor,
+          parcelas: novasParcelas,
+          mesOrigem,
+          parcelamentoId
+        });
+
+        novasCompras.forEach(compraGerada => {
+          const mesDestino = compraGerada.mesDestino;
+          const listaMes = mapaAtualizado[mesDestino] || getComprasBasePorMes(item, mesDestino)
+            .filter(itemCompra => String(itemCompra?.parcelamentoId || itemCompra?.id || "") !== parcelamentoId);
+
+          listaMes.push({
+            id: compraGerada.id,
+            parcelamentoId: compraGerada.parcelamentoId,
+            nome: compraGerada.nome,
+            categoria: compraGerada.categoria,
+            valor: compraGerada.valor,
+            valorTotal: compraGerada.valorTotal,
+            parcelaAtual: compraGerada.parcelaAtual,
+            parcelaTotal: compraGerada.parcelaTotal,
+            mesOrigem: compraGerada.mesOrigem
+          });
+
+          mapaAtualizado[mesDestino] = listaMes;
+        });
+
+        await salvarComprasPorMes(cardId, item, mapaAtualizado);
+      } else {
+        comprasBase[index] = {
+          id: compra.id || gerarIdCompra(),
+          parcelamentoId: "",
+          nome: String(novoNome).trim(),
+          categoria: String(novaCategoria).trim(),
+          valor: numeroSeguro(novoValor),
+          valorTotal: numeroSeguro(novoValor),
+          parcelaAtual: 1,
+          parcelaTotal: 1,
+          mesOrigem
+        };
+        mapaAtualizado[mesReferencia] = comprasBase;
+        await salvarComprasPorMes(cardId, item, mapaAtualizado);
+      }
+
+      editCompraModal.classList.add("hidden");
+      editCompraForm.reset();
+      renderGraficoCategorias();
+      renderPainelCartoes();
+    });
+
+    document.getElementById("close-edit-compra-modal")?.addEventListener("click", () => {
+      editCompraModal.classList.add("hidden");
+    });
+    
+    document.getElementById("cancel-edit-compra")?.addEventListener("click", () => {
+      editCompraModal.classList.add("hidden");
+    });
+    
+    editCompraModal.addEventListener("click", (e) => {
+      if (e.target === editCompraModal) editCompraModal.classList.add("hidden");
+    });
+  }
 
   ipvaForm.addEventListener("submit", async (e) => {
     e.preventDefault();
