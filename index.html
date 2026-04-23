@@ -272,7 +272,7 @@
           </div>
           <div class="field">
             <label for="card-dashboard-month-info">Mês base</label>
-            <input id="card-dashboard-month-info" type="text" value="Carregando..." readonly />
+            <input id="card-dashboard-month-info" type="month" />
           </div>
         </div>
 
@@ -316,6 +316,7 @@
             <div class="chart-box card-chart-box">
               <canvas id="card-breakdown-chart"></canvas>
             </div>
+            <div id="top-compras-list" class="card-next-month-list"></div>
           </div>
 
           <div class="chart-card chart-card-full">
@@ -1749,9 +1750,7 @@ function getOptionsCategoriasCompra(selected = "") {
     }
 
     if (cardDashboardMonthInfo) {
-      cardDashboardMonthInfo.value = cartaoSelecionado
-        ? `${formatarMesTitulo(getMesBaseCartoes())} • ${cartaoSelecionado}`
-        : formatarMesTitulo(getMesBaseCartoes());
+      cardDashboardMonthInfo.value = getMesBaseCartoes();
     }
   }
 
@@ -1797,6 +1796,53 @@ function getOptionsCategoriasCompra(selected = "") {
     `;
   }
 
+  function getTopComprasCartoes(listaCartoes) {
+    const todasCompras = [];
+    listaCartoes.forEach(item => {
+      const nomeCartao = getNomeExibicaoCartao(item.descricao);
+      normalizarCompras(item).forEach(compra => {
+        todasCompras.push({
+          cartao: nomeCartao,
+          nome: compra.nome,
+          valor: numeroSeguro(compra.valor),
+          categoria: compra.categoria
+        });
+      });
+    });
+    return todasCompras.sort((a, b) => b.valor - a.valor).slice(0, 5);
+  }
+
+  function renderTopComprasCartoes(listaCartoes) {
+    const topComprasList = document.getElementById("top-compras-list");
+    if (!topComprasList) return;
+    
+    const topCompras = getTopComprasCartoes(listaCartoes);
+    if (!topCompras.length) {
+      topComprasList.innerHTML = `<div class="card-next-empty">Nenhuma compra detalhada no mês.</div>`;
+      return;
+    }
+    
+    topComprasList.innerHTML = `
+      <div class="card-next-month-header">
+        <strong>Maiores Lançamentos</strong>
+        <span>Top ${topCompras.length}</span>
+      </div>
+      <div class="card-next-month-items">
+        ${topCompras.map((compra, index) => `
+          <div class="card-next-item">
+            <div class="card-next-item-top">
+              <span class="card-next-item-name">${index + 1}º ${escapeHtml(compra.nome)} <small style="color:var(--muted)">(${escapeHtml(compra.cartao)})</small></span>
+              <strong class="card-next-item-value">${formatarMoeda(compra.valor)}</strong>
+            </div>
+            <div class="card-next-item-bar" style="height:4px; margin-top:4px;">
+              <span style="width:${Math.max(10, 100 - (index * 15))}%; background-color:var(--primary);"></span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
   function destruirGraficosCartoes() {
     [
       [cardFutureChart, 'cardFutureChart'],
@@ -1817,6 +1863,7 @@ function getOptionsCategoriasCompra(selected = "") {
 
     const listaCartoes = getListaCartoesFiltradaPainel();
     renderResumoCartoes(listaCartoes);
+    renderTopComprasCartoes(listaCartoes);
 
     const estilo = getComputedStyle(document.documentElement);
     const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
@@ -3199,6 +3246,18 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
     cardDashboardFilterTerm = cardDashboardFilter.value.trim();
     renderPainelCartoes();
   });
+
+  if (cardDashboardMonthInfo) {
+    cardDashboardMonthInfo.addEventListener("change", (e) => {
+      monthTerm = e.target.value;
+      if (monthFilter) monthFilter.value = monthTerm;
+      renderTabelaPrincipal();
+      renderIpva();
+      renderGraficoMensal();
+      renderGraficoCategorias();
+      renderPainelCartoes();
+    });
+  }
 
   floatingCardBtn?.addEventListener("click", () => {
     alternarPainelCartoes();
