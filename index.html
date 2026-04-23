@@ -8,19 +8,23 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
   />
   <title>Financeiro do Casal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
   <section class="auth-page" id="loginBox">
     <div class="auth-card">
       <div class="panel-header">
-        <span class="badge badge-login">🔐 Área de login</span>
+        <span class="badge badge-login"><i data-lucide="lock" style="width: 16px; height: 16px;"></i> Área de login</span>
         <h2>Entrar no sistema</h2>
         <p>Acesse o painel financeiro com seu e-mail e senha.</p>
       </div>
@@ -64,7 +68,7 @@
 
       <header class="hero">
         <div>
-          <span class="badge">Luan e Kelly ❤️</span>
+          <span class="badge">Luan e Kelly <i data-lucide="heart" fill="currentColor" style="color: #ef4444; width: 16px; height: 16px;"></i></span>
           <h1>Controle de Finanças</h1>
           <p>Gastos Mensais</p>
         </div>
@@ -77,7 +81,7 @@
           </div>
 
           <div class="hero-actions">
-            <button id="theme-toggle" type="button" class="btn-light">🌙 Tema escuro</button>
+            <button id="theme-toggle" type="button" class="btn-light" style="display:flex; align-items:center; gap:6px;"><i data-lucide="moon" style="width:18px;height:18px;"></i> Tema escuro</button>
             <button id="logout-btn" type="button" class="btn-secondary">Sair</button>
           </div>
         </div>
@@ -85,7 +89,7 @@
 
       <section id="alerta-vencidas" class="alert-panel hidden">
         <div class="alert-panel-left">
-          <span class="alert-icon">⚠️</span>
+          <span class="alert-icon"><i data-lucide="alert-triangle"></i></span>
           <div>
             <h3>Contas vencidas</h3>
             <p id="alerta-vencidas-texto">Nenhuma conta vencida no momento.</p>
@@ -130,8 +134,8 @@
           aria-expanded="false"
           aria-controls="expense-form-wrapper"
         >
-          <span>➕ Nova despesa</span>
-          <span id="expense-toggle-icon">▼</span>
+          <span style="display:flex; align-items:center; gap:6px;"><i data-lucide="plus" style="width:18px;height:18px;"></i> Nova despesa</span>
+          <span id="expense-toggle-icon"><i data-lucide="chevron-down" style="width:18px;height:18px;"></i></span>
         </button>
 
         <div id="expense-form-wrapper" class="collapsible-content hidden">
@@ -215,14 +219,14 @@
       </section>
 
       <button id="floating-card-btn" class="floating-card-btn" type="button" aria-label="Abrir ou fechar central de gráficos" title="Abrir ou fechar central de gráficos" aria-expanded="false" aria-controls="card-dashboard-panel">
-        <span class="floating-card-btn-icon">💳</span>
+        <span class="floating-card-btn-icon"><i data-lucide="credit-card"></i></span>
         <span class="floating-card-btn-text">Gráficos</span>
       </button>
 
       <section class="panel card-dashboard-panel hidden" id="card-dashboard-panel">
         <div class="panel-header card-dashboard-header">
           <div>
-            <span class="badge">📊 Central de gráficos</span>
+            <span class="badge"><i data-lucide="bar-chart-2" style="width:16px;height:16px;"></i> Central de gráficos</span>
             <h2>Todos os gráficos em um só lugar</h2>
             <p>Aqui ficam os gráficos gerais e os gráficos dos cartões, sem mudar o restante do site.</p>
           </div>
@@ -233,6 +237,11 @@
           <div class="summary-card">
             <p>Fatura do mês</p>
             <h3 id="cards-total-current">R$ 0,00</h3>
+            <div id="cards-total-prev-wrapper" style="display:none; margin-top: 8px; font-size: 13px;">
+               <span style="color: var(--muted);">Mês passado: </span>
+               <strong id="cards-total-prev-value" style="color: var(--text);">R$ 0,00</strong>
+               <span id="cards-total-prev-trend" style="margin-left: 4px; font-weight: bold;"></span>
+            </div>
           </div>
           <div class="summary-card">
             <p>Próximo mês</p>
@@ -550,6 +559,9 @@
   const cardDashboardFilter = document.getElementById("card-dashboard-filter");
   const cardDashboardMonthInfo = document.getElementById("card-dashboard-month-info");
   const cardsTotalCurrentEl = document.getElementById("cards-total-current");
+  const cardsTotalPrevWrapper = document.getElementById("cards-total-prev-wrapper");
+  const cardsTotalPrevValue = document.getElementById("cards-total-prev-value");
+  const cardsTotalPrevTrend = document.getElementById("cards-total-prev-trend");
   const cardsTotalNextEl = document.getElementById("cards-total-next");
   const cardsTotalSixEl = document.getElementById("cards-total-six");
   const cardsActiveCountEl = document.getElementById("cards-active-count");
@@ -686,7 +698,7 @@
 
   function definirCategoriaAutomatica(descricao) {
     const desc = normalizarTexto(descricao);
-    const ehFixo = GASTOS_FIXOS.some(item => normalizarTexto(item) === desc);
+    const ehFixo = GASTOS_FIXOS.some(item => normalizarTexto(item) === desc) || desc.includes("assinatura");
     if (ehFixo) return CATEGORIA_FIXA;
     if (desc.includes("cartao")) return CATEGORIA_CARTOES;
     return CATEGORIA_COMUM;
@@ -1708,6 +1720,34 @@ function getOptionsCategoriasCompra(selected = "") {
     if (cardsTotalNextEl) cardsTotalNextEl.textContent = formatarMoeda(totalProximo);
     if (cardsTotalSixEl) cardsTotalSixEl.textContent = formatarMoeda(totalAno);
     if (cardsActiveCountEl) cardsActiveCountEl.textContent = String(ativosUnicos);
+    
+    if (cardsTotalPrevWrapper && cardsTotalPrevValue && cardsTotalPrevTrend) {
+      const mapaMeses = gerarListaParaGraficoMensal();
+      const mesBase = getMesBaseCartoes();
+      const mesAnterior = adicionarMesAoYyyyMm(mesBase, -1);
+      
+      let itensAnterior = mapaMeses.get(mesAnterior) || [];
+      itensAnterior = itensAnterior.filter(item => isCartao(item))
+        .filter(item => !cardDashboardFilterTerm || String(item.descricao || "").trim() === cardDashboardFilterTerm);
+      
+      const totalAnterior = itensAnterior.reduce((acc, item) => acc + getValorPrincipalItem(item), 0);
+      
+      cardsTotalPrevWrapper.style.display = "block";
+      cardsTotalPrevValue.textContent = formatarMoeda(totalAnterior);
+      
+      if (totalAtual > totalAnterior && totalAnterior > 0) {
+        const aumento = ((totalAtual - totalAnterior) / totalAnterior) * 100;
+        cardsTotalPrevTrend.textContent = `🔺 +${Math.round(aumento)}%`;
+        cardsTotalPrevTrend.style.color = "var(--red)";
+      } else if (totalAtual < totalAnterior && totalAnterior > 0) {
+        const reducao = ((totalAnterior - totalAtual) / totalAnterior) * 100;
+        cardsTotalPrevTrend.textContent = `🔽 -${Math.round(reducao)}%`;
+        cardsTotalPrevTrend.style.color = "var(--green)";
+      } else {
+        cardsTotalPrevTrend.textContent = "";
+      }
+    }
+
     if (cardDashboardMonthInfo) {
       cardDashboardMonthInfo.value = cartaoSelecionado
         ? `${formatarMesTitulo(getMesBaseCartoes())} • ${cartaoSelecionado}`
@@ -3396,6 +3436,9 @@ Sugestões: ${CATEGORIAS_COMPRA.join(", ")}`,
   monthHeader.textContent = formatarMesTitulo(mesAtual);
   atualizarPreviewCategoria();
 })();
+
+// Initialize Lucide icons
+lucide.createIcons();
   </script>
 </body>
 </html>
