@@ -241,7 +241,7 @@
       </section>
 
       <button id="floating-card-btn" class="floating-card-btn" type="button" aria-label="Abrir ou fechar central de gráficos" title="Abrir ou fechar central de gráficos" aria-expanded="false" aria-controls="card-dashboard-panel">
-        <span class="floating-card-btn-icon"><i data-lucide="credit-card"></i></span>
+        <span class="floating-card-btn-icon"><i data-lucide="bar-chart-2"></i></span>
         <span class="floating-card-btn-text">Gráficos</span>
       </button>
 
@@ -2634,6 +2634,14 @@ function getOptionsCategoriasCompra(selected = "") {
     cardDashboardPanel.classList.remove("hidden");
     floatingCardBtn?.classList.add("is-open");
     floatingCardBtn?.setAttribute("aria-expanded", "true");
+    
+    // Atualiza ícone para casinha e texto para Voltar
+    const btnIcon = floatingCardBtn?.querySelector(".floating-card-btn-icon");
+    const btnText = floatingCardBtn?.querySelector(".floating-card-btn-text");
+    if (btnIcon) btnIcon.innerHTML = '<i data-lucide="home"></i>';
+    if (btnText) btnText.textContent = "Voltar";
+    lucide.createIcons();
+
     renderPainelCartoes();
     setTimeout(() => {
       cardDashboardPanel.scrollTo({ top: 0, behavior: "auto" });
@@ -2646,6 +2654,14 @@ function getOptionsCategoriasCompra(selected = "") {
     cardDashboardPanel.classList.add("hidden");
     floatingCardBtn?.classList.remove("is-open");
     floatingCardBtn?.setAttribute("aria-expanded", "false");
+
+    // Volta o ícone para Gráficos e texto
+    const btnIcon = floatingCardBtn?.querySelector(".floating-card-btn-icon");
+    const btnText = floatingCardBtn?.querySelector(".floating-card-btn-text");
+    if (btnIcon) btnIcon.innerHTML = '<i data-lucide="bar-chart-2"></i>';
+    if (btnText) btnText.textContent = "Gráficos";
+    lucide.createIcons();
+
     destruirGraficosCartoes();
   }
 
