@@ -1216,12 +1216,13 @@
 
   function traduzirErroAuth(code) {
     const erros = {
-      "auth/invalid-email": "E-mail inválido.",
-      "auth/missing-password": "Digite a senha.",
-      "auth/user-not-found": "Usuário não encontrado.",
-      "auth/wrong-password": "Senha incorreta.",
-      "auth/invalid-credential": "E-mail ou senha inválidos.",
-      "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde."
+      "auth/invalid-email": "E-mail inválido ou mal formatado.",
+      "auth/missing-password": "Por favor, digite sua senha.",
+      "auth/user-not-found": "E-mail não cadastrado. Clique em 'Criar agora' abaixo.",
+      "auth/wrong-password": "Senha incorreta. Tente novamente.",
+      "auth/invalid-credential": "E-mail ou senha inválidos. Verifique os dados.",
+      "auth/too-many-requests": "Muitas tentativas. Tente novamente em alguns minutos.",
+      "auth/email-already-in-use": "Este e-mail já está sendo usado por outra conta."
     };
     return erros[code] || `Erro: ${code}`;
   }
@@ -3746,9 +3747,9 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     e.preventDefault();
     
     // Pequeno delay para garantir que o Face ID/Autofill do iOS termine de preencher
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 250));
 
-    const email = emailInput.value.trim();
+    const email = emailInput.value.trim().toLowerCase(); // Normaliza para minúsculas
     const password = passwordInput.value.trim();
     
     if (!email) {
@@ -3756,39 +3757,44 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
       return;
     }
 
-    authMessage.textContent = isSignUpMode ? "Criando conta..." : "Entrando...";
+    // Feedback visual e proteção contra duplo clique
+    submitBtn.disabled = true;
+    const originalBtnText = submitBtn.textContent;
+    submitBtn.textContent = isSignUpMode ? "Criando..." : "Acessando...";
+    authMessage.textContent = "";
 
     try {
       if (isSignUpMode) {
         if (!password) {
           authMessage.textContent = "Digite uma senha para criar sua conta.";
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
           return;
         }
         await auth.createUserWithEmailAndPassword(email, password);
       } else {
-        // Se houver senha (mesmo via Face ID), tenta o login direto primeiro
-        if (password) {
-          await auth.signInWithEmailAndPassword(email, password);
-        } else {
-          // No iPhone, se o campo de senha estiver vazio mas o usuário clicou em Entrar, 
-          // damos um tempo extra para o preenchimento automático.
-          await new Promise(resolve => setTimeout(resolve, 500));
-          const p2 = passwordInput.value.trim();
-          if (p2) {
-             await auth.signInWithEmailAndPassword(email, p2);
-             return;
-          }
-
-          // Se CONTINUAR sem senha, apenas avisamos. 
-          // REMOVIDO o redirecionamento automático para Google para não quebrar o FaceID.
-          authMessage.textContent = "Por favor, digite sua senha ou entre com o botão Google.";
+        let finalPassword = password;
+        
+        // Se a senha estiver vazia (comum no primeiro clique com FaceID no Safari)
+        if (!finalPassword) {
+          await new Promise(resolve => setTimeout(resolve, 600));
+          finalPassword = passwordInput.value.trim();
         }
+
+        if (!finalPassword) {
+          authMessage.textContent = "Digite sua senha ou use o login com Google.";
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+          return;
+        }
+
+        await auth.signInWithEmailAndPassword(email, finalPassword);
       }
-      
-      authMessage.textContent = "";
     } catch (error) {
       console.error("Auth error:", error);
       authMessage.textContent = traduzirErroAuth(error.code || error.message);
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalBtnText;
     }
   });
 
