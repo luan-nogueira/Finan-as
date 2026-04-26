@@ -67,7 +67,10 @@
 
         <div class="full" style="display: flex; flex-direction: column; gap: 12px;">
           <button id="submit-btn" type="submit" class="btn-primary">Entrar</button>
-          <button id="toggle-auth-mode" type="button" class="btn-light" style="font-size: 14px;">Não tem uma conta? Criar agora</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+            <button id="toggle-auth-mode" type="button" class="btn-light" style="font-size: 13px; flex: 1;">Não tem uma conta? Criar agora</button>
+            <button id="forgot-password-btn" type="button" class="btn-light" style="font-size: 13px; color: var(--muted);">Esqueci a senha</button>
+          </div>
         </div>
       </form>
 
@@ -653,6 +656,7 @@
   const groupMembersList = document.getElementById("group-members-list");
   const googleLoginBtn = document.getElementById("google-login-btn");
   const toggleAuthModeBtn = document.getElementById("toggle-auth-mode");
+  const forgotPasswordBtn = document.getElementById("forgot-password-btn");
   const authTitle = document.getElementById("auth-title");
   const authSubtitle = document.getElementById("auth-subtitle");
   const submitBtn = document.getElementById("submit-btn");
@@ -1423,8 +1427,8 @@ function getOptionsCategoriasCompra(selected = "") {
 
   async function prepararDadosIniciaisComResiliencia() {
     const resultados = await Promise.allSettled([
-      garantirIpvaInicial(),
-      garantirDespesasIniciais()
+      garantirIpvaInicial()
+      // garantirDespesasIniciais() <- Removido para evitar o bug de criar dados em contas novas
     ]);
 
     const falhas = resultados.filter(resultado => resultado.status === "rejected");
@@ -3333,7 +3337,22 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     authSubtitle.textContent = isSignUpMode ? "Preencha os dados para começar seu controle." : "Acesse o painel financeiro com seu e-mail e senha.";
     submitBtn.textContent = isSignUpMode ? "Criar conta" : "Entrar";
     toggleAuthModeBtn.textContent = isSignUpMode ? "Já tem uma conta? Fazer login" : "Não tem uma conta? Criar agora";
+    forgotPasswordBtn.style.display = isSignUpMode ? "none" : "block";
     authMessage.textContent = "";
+  });
+
+  forgotPasswordBtn?.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    if (!email) {
+      alert("Por favor, digite seu e-mail no campo acima primeiro.");
+      return;
+    }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      alert("E-mail de recuperação enviado! Verifique sua caixa de entrada (e o spam).");
+    } catch (error) {
+      alert("Erro ao enviar e-mail: " + (error.message || error.code));
+    }
   });
 
   authForm.addEventListener("submit", async (e) => {
