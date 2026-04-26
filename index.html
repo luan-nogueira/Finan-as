@@ -3679,7 +3679,7 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     settingsUserEmail.textContent = auth.currentUser?.email || "";
     settingsGroupId.textContent = currentGroupId || "";
     shareLinkInput.value = `${window.location.origin}${window.location.pathname}?join=${currentGroupId}`;
-    if (auth.currentUser?.email === 'luanmnogueira@gmail.com' || auth.currentUser?.email === 'luantop138@gmail.com') {
+    if (auth.currentUser?.email === 'luanmnogueira@gmail.com') {
       document.getElementById("recovery-section").style.display = "block";
     }
 
@@ -4223,7 +4223,7 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     }
     
     // Mostra botão Admin apenas para o Luan
-    if (user.email === 'luanmnogueira@gmail.com' || user.email === 'luantop138@gmail.com') {
+    if (user.email === 'luanmnogueira@gmail.com') {
       adminBtn.style.display = "flex";
     } else {
       adminBtn.style.display = "none";
