@@ -1,0 +1,17 @@
+{
+  "name": "Financeiro do Casal",
+  "short_name": "Financeiro",
+  "description": "Controle financeiro compartilhado para casais.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1d4ed8",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2845/2845894.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -2188,3 +2188,90 @@ html[data-theme="dark"] .table-wrap tbody tr:nth-child(even):not(.group-row):not
 
 .status-badge { gap: 6px; min-width: 96px; }
 
+
+/* ===== ESTILOS PARA LOGIN COM GOOGLE ===== */
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #1f2937;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.btn-google:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.btn-google img {
+  width: 20px;
+  height: 20px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 16px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--border);
+}
+
+.auth-divider:not(:empty)::before { margin-right: 12px; }
+.auth-divider:not(:empty)::after { margin-left: 12px; }
+
+/* ===== ESTILOS PARA ABA DE CONFIGURAÇÕES ===== */
+.settings-group {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--bg-soft);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.settings-group h3 {
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.settings-group p {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.share-link-box {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.share-link-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+}
+
