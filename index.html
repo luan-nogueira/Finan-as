@@ -97,6 +97,7 @@
 
           <div class="hero-actions">
             <button id="theme-toggle" type="button" class="btn-light" style="display:flex; align-items:center; gap:6px;"><i data-lucide="moon" style="width:18px;height:18px;"></i> Tema escuro</button>
+            <button id="admin-btn" type="button" class="btn-light" style="display:none; color: #ef4444;" title="Painel Admin"><i data-lucide="shield" style="width:18px;height:18px;"></i></button>
             <button id="settings-btn" type="button" class="btn-light" title="Configurações e Compartilhamento"><i data-lucide="settings" style="width:18px;height:18px;"></i></button>
             <button id="logout-btn" type="button" class="btn-secondary">Sair</button>
           </div>
@@ -638,6 +639,46 @@
     </div>
   </div>
 
+  <div id="admin-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>🛡️ Gestão de Usuários</h2>
+        <button type="button" class="modal-close" id="close-admin-modal">&times;</button>
+      </div>
+      <div id="admin-user-list" style="max-height: 400px; overflow-y: auto; margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <p style="color: var(--muted);">Carregando usuários...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="billing-modal" class="modal hidden" style="z-index: 10000;">
+    <div class="modal-content tour-content">
+      <div class="tour-step-icon" style="background: #fef3c7; color: #d97706;"><i data-lucide="alert-triangle"></i></div>
+      <h2>Aviso Importante! 💰</h2>
+      <p id="billing-notice-text">Seu acesso irá vencer em breve.</p>
+      <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+        <p style="font-size: 14px; margin-bottom: 8px;">Para renovar seu acesso, entre em contato:</p>
+        <strong style="font-size: 18px; color: var(--primary);">📲 (22) 99903-2428</strong>
+      </div>
+      <div class="modal-actions" style="justify-content: center;">
+        <button type="button" class="btn-primary" id="close-billing-modal">Entendi, vou regularizar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="blocked-screen" class="hidden" style="position: fixed; inset: 0; background: var(--bg); z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;">
+    <div style="width: 80px; height: 80px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+      <i data-lucide="lock" style="width: 40px; height: 40px;"></i>
+    </div>
+    <h1 style="font-size: 28px; margin-bottom: 12px;">Acesso Suspenso</h1>
+    <p style="color: var(--muted); max-width: 400px; margin-bottom: 32px;">Seu acesso a este painel financeiro foi bloqueado. Entre em contato com o administrador para regularizar sua situação.</p>
+    <div style="background: var(--primary-soft); padding: 20px; border-radius: 16px; width: 100%; max-width: 300px;">
+      <p style="font-size: 14px; margin-bottom: 8px;">Fale com Luan:</p>
+      <strong style="font-size: 20px; color: var(--primary);">📲 (22) 99903-2428</strong>
+    </div>
+    <button type="button" class="btn-light" id="blocked-logout-btn" style="margin-top: 32px;">Sair da conta</button>
+  </div>
+
   <script>
 (() => {
   const firebaseConfig = {
@@ -705,6 +746,15 @@
   const authSubtitle = document.getElementById("auth-subtitle");
   const submitBtn = document.getElementById("submit-btn");
   const appBadge = document.getElementById("app-badge");
+  const adminBtn = document.getElementById("admin-btn");
+  const adminModal = document.getElementById("admin-modal");
+  const adminUserList = document.getElementById("admin-user-list");
+  const closeAdminModal = document.getElementById("close-admin-modal");
+  const billingModal = document.getElementById("billing-modal");
+  const billingNoticeText = document.getElementById("billing-notice-text");
+  const closeBillingModal = document.getElementById("close-billing-modal");
+  const blockedScreen = document.getElementById("blocked-screen");
+  const blockedLogoutBtn = document.getElementById("blocked-logout-btn");
 
   // Tour Elements
   const tourModal = document.getElementById("tour-modal");
@@ -1477,6 +1527,67 @@ function getOptionsCategoriasCompra(selected = "") {
 
     await getColDespesas().doc(cardId).update({ ajustesMensais });
   }
+
+  async function renderAdminUserList() {
+    adminUserList.innerHTML = '<p style="color: var(--muted);">Buscando todos os usuários...</p>';
+    try {
+      const snapshot = await db.collection("users").get();
+      if (snapshot.empty) {
+        adminUserList.innerHTML = '<p>Nenhum usuário encontrado.</p>';
+        return;
+      }
+
+      let html = "";
+      snapshot.docs.forEach(doc => {
+        const u = doc.data();
+        const uid = doc.id;
+        const status = u.status || "active";
+        const expireDate = u.expireDate || "Não definido";
+        const isBlocked = status === "blocked";
+
+        html += `
+          <div style="background: var(--bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong>${escapeHtml(u.email)}</strong>
+              <span class="status-badge ${isBlocked ? 'overdue' : 'paid'}">${isBlocked ? 'Bloqueado' : 'Ativo'}</span>
+            </div>
+            <p style="font-size: 13px; color: var(--muted);">Vencimento: <strong>${escapeHtml(expireDate)}</strong></p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px;">
+              <button class="btn-light" onclick="window.adminAcao('${uid}', '${isBlocked ? 'active' : 'blocked'}')" style="font-size: 12px;">
+                ${isBlocked ? '✅ Desbloquear' : '🚫 Bloquear'}
+              </button>
+              <button class="btn-primary" onclick="window.adminCobranca('${uid}')" style="font-size: 12px; background: var(--primary-soft); color: var(--primary);">
+                💰 Enviar Cobrança
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      adminUserList.innerHTML = html;
+    } catch (e) {
+      adminUserList.innerHTML = `<p style="color: var(--red);">Erro: ${e.message}</p>`;
+    }
+  }
+
+  window.adminAcao = async (uid, newStatus) => {
+    try {
+      await db.collection("users").doc(uid).update({ status: newStatus });
+      renderAdminUserList();
+    } catch (e) { alert("Erro: " + e.message); }
+  };
+
+  window.adminCobranca = async (uid) => {
+    const dataVencimento = prompt("Digite a data de vencimento (ex: 15 de Maio):", "Em breve");
+    if (dataVencimento === null) return;
+    try {
+      await db.collection("users").doc(uid).update({
+        expireDate: dataVencimento,
+        showBillingNotice: true
+      });
+      alert("Aviso de cobrança enviado!");
+      renderAdminUserList();
+    } catch (e) { alert("Erro: " + e.message); }
+  };
 
   async function renderGroupMembers() {
     if (!currentGroupId) return;
@@ -3991,6 +4102,20 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     if (check) await alternarIpva(Number(check.dataset.indexReal));
   });
 
+  adminBtn.addEventListener("click", () => {
+    adminModal.classList.remove("hidden");
+    renderAdminUserList();
+  });
+
+  closeAdminModal.addEventListener("click", () => adminModal.classList.add("hidden"));
+  
+  closeBillingModal.addEventListener("click", () => billingModal.classList.add("hidden"));
+
+  blockedLogoutBtn.addEventListener("click", async () => {
+    await auth.signOut();
+    location.reload();
+  });
+
   // Processa o resultado do redirecionamento do Google (essencial para mobile)
   auth.getRedirectResult()
     .then((result) => {
@@ -4014,15 +4139,47 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     }
 
     try {
+      const userDocRef = db.collection("users").doc(user.uid);
+      const userDocSnap = await userDocRef.get();
+      
+      if (userDocSnap.exists) {
+        const uData = userDocSnap.data();
+        
+        // 1. Verificação de Bloqueio
+        if (uData.status === "blocked") {
+          blockedScreen.classList.remove("hidden");
+          appRoot.style.display = "none";
+          loginBox.style.display = "none";
+          return;
+        } else {
+          blockedScreen.classList.add("hidden");
+        }
+
+        // 2. Aviso de Cobrança
+        if (uData.showBillingNotice) {
+          billingNoticeText.textContent = `Seu acesso irá vencer em ${uData.expireDate || 'breve'}.`;
+          billingModal.classList.remove("hidden");
+          // Limpa o aviso após mostrar uma vez? Ou mantém até o admin tirar? 
+          // Vamos manter até o admin tirar no banco de dados para ele não esquecer.
+        }
+      }
+
       currentGroupId = await getOrCreateUserGroup(user);
     } catch (e) {
-      console.error("Erro ao obter grupo:", e);
-      alert("Erro ao carregar seu perfil: " + e.message + ". Verifique as Regras do Firestore.");
+      console.error("Erro ao obter perfil:", e);
+      alert("Erro ao carregar seu perfil: " + e.message);
       auth.signOut();
       return;
     }
     
-    // Lógica de Migração Inicial (Move dados globais para o grupo pessoal do primeiro acesso)
+    // Mostra botão Admin apenas para o Luan
+    if (user.email === 'luanmnogueira@gmail.com' || user.email === 'luantop138@gmail.com') {
+      adminBtn.style.display = "flex";
+    } else {
+      adminBtn.style.display = "none";
+    }
+
+    // Lógica de Migração Inicial...
     try {
       if (currentGroupId === user.uid) {
         const globalDespesas = await db.collection("despesas").limit(1).get();
