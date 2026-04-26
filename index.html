@@ -1530,27 +1530,60 @@ function getOptionsCategoriasCompra(selected = "") {
     const email = auth.currentUser?.email;
     if (!email) return;
 
-    authMessage.textContent = "Buscando dados perdidos...";
+    authMessage.textContent = "Iniciando busca profunda...";
     try {
-      // 1. Tenta buscar na coleção global (caso a limpeza não tenha ocorrido)
+      // 1. Primeiro, tenta o básico (área global)
       const globalSnap = await db.collection("despesas").get();
       if (!globalSnap.empty) {
-        console.log("Dados encontrados na coleção global!");
         const batch = db.batch();
         globalSnap.docs.forEach(doc => {
           batch.set(getColDespesas().doc(doc.id), doc.data());
         });
         await batch.commit();
-        alert("Dados recuperados da área global com sucesso!");
+        alert("Dados recuperados da área global!");
         location.reload();
         return;
       }
 
-      // 2. Busca em ID antigo (sabendo que o Luan pode ter trocado de ID)
-      // Vou deixar um alerta com o que fazer se não achar
-      alert("Não encontramos dados na área comum. Por favor, me avise o seu e-mail para eu fazer a migração manual via código.");
+      // 2. BUSCA PROFUNDA: Procura outros IDs de usuário vinculados ao mesmo e-mail
+      const usersSnap = await db.collection("users").where("email", "==", email).get();
+      
+      let dadosEncontrados = false;
+      for (const userDoc of usersSnap.docs) {
+        const oldGroupId = userDoc.data().groupId;
+        if (oldGroupId === currentGroupId) continue; // Pula o grupo atual (que está vazio)
+
+        console.log("Verificando grupo antigo:", oldGroupId);
+        const oldDespesasSnap = await db.collection("grupos").doc(oldGroupId).collection("despesas").get();
+        
+        if (!oldDespesasSnap.empty) {
+          console.log(`Encontrados ${oldDespesasSnap.size} itens no grupo ${oldGroupId}. Migrando...`);
+          const batch = db.batch();
+          oldDespesasSnap.docs.forEach(doc => {
+            batch.set(getColDespesas().doc(doc.id), doc.data());
+          });
+          
+          // Tenta também recuperar o IPVA do grupo antigo
+          const oldIpva = await db.collection("grupos").doc(oldGroupId).collection("configuracoes").doc("ipva").get();
+          if (oldIpva.exists) {
+            batch.set(getDocIpva(), oldIpva.data());
+          }
+
+          await batch.commit();
+          dadosEncontrados = true;
+          break; // Para na primeira vez que achar dados
+        }
+      }
+
+      if (dadosEncontrados) {
+        alert("SUCESSO! Encontramos seus dados antigos e eles foram restaurados no seu novo login.");
+        location.reload();
+      } else {
+        alert("Infelizmente não encontramos rastros de dados vinculados a este e-mail em outros grupos.");
+      }
     } catch (e) {
-      alert("Erro na busca: " + e.message);
+      console.error(e);
+      alert("Erro na busca profunda: " + e.message);
     } finally {
       authMessage.textContent = "";
     }
