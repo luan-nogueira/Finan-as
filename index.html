@@ -45,7 +45,7 @@
         <div class="auth-divider">ou usar e-mail</div>
       </div>
 
-      <form id="auth-form" class="form-grid auth-form">
+      <form id="auth-form" method="POST" class="form-grid auth-form">
         <div class="field full">
           <label for="email">E-mail</label>
           <input type="email" id="email" name="email" placeholder="seu@email.com" autocomplete="username" required>
@@ -723,17 +723,21 @@
   const splashScreen = document.getElementById("splash-screen");
   const loginBox = document.getElementById("loginBox");
   const appRoot = document.getElementById("appRoot");
+  const authForm = document.getElementById("auth-form");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const authMessage = document.getElementById("auth-message");
+
+  // Sanitização de segurança: Limpa dados sensíveis da URL se existirem por erro de submissão
+  if (window.location.search.includes("password=") || window.location.search.includes("email=")) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 
   // Recupera o último e-mail para facilitar o preenchimento automático
   const ultimoEmailSalvo = localStorage.getItem("finance_last_email");
   if (ultimoEmailSalvo && emailInput) {
     emailInput.value = ultimoEmailSalvo;
   }
-
-  const authForm = document.getElementById("auth-form");
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
-  const authMessage = document.getElementById("auth-message");
 
   const form = document.getElementById("expense-form");
   const logoutBtn = document.getElementById("logout-btn");
