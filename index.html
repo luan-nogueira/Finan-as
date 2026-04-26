@@ -3696,6 +3696,7 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
 
   googleLoginBtn?.addEventListener("click", async () => {
     const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
     try {
       // Usar redirecionamento em vez de popup para maior compatibilidade (especialmente mobile)
       await auth.signInWithRedirect(provider);
