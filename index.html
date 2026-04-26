@@ -48,26 +48,12 @@
       <form id="auth-form" class="form-grid auth-form">
         <div class="field full">
           <label for="email">E-mail</label>
-          <input
-            type="email"
-            id="email"
-            required
-            placeholder="seuemail@exemplo.com"
-            inputmode="email"
-            autocomplete="email"
-          />
+          <input type="email" id="email" name="email" placeholder="seu@email.com" autocomplete="username" required>
         </div>
 
         <div class="field full">
           <label for="password">Senha</label>
-          <input
-            type="password"
-            id="password"
-            required
-            minlength="6"
-            placeholder="Digite sua senha"
-            autocomplete="current-password"
-          />
+          <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
         </div>
 
         <div class="full" style="display: flex; flex-direction: column; gap: 12px;">
@@ -3805,11 +3791,10 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
         }
         await auth.createUserWithEmailAndPassword(email, password);
       } else {
-        let finalPassword = password;
-        
         // Se a senha estiver vazia (comum no primeiro clique com FaceID no Safari)
         if (!finalPassword) {
-          await new Promise(resolve => setTimeout(resolve, 600));
+          // No iPhone o preenchimento pode demorar um pouco mais após a validação biométrica
+          await new Promise(resolve => setTimeout(resolve, 1000));
           finalPassword = passwordInput.value.trim();
         }
 
@@ -3838,7 +3823,7 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
         msg = "E-mail ou senha incorretos. Se você já usou o Google antes, entre pelo botão do Google.";
       }
 
-      authMessage.textContent = msg;
+      authMessage.innerHTML = `${msg} <br><small style="opacity: 0.5; font-size: 10px;">ID: ${error.code || 'unknown'}</small>`;
       submitBtn.disabled = false;
       submitBtn.textContent = originalBtnText;
     }
@@ -4389,11 +4374,13 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
   // Tenta o Login Automático se o navegador preencher os campos sozinhos (Autofill)
   setTimeout(() => {
     // Só tenta se estiver na tela de login (loginBox visível) e não estiver logado
-    if (loginBox.style.display !== "none" && emailInput.value && passwordInput.value && !auth.currentUser) {
+    // Em dispositivos móveis, não auto-submete se a senha estiver vazia (para esperar o FaceID)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (loginBox.style.display !== "none" && emailInput.value && (passwordInput.value || !isMobile) && !auth.currentUser) {
       console.log("Detectado preenchimento automático. Tentando login...");
       authForm.dispatchEvent(new Event("submit"));
     }
-  }, 1500);
+  }, 2000);
 
   const hoje = new Date();
   const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
