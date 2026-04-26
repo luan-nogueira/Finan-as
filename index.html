@@ -583,6 +583,12 @@
       </div>
 
       <div class="settings-group">
+        <h3>🚗 Veículo</h3>
+        <p>Organize as parcelas do seu IPVA ou seguro.</p>
+        <button type="button" class="btn-light" id="settings-ipva-btn" style="width: 100%;">Editar Parcelas do IPVA</button>
+      </div>
+
+      <div class="settings-group">
         <h3>ℹ️ Informações da Conta</h3>
         <p>Conectado como: <strong id="settings-user-email">...</strong></p>
         <p>ID do Grupo: <code id="settings-group-id" style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">...</code></p>
@@ -1516,7 +1522,7 @@ function getOptionsCategoriasCompra(selected = "") {
 
   async function prepararDadosIniciaisComResiliencia() {
     const resultados = await Promise.allSettled([
-      garantirIpvaInicial()
+      // garantirIpvaInicial() <- Removido para vir tudo limpo para novos usuários
       // garantirDespesasIniciais() <- Removido para evitar o bug de criar dados em contas novas
     ]);
 
@@ -3410,6 +3416,12 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     renderGroupMembers();
     settingsModal.classList.remove("hidden");
     lucide.createIcons();
+  });
+
+  document.getElementById("settings-ipva-btn")?.addEventListener("click", () => {
+    settingsModal.classList.add("hidden");
+    ipvaModal.classList.remove("hidden");
+    renderIpvaForm();
   });
 
   closeSettingsModal?.addEventListener("click", () => settingsModal.classList.add("hidden"));
