@@ -556,9 +556,33 @@
       </div>
 
       <div class="settings-group">
+        <h3>👥 Membros do Grupo</h3>
+        <p>Pessoas que podem ver e editar este financeiro:</p>
+        <ul id="group-members-list" style="margin: 0; padding: 0; list-style: none; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <li style="color: var(--muted);">Carregando membros...</li>
+        </ul>
+      </div>
+
+      <div class="settings-group">
+        <h3>📲 Como instalar o App</h3>
+        <div style="font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <strong style="color: var(--text); display: block; margin-bottom: 4px;">Android (Chrome)</strong>
+            1. Clique nos <i data-lucide="more-vertical" style="width:14px; height:14px; vertical-align: middle;"></i> 3 pontinhos no canto superior.<br>
+            2. Clique em <strong>"Instalar aplicativo"</strong> ou "Adicionar à tela inicial".
+          </div>
+          <div style="border-top: 1px solid var(--border); padding-top: 12px;">
+            <strong style="color: var(--text); display: block; margin-bottom: 4px;">iPhone (Safari)</strong>
+            1. Clique no botão de <strong>Compartilhar</strong> <i data-lucide="share" style="width:14px; height:14px; vertical-align: middle;"></i> (quadrado com seta).<br>
+            2. Role para baixo e clique em <strong>"Adicionar à Tela de Início"</strong>.
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
         <h3>ℹ️ Informações da Conta</h3>
         <p>Conectado como: <strong id="settings-user-email">...</strong></p>
-        <p>ID do Grupo: <code id="settings-group-id">...</code></p>
+        <p>ID do Grupo: <code id="settings-group-id" style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">...</code></p>
       </div>
 
       <div class="modal-actions">
@@ -626,6 +650,7 @@
   const copyShareLinkBtn = document.getElementById("copy-share-link");
   const settingsUserEmail = document.getElementById("settings-user-email");
   const settingsGroupId = document.getElementById("settings-group-id");
+  const groupMembersList = document.getElementById("group-members-list");
   const googleLoginBtn = document.getElementById("google-login-btn");
   const toggleAuthModeBtn = document.getElementById("toggle-auth-mode");
   const authTitle = document.getElementById("auth-title");
@@ -1329,6 +1354,26 @@ function getOptionsCategoriasCompra(selected = "") {
     });
 
     await getColDespesas().doc(cardId).update({ ajustesMensais });
+  }
+
+  async function renderGroupMembers() {
+    if (!currentGroupId) return;
+    groupMembersList.innerHTML = '<li style="color: var(--muted);">Carregando...</li>';
+    try {
+      const snapshot = await db.collection("users").where("groupId", "==", currentGroupId).get();
+      groupMembersList.innerHTML = snapshot.docs.map(doc => {
+        const data = doc.data();
+        const isMe = auth.currentUser?.uid === doc.id;
+        return `
+          <li style="display: flex; align-items: center; gap: 8px; color: var(--text);">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${isMe ? '#16a34a' : '#1d4ed8'};"></div>
+            ${escapeHtml(data.email)} ${isMe ? '<small style="color: var(--muted);">(Você)</small>' : ''}
+          </li>
+        `;
+      }).join("");
+    } catch (e) {
+      groupMembersList.innerHTML = '<li style="color: var(--red);">Erro ao carregar membros.</li>';
+    }
   }
 
   async function garantirIpvaInicial() {
@@ -3269,7 +3314,9 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     settingsUserEmail.textContent = auth.currentUser?.email || "";
     settingsGroupId.textContent = currentGroupId || "";
     shareLinkInput.value = `${window.location.origin}${window.location.pathname}?join=${currentGroupId}`;
+    renderGroupMembers();
     settingsModal.classList.remove("hidden");
+    lucide.createIcons();
   });
 
   closeSettingsModal?.addEventListener("click", () => settingsModal.classList.add("hidden"));
