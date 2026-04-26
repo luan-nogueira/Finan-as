@@ -3856,6 +3856,19 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     if (check) await alternarIpva(Number(check.dataset.indexReal));
   });
 
+  // Processa o resultado do redirecionamento do Google (essencial para mobile)
+  auth.getRedirectResult()
+    .then((result) => {
+      if (result.user) console.log("Login via redirect completo");
+    })
+    .catch((error) => {
+      if (error.code === 'auth/cross-origin-isolated-stack' || error.code === 'auth/network-request-failed') {
+        console.warn("Possível bloqueio de rastreamento do Safari. Tentando contornar...");
+      } else {
+        alert("Erro no redirecionamento do Google: " + error.message);
+      }
+    });
+
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
       currentGroupId = null;
@@ -3865,7 +3878,14 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
       return;
     }
 
-    currentGroupId = await getOrCreateUserGroup(user);
+    try {
+      currentGroupId = await getOrCreateUserGroup(user);
+    } catch (e) {
+      console.error("Erro ao obter grupo:", e);
+      alert("Erro ao carregar seu perfil: " + e.message + ". Verifique as Regras do Firestore.");
+      auth.signOut();
+      return;
+    }
     
     // Lógica de Migração Inicial (Move dados globais para o grupo pessoal do primeiro acesso)
     try {
