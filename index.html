@@ -594,6 +594,21 @@
     </div>
   </div>
 
+  <div id="tour-modal" class="modal hidden">
+    <div class="modal-content tour-content">
+      <div id="tour-step-content">
+        <!-- Renderizado dinamicamente -->
+      </div>
+      <div class="tour-progress" id="tour-progress">
+        <!-- Dots renderizados dinamicamente -->
+      </div>
+      <div class="modal-actions" style="justify-content: center; gap: 12px; border-top: none; padding-top: 0;">
+        <button type="button" class="btn-light" id="skip-tour">Pular</button>
+        <button type="button" class="btn-primary" id="next-tour-step" style="min-width: 120px;">Próximo</button>
+      </div>
+    </div>
+  </div>
+
   <script>
 (() => {
   const firebaseConfig = {
@@ -662,6 +677,13 @@
   const submitBtn = document.getElementById("submit-btn");
   const appBadge = document.getElementById("app-badge");
 
+  // Tour Elements
+  const tourModal = document.getElementById("tour-modal");
+  const tourStepContent = document.getElementById("tour-step-content");
+  const tourProgress = document.getElementById("tour-progress");
+  const skipTourBtn = document.getElementById("skip-tour");
+  const nextTourBtn = document.getElementById("next-tour-step");
+
   const totalGeralEl = document.getElementById("total-geral");
   const totalPendenteEl = document.getElementById("total-pendente");
   const totalPagoEl = document.getElementById("total-pago");
@@ -720,6 +742,41 @@
   let cardCategoryChart = null;
   let currentGroupId = null;
   let isSignUpMode = false;
+  let isNewUser = false;
+  let currentTourStep = 0;
+
+  const TOUR_STEPS = [
+    {
+      icon: "party-popper",
+      title: "Boas-vindas! 🎉",
+      text: "Seu sistema financeiro está pronto. Vamos te mostrar como usá-lo em 1 minuto?"
+    },
+    {
+      icon: "plus-circle",
+      title: "Novo Lançamento",
+      text: "Use o botão '+' no topo para adicionar gastos. Você pode parcelar compras e escolher categorias."
+    },
+    {
+      icon: "pie-chart",
+      title: "Gráficos e Resumo",
+      text: "No topo, acompanhe o total pago e pendente. Use os filtros para ver meses específicos."
+    },
+    {
+      icon: "credit-card",
+      title: "Cartões de Crédito",
+      text: "Acompanhe suas faturas e veja quanto virá nos próximos meses automaticamente."
+    },
+    {
+      icon: "users",
+      title: "Divida as Contas",
+      text: "No ícone de engrenagem (⚙️), você gera um link para convidar alguém para o seu grupo."
+    },
+    {
+      icon: "smartphone",
+      title: "App no Celular",
+      text: "Também nas configurações, veja como instalar o ícone do sistema na sua tela inicial."
+    }
+  ];
 
   function getColDespesas() {
     if (!currentGroupId) return db.collection("despesas"); // Fallback para despesas globais se não logado
@@ -748,6 +805,7 @@
       }
       return data.groupId;
     } else {
+      isNewUser = true; // Marca como novo usuário para o Tour
       const groupId = joinGroupId || user.uid;
       await userRef.set({
         email: user.email,
@@ -758,6 +816,37 @@
       return groupId;
     }
   }
+
+  function renderTourStep() {
+    const step = TOUR_STEPS[currentTourStep];
+    const isLast = currentTourStep === TOUR_STEPS.length - 1;
+
+    tourStepContent.innerHTML = `
+      <div class="tour-step-icon"><i data-lucide="${step.icon}"></i></div>
+      <h2>${step.title}</h2>
+      <p>${step.text}</p>
+    `;
+
+    tourProgress.innerHTML = TOUR_STEPS.map((_, i) => `
+      <div class="tour-dot ${i === currentTourStep ? 'active' : ''}"></div>
+    `).join("");
+
+    nextTourBtn.textContent = isLast ? "Começar Agora!" : "Próximo";
+    lucide.createIcons();
+  }
+
+  nextTourBtn?.addEventListener("click", () => {
+    if (currentTourStep < TOUR_STEPS.length - 1) {
+      currentTourStep++;
+      renderTourStep();
+    } else {
+      tourModal.classList.add("hidden");
+    }
+  });
+
+  skipTourBtn?.addEventListener("click", () => {
+    tourModal.classList.add("hidden");
+  });
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -3787,6 +3876,13 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
 
     mostrarApp(true);
     userEmail.textContent = user.email || "Usuário logado";
+
+    if (isNewUser) {
+      currentTourStep = 0;
+      renderTourStep();
+      tourModal.classList.remove("hidden");
+      isNewUser = false; // Reset para não aparecer em todo refresh
+    }
 
     if (unsubscribe) unsubscribe();
     if (unsubscribeIpva) unsubscribeIpva();

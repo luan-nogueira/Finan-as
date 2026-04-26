@@ -2275,3 +2275,61 @@ html[data-theme="dark"] .table-wrap tbody tr:nth-child(even):not(.group-row):not
   font-size: 13px;
 }
 
+
+/* ===== ESTILOS PARA O TOUR ===== */
+.tour-content {
+  max-width: 400px !important;
+  text-align: center;
+  padding: 32px !important;
+}
+
+.tour-step-icon {
+  width: 64px;
+  height: 64px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.tour-step-icon i {
+  width: 32px;
+  height: 32px;
+}
+
+.tour-content h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.tour-content p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.tour-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tour-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.tour-dot.active {
+  background: var(--primary);
+  width: 20px;
+  border-radius: 10px;
+}
+
