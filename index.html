@@ -3458,21 +3458,35 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
 
   authForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    
+    // Pequeno delay para garantir que o Face ID/Autofill do iOS termine de preencher
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
-    authMessage.textContent = isSignUpMode ? "Criando conta..." : "Processando...";
+    
+    if (!email) {
+      authMessage.textContent = "Digite seu e-mail.";
+      return;
+    }
+
+    authMessage.textContent = isSignUpMode ? "Criando conta..." : "Entrando...";
 
     try {
       await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
       
       if (isSignUpMode) {
+        if (!password) {
+          authMessage.textContent = "Digite uma senha para criar sua conta.";
+          return;
+        }
         await auth.createUserWithEmailAndPassword(email, password);
       } else {
-        // Lógica de Login Inteligente: Só tenta se NÃO houver senha preenchida
-        const senhaPreenchida = passwordInput.value.length > 0;
-        
-        if (!isSignUpMode && !senhaPreenchida) {
+        // Se houver senha (mesmo via Face ID), tenta o login direto primeiro
+        if (password) {
+          await auth.signInWithEmailAndPassword(email, password);
+        } else {
+          // Se NÃO houver senha, tenta o login inteligente (Google)
           try {
             const methods = await auth.fetchSignInMethodsForEmail(email);
             if (methods.includes("google.com") && !methods.includes("password")) {
@@ -3483,15 +3497,17 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
               return;
             }
           } catch (e) {
-            console.log("Check smart login failed", e);
+            console.warn("Smart login check failed", e);
           }
+          
+          // Se não for Google e não tiver senha, pede a senha
+          authMessage.textContent = "Por favor, digite sua senha.";
         }
-
-        await auth.signInWithEmailAndPassword(email, password);
       }
       
       authMessage.textContent = "";
     } catch (error) {
+      console.error("Auth error:", error);
       authMessage.textContent = traduzirErroAuth(error.code || error.message);
     }
   });
