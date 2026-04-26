@@ -1718,7 +1718,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
 
 
 
-/* ===== AJUSTE DE TOQUE NOS GRÁFICOS (MOBILE) ===== */
+/* ===== AJUSTE DE TOQUE NOS GRﾃ：ICOS (MOBILE) ===== */
 .chart-box,
 .card-chart-box,
 .chart-box-category,
@@ -1737,7 +1737,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
   touch-action: pan-x pan-y;
 }
 
-/* ===== AJUSTES RESPONSIVOS DOS GRÁFICOS ===== */
+/* ===== AJUSTES RESPONSIVOS DOS GRﾃ：ICOS ===== */
 .chart-box,
 .card-chart-box,
 .chart-box-category,
@@ -1843,7 +1843,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
 }
 
 
-/* ===== AJUSTE FINAL DO ANO: TAMANHO DO GRÁFICO DE CARTÕES ===== */
+/* ===== AJUSTE FINAL DO ANO: TAMANHO DO GRﾃ：ICO DE CARTﾃ髭S ===== */
 .card-next-chart-box {
   width: 100%;
   max-width: 100%;
@@ -1869,7 +1869,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
 }
 
 
-/* ===== CORREÇÃO FINAL MOBILE: não prender o toque no canvas ===== */
+/* ===== CORREﾃ�グ FINAL MOBILE: nﾃ｣o prender o toque no canvas ===== */
 @media (max-width: 640px) {
   .chart-box,
   .card-chart-box,
@@ -1887,7 +1887,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
   }
 }
 
-/* ===== CORREÇÃO DEFINITIVA: ROLAGEM DOS GRÁFICOS NO CELULAR ===== */
+/* ===== CORREﾃ�グ DEFINITIVA: ROLAGEM DOS GRﾃ：ICOS NO CELULAR ===== */
 body.card-dashboard-open {
   overflow: hidden;
   height: 100dvh;
@@ -2018,7 +2018,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
   }
 }
 
-/* ===== CORREÇÃO FINAL MOBILE: PAINEL DE CARTÕES COM ROLAGEM ===== */
+/* ===== CORREﾃ�グ FINAL MOBILE: PAINEL DE CARTﾃ髭S COM ROLAGEM ===== */
 body.card-dashboard-open {
   overflow: hidden;
   height: 100dvh;
@@ -2085,7 +2085,7 @@ body.card-dashboard-open {
 }
 
 
-/* ===== Ajuste do gráfico de pizza por categoria no celular ===== */
+/* ===== Ajuste do grﾃ｡fico de pizza por categoria no celular ===== */
 .category-pie-box {
   min-width: 0 !important;
   width: 100% !important;
@@ -2106,7 +2106,7 @@ body.card-dashboard-open {
 }
 
 
-/* ===== INTERAÇÃO COMPLETA DOS GRÁFICOS NO MOBILE ===== */
+/* ===== INTERAﾃ�グ COMPLETA DOS GRﾃ：ICOS NO MOBILE ===== */
 #card-dashboard-panel canvas,
 .chart-box canvas,
 .card-chart-box canvas,
@@ -2238,7 +2238,7 @@ html[data-theme="dark"] .table-wrap tbody tr:nth-child(even):not(.group-row):not
 .auth-divider:not(:empty)::before { margin-right: 12px; }
 .auth-divider:not(:empty)::after { margin-left: 12px; }
 
-/* ===== ESTILOS PARA ABA DE CONFIGURA��ES ===== */
+/* ===== ESTILOS PARA ABA DE CONFIGURAﾇﾕES ===== */
 .settings-group {
   margin-bottom: 24px;
   padding: 16px;
@@ -2259,10 +2259,29 @@ html[data-theme="dark"] .table-wrap tbody tr:nth-child(even):not(.group-row):not
   margin-bottom: 12px;
 }
 
-.share-link-box {
+.hero-actions {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
+  align-items: center;
+}
+
+.hero-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  min-width: 40px;
+  height: 40px;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  padding: 0;
 }
 
 .share-link-input {

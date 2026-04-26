@@ -666,6 +666,25 @@
     </div>
   </div>
 
+  <div id="expire-modal" class="modal hidden" style="z-index: 11000;">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2>💰 Definir Vencimento</h2>
+        <button type="button" class="modal-close" id="close-expire-modal">&times;</button>
+      </div>
+      <div class="form-grid" style="margin-top: 16px;">
+        <div class="field full">
+          <label>Data ou Frase de Vencimento</label>
+          <input type="text" id="expire-date-input" placeholder="Ex: 15 de Maio, Amanhã, etc." />
+        </div>
+        <div class="modal-actions full" style="margin-top: 20px;">
+          <button type="button" class="btn-light" id="cancel-expire">Cancelar</button>
+          <button type="button" class="btn-primary" id="confirm-expire">Confirmar Cobrança</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="blocked-screen" class="hidden" style="position: fixed; inset: 0; background: var(--bg); z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;">
     <div style="width: 80px; height: 80px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
       <i data-lucide="lock" style="width: 40px; height: 40px;"></i>
@@ -755,6 +774,12 @@
   const closeBillingModal = document.getElementById("close-billing-modal");
   const blockedScreen = document.getElementById("blocked-screen");
   const blockedLogoutBtn = document.getElementById("blocked-logout-btn");
+  const expireModal = document.getElementById("expire-modal");
+  const expireDateInput = document.getElementById("expire-date-input");
+  const closeExpireModal = document.getElementById("close-expire-modal");
+  const cancelExpireBtn = document.getElementById("cancel-expire");
+  const confirmExpireBtn = document.getElementById("confirm-expire");
+  let currentUserToManage = null;
 
   // Tour Elements
   const tourModal = document.getElementById("tour-modal");
@@ -1576,18 +1601,28 @@ function getOptionsCategoriasCompra(selected = "") {
     } catch (e) { alert("Erro: " + e.message); }
   };
 
-  window.adminCobranca = async (uid) => {
-    const dataVencimento = prompt("Digite a data de vencimento (ex: 15 de Maio):", "Em breve");
-    if (dataVencimento === null) return;
+  window.adminCobranca = (uid) => {
+    currentUserToManage = uid;
+    expireDateInput.value = "Em breve";
+    expireModal.classList.remove("hidden");
+  };
+
+  closeExpireModal.addEventListener("click", () => expireModal.classList.add("hidden"));
+  cancelExpireBtn.addEventListener("click", () => expireModal.classList.add("hidden"));
+  
+  confirmExpireBtn.addEventListener("click", async () => {
+    if (!currentUserToManage) return;
+    const dataVencimento = expireDateInput.value.trim();
     try {
-      await db.collection("users").doc(uid).update({
+      await db.collection("users").doc(currentUserToManage).update({
         expireDate: dataVencimento,
         showBillingNotice: true
       });
       alert("Aviso de cobrança enviado!");
+      expireModal.classList.add("hidden");
       renderAdminUserList();
     } catch (e) { alert("Erro: " + e.message); }
-  };
+  });
 
   async function renderGroupMembers() {
     if (!currentGroupId) return;
