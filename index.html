@@ -25,9 +25,9 @@
   <section class="auth-page" id="loginBox">
     <div class="auth-card">
       <div class="panel-header">
-        <span class="badge badge-login"><i data-lucide="lock" style="width: 16px; height: 16px;"></i> Área de login</span>
-        <h2>Entrar no sistema</h2>
-        <p>Acesse o painel financeiro com seu e-mail e senha.</p>
+        <span class="badge badge-login"><i data-lucide="lock" style="width: 16px; height: 16px;"></i> Área de acesso</span>
+        <h2 id="auth-title">Entrar no sistema</h2>
+        <p id="auth-subtitle">Acesse o painel financeiro com seu e-mail e senha.</p>
       </div>
 
 
@@ -65,8 +65,9 @@
           />
         </div>
 
-        <div class="full">
+        <div class="full" style="display: flex; flex-direction: column; gap: 12px;">
           <button id="submit-btn" type="submit" class="btn-primary">Entrar</button>
+          <button id="toggle-auth-mode" type="button" class="btn-light" style="font-size: 14px;">Não tem uma conta? Criar agora</button>
         </div>
       </form>
 
@@ -79,9 +80,9 @@
 
       <header class="hero">
         <div>
-          <span class="badge">Luan e Kelly <i data-lucide="heart" fill="currentColor" style="color: #ef4444; width: 16px; height: 16px;"></i></span>
+          <span class="badge" id="app-badge">Finanças Compartilhadas <i data-lucide="shield-check" style="color: var(--primary); width: 16px; height: 16px;"></i></span>
           <h1>Controle de Finanças</h1>
-          <p>Gastos Mensais</p>
+          <p>Gestão Pessoal e Familiar</p>
         </div>
 
         <div class="hero-side">
@@ -626,6 +627,11 @@
   const settingsUserEmail = document.getElementById("settings-user-email");
   const settingsGroupId = document.getElementById("settings-group-id");
   const googleLoginBtn = document.getElementById("google-login-btn");
+  const toggleAuthModeBtn = document.getElementById("toggle-auth-mode");
+  const authTitle = document.getElementById("auth-title");
+  const authSubtitle = document.getElementById("auth-subtitle");
+  const submitBtn = document.getElementById("submit-btn");
+  const appBadge = document.getElementById("app-badge");
 
   const totalGeralEl = document.getElementById("total-geral");
   const totalPendenteEl = document.getElementById("total-pendente");
@@ -684,6 +690,7 @@
   let cardBreakdownChart = null;
   let cardCategoryChart = null;
   let currentGroupId = null;
+  let isSignUpMode = false;
 
   function getColDespesas() {
     if (!currentGroupId) return db.collection("despesas"); // Fallback para despesas globais se não logado
@@ -3251,9 +3258,10 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
   googleLoginBtn?.addEventListener("click", async () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
-      await auth.signInWithPopup(provider);
+      // Usar redirecionamento em vez de popup para maior compatibilidade (especialmente mobile)
+      await auth.signInWithRedirect(provider);
     } catch (error) {
-      alert("Erro no login com Google: " + error.code);
+      alert("Erro no login com Google: " + (error.message || error.code));
     }
   });
 
@@ -3272,16 +3280,31 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     alert("Link de convite copiado!");
   });
 
+  toggleAuthModeBtn?.addEventListener("click", () => {
+    isSignUpMode = !isSignUpMode;
+    authTitle.textContent = isSignUpMode ? "Criar nova conta" : "Entrar no sistema";
+    authSubtitle.textContent = isSignUpMode ? "Preencha os dados para começar seu controle." : "Acesse o painel financeiro com seu e-mail e senha.";
+    submitBtn.textContent = isSignUpMode ? "Criar conta" : "Entrar";
+    toggleAuthModeBtn.textContent = isSignUpMode ? "Já tem uma conta? Fazer login" : "Não tem uma conta? Criar agora";
+    authMessage.textContent = "";
+  });
+
   authForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
-    authMessage.textContent = "Processando...";
+    authMessage.textContent = isSignUpMode ? "Criando conta..." : "Processando...";
 
     try {
       await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-      await auth.signInWithEmailAndPassword(email, password);
+      
+      if (isSignUpMode) {
+        await auth.createUserWithEmailAndPassword(email, password);
+      } else {
+        await auth.signInWithEmailAndPassword(email, password);
+      }
+      
       authMessage.textContent = "";
     } catch (error) {
       authMessage.textContent = traduzirErroAuth(error.code || error.message);
