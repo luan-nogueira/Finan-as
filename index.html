@@ -1577,12 +1577,15 @@ function getOptionsCategoriasCompra(selected = "") {
               <span class="status-badge ${isBlocked ? 'overdue' : 'paid'}">${isBlocked ? 'Bloqueado' : 'Ativo'}</span>
             </div>
             <p style="font-size: 13px; color: var(--muted);">Vencimento: <strong>${escapeHtml(expireDate)}</strong></p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 4px;">
               <button class="btn-light" onclick="window.adminAcao('${uid}', '${isBlocked ? 'active' : 'blocked'}')" style="font-size: 12px;">
-                ${isBlocked ? '✅ Desbloquear' : '🚫 Bloquear'}
+                ${isBlocked ? '✅ Ativar' : '🚫 Bloquear'}
               </button>
               <button class="btn-primary" onclick="window.adminCobranca('${uid}')" style="font-size: 12px; background: var(--primary-soft); color: var(--primary);">
-                💰 Enviar Cobrança
+                💰 Cobrar
+              </button>
+              <button class="btn-delete" onclick="window.adminExcluir('${uid}')" style="font-size: 12px;">
+                🗑️ Excluir
               </button>
             </div>
           </div>
@@ -1599,6 +1602,18 @@ function getOptionsCategoriasCompra(selected = "") {
       await db.collection("users").doc(uid).update({ status: newStatus });
       renderAdminUserList();
     } catch (e) { alert("Erro: " + e.message); }
+  };
+
+  window.adminExcluir = async (uid) => {
+    if (!confirm("⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\nTem certeza que deseja excluir permanentemente este usuário? Todos os dados dele serão perdidos.")) return;
+    
+    try {
+      await db.collection("users").doc(uid).delete();
+      alert("Usuário removido com sucesso do sistema.");
+      renderAdminUserList();
+    } catch (e) {
+      alert("Erro ao excluir usuário: " + e.message);
+    }
   };
 
   window.adminCobranca = (uid) => {
