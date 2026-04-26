@@ -12,6 +12,8 @@
     rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="logo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="logo.png" />
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -24,14 +26,11 @@
 
   <div id="splash-screen">
     <div class="splash-loader"></div>
-    <img src="logo.png" alt="LM TECH" style="width: 120px; margin-bottom: 20px;">
+    <div class="splash-logo">FINANÇAS</div>
   </div>
 
   <section class="auth-page" id="loginBox">
     <div class="auth-card">
-      <div class="auth-card-logo" style="text-align: center; margin-bottom: 24px;">
-        <img src="logo.png" alt="LM TECH Logo" style="width: 140px;">
-      </div>
       <div class="panel-header">
         <span class="badge badge-login"><i data-lucide="lock" style="width: 16px; height: 16px;"></i> Área de
           acesso</span>
@@ -81,7 +80,6 @@
 
       <header class="hero">
         <div>
-          <img src="logo.png" alt="LM TECH" style="width: 100px; margin-bottom: 12px; display: block;">
           <span class="badge" id="app-badge">Finanças Compartilhadas <i data-lucide="shield-check"
               style="color: var(--primary); width: 16px; height: 16px;"></i></span>
           <h1>Controle de Finanças</h1>
