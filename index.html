@@ -3778,7 +3778,7 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     await new Promise(resolve => setTimeout(resolve, 250));
 
     const email = emailInput.value.trim().toLowerCase(); // Normaliza para minúsculas
-    const password = passwordInput.value.trim();
+    let finalPassword = passwordInput.value.trim();
     
     if (!email) {
       authMessage.textContent = "Digite seu e-mail.";
@@ -3793,13 +3793,13 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
 
     try {
       if (isSignUpMode) {
-        if (!password) {
+        if (!finalPassword) {
           authMessage.textContent = "Digite uma senha para criar sua conta.";
           submitBtn.disabled = false;
           submitBtn.textContent = originalBtnText;
           return;
         }
-        await auth.createUserWithEmailAndPassword(email, password);
+        await auth.createUserWithEmailAndPassword(email, finalPassword);
       } else {
         // Se a senha estiver vazia (comum no primeiro clique com FaceID no Safari)
         if (!finalPassword) {
