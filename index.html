@@ -3457,6 +3457,20 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
       if (isSignUpMode) {
         await auth.createUserWithEmailAndPassword(email, password);
       } else {
+        // Lógica de Login Inteligente: Verifica se o e-mail é apenas do Google
+        try {
+          const methods = await auth.fetchSignInMethodsForEmail(email);
+          if (methods.includes("google.com") && !methods.includes("password") && !password) {
+            authMessage.textContent = "Conta Google detectada. Redirecionando...";
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ login_hint: email });
+            await auth.signInWithRedirect(provider);
+            return;
+          }
+        } catch (e) {
+          console.log("Check smart login failed", e);
+        }
+
         await auth.signInWithEmailAndPassword(email, password);
       }
       
