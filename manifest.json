@@ -1,6 +1,6 @@
 {
-  "name": "Financeiro do Casal",
-  "short_name": "Financeiro",
+  "name": "Finanças Compartilhadas",
+  "short_name": "Finanças",
   "description": "Controle financeiro compartilhado para casais.",
   "start_url": "./index.html",
   "display": "standalone",
