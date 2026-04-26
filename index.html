@@ -704,6 +704,15 @@
   </div>
 
   <script>
+    // Segurança global para o Splash Screen
+    setTimeout(function() {
+      var sp = document.getElementById('splash-screen');
+      if (sp && !sp.classList.contains('fade-out')) {
+        sp.classList.add('fade-out');
+        console.warn("Splash Screen removido via script de segurança global.");
+      }
+    }, 10000); // 10 segundos no máximo
+
 (() => {
   const firebaseConfig = {
     apiKey: "AIzaSyAA9oMvrsKbsixFBgJ5MlZuHdriVBcG4hA",
