@@ -4264,6 +4264,47 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
       }
 
       currentGroupId = await getOrCreateUserGroup(user);
+      
+      // LIBERA A TELA AQUI: Usuário validado e grupo identificado
+      mostrarApp(true);
+      if (splashScreen) splashScreen.classList.add("fade-out");
+      userEmail.textContent = user.email || "Usuário logado";
+
+      // Lógica de Migração Inicial (Roda em background agora)
+      (async () => {
+        try {
+          if (currentGroupId === user.uid) {
+            const globalDespesas = await db.collection("despesas").limit(1).get();
+            if (!globalDespesas.empty) {
+              const personalGroupDespesas = await getColDespesas().limit(1).get();
+              if (personalGroupDespesas.empty) {
+                console.log("Migrando dados globais para o grupo pessoal...");
+                const snapshot = await db.collection("despesas").get();
+                const batch = db.batch();
+                snapshot.docs.forEach(doc => {
+                  batch.set(getColDespesas().doc(doc.id), doc.data());
+                });
+                await batch.commit();
+                
+                const ipvaGlobal = await db.collection("configuracoes").doc("ipva_carro").get();
+                if (ipvaGlobal.exists) {
+                  await getDocIpva().set(ipvaGlobal.data());
+                }
+    
+                // Limpeza: Após migrar com sucesso, apaga os dados da área pública para privacidade
+                const globalDocs = await db.collection("despesas").get();
+                const deleteBatch = db.batch();
+                globalDocs.forEach(d => deleteBatch.delete(d.ref));
+                await deleteBatch.commit();
+                console.log("Migração concluída e área pública limpa.");
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Erro na migração assistida:", e);
+        }
+      })();
+
     } catch (e) {
       console.error("Erro ao obter perfil:", e);
       if (splashScreen) splashScreen.classList.add("fade-out");
@@ -4279,43 +4320,7 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
       adminBtn.style.display = "none";
     }
 
-    // Lógica de Migração Inicial...
-    try {
-      if (currentGroupId === user.uid) {
-        const globalDespesas = await db.collection("despesas").limit(1).get();
-        if (!globalDespesas.empty) {
-          const personalGroupDespesas = await getColDespesas().limit(1).get();
-          if (personalGroupDespesas.empty) {
-            console.log("Migrando dados globais para o grupo pessoal...");
-            const snapshot = await db.collection("despesas").get();
-            const batch = db.batch();
-            snapshot.docs.forEach(doc => {
-              batch.set(getColDespesas().doc(doc.id), doc.data());
-            });
-            await batch.commit();
-            
-            const ipvaGlobal = await db.collection("configuracoes").doc("ipva_carro").get();
-            if (ipvaGlobal.exists) {
-              await getDocIpva().set(ipvaGlobal.data());
-            }
-
-            // Limpeza: Após migrar com sucesso, apaga os dados da área pública para privacidade
-            const globalDocs = await db.collection("despesas").get();
-            const deleteBatch = db.batch();
-            globalDocs.forEach(d => deleteBatch.delete(d.ref));
-            await deleteBatch.commit();
-            console.log("Migração concluída e área pública limpa.");
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("Erro na migração assistida:", e);
-    }
-
-    mostrarApp(true);
-    // Remove o Splash Screen após carregar tudo
-    if (splashScreen) splashScreen.classList.add("fade-out");
-    userEmail.textContent = user.email || "Usuário logado";
+    // Já mostramos o app e removemos o splash acima
 
     if (isNewUser) {
       currentTourStep = 0;
