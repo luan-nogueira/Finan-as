@@ -1228,7 +1228,8 @@
       "auth/wrong-password": "Senha incorreta. Tente novamente.",
       "auth/invalid-credential": "E-mail ou senha inválidos. Verifique os dados.",
       "auth/too-many-requests": "Muitas tentativas. Tente novamente em alguns minutos.",
-      "auth/email-already-in-use": "Este e-mail já está sendo usado por outra conta."
+      "auth/email-already-in-use": "Este e-mail já está sendo usado por outra conta.",
+      "auth/account-exists-with-different-credential": "Este e-mail já está associado ao Google. Entre usando o botão do Google."
     };
     return erros[code] || `Erro: ${code}`;
   }
@@ -3817,8 +3818,18 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
       }
       authMessage.textContent = "";
     } catch (error) {
-      console.error("Auth error:", error);
-      authMessage.textContent = traduzirErroAuth(error.code || error.message);
+      console.error("Auth error detail:", error);
+      
+      let msg = traduzirErroAuth(error.code || error.message);
+      
+      // Caso especial: Usuário tentando logar com e-mail em conta que é Google
+      if (error.code === 'auth/account-exists-with-different-credential' || 
+          (error.code === 'auth/invalid-credential' && !isSignUpMode)) {
+        // Se for login e der erro de credencial, pode ser que a conta seja Google
+        msg = "E-mail ou senha incorretos. Se você já usou o Google antes, entre pelo botão do Google.";
+      }
+
+      authMessage.textContent = msg;
       submitBtn.disabled = false;
       submitBtn.textContent = originalBtnText;
     }
