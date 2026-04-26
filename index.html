@@ -22,6 +22,11 @@
 </head>
 <body>
 
+  <div id="splash-screen">
+    <div class="splash-loader"></div>
+    <div class="splash-logo">FINANÇAS</div>
+  </div>
+
   <section class="auth-page" id="loginBox">
     <div class="auth-card">
       <div class="panel-header">
@@ -716,6 +721,11 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
 
+  // Configuração global de persistência (Garante que o login fique salvo no navegador)
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .catch(err => console.error("Erro ao definir persistência:", err));
+
+  const splashScreen = document.getElementById("splash-screen");
   const loginBox = document.getElementById("loginBox");
   const appRoot = document.getElementById("appRoot");
 
@@ -3736,7 +3746,7 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     e.preventDefault();
     
     // Pequeno delay para garantir que o Face ID/Autofill do iOS termine de preencher
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
@@ -3749,8 +3759,6 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     authMessage.textContent = isSignUpMode ? "Criando conta..." : "Entrando...";
 
     try {
-      await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-      
       if (isSignUpMode) {
         if (!password) {
           authMessage.textContent = "Digite uma senha para criar sua conta.";
@@ -3762,22 +3770,18 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
         if (password) {
           await auth.signInWithEmailAndPassword(email, password);
         } else {
-          // Se NÃO houver senha, tenta o login inteligente (Google)
-          try {
-            const methods = await auth.fetchSignInMethodsForEmail(email);
-            if (methods.includes("google.com") && !methods.includes("password")) {
-              authMessage.textContent = "Conta Google detectada. Redirecionando...";
-              const provider = new firebase.auth.GoogleAuthProvider();
-              provider.setCustomParameters({ login_hint: email });
-              await auth.signInWithRedirect(provider);
-              return;
-            }
-          } catch (e) {
-            console.warn("Smart login check failed", e);
+          // No iPhone, se o campo de senha estiver vazio mas o usuário clicou em Entrar, 
+          // damos um tempo extra para o preenchimento automático.
+          await new Promise(resolve => setTimeout(resolve, 500));
+          const p2 = passwordInput.value.trim();
+          if (p2) {
+             await auth.signInWithEmailAndPassword(email, p2);
+             return;
           }
-          
-          // Se não for Google e não tiver senha, pede a senha
-          authMessage.textContent = "Por favor, digite sua senha.";
+
+          // Se CONTINUAR sem senha, apenas avisamos. 
+          // REMOVIDO o redirecionamento automático para Google para não quebrar o FaceID.
+          authMessage.textContent = "Por favor, digite sua senha ou entre com o botão Google.";
         }
       }
       
@@ -4185,6 +4189,8 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
       if (unsubscribe) unsubscribe();
       if (unsubscribeIpva) unsubscribeIpva();
       mostrarApp(false);
+      // Remove o Splash Screen se não estiver logado para mostrar o login
+      if (splashScreen) splashScreen.classList.add("fade-out");
       return;
     }
 
@@ -4263,6 +4269,8 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     }
 
     mostrarApp(true);
+    // Remove o Splash Screen após carregar tudo
+    if (splashScreen) splashScreen.classList.add("fade-out");
     userEmail.textContent = user.email || "Usuário logado";
 
     if (isNewUser) {
