@@ -542,6 +542,23 @@
     </div>
   </div>
 
+  <div id="delete-confirm-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+      <div style="width: 50px; height: 50px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+        <i data-lucide="trash-2"></i>
+      </div>
+      <h2 id="delete-confirm-title">Excluir Despesa</h2>
+      <p id="delete-confirm-text" style="color: var(--muted); margin-bottom: 24px;">Esta despesa se repete em outros meses. Como deseja prosseguir?</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button type="button" class="btn-primary" id="delete-only-this" style="background: var(--primary-soft); color: var(--primary); border: 1px solid var(--primary-soft);">Excluir apenas deste mês</button>
+        <button type="button" class="btn-primary" id="delete-all-future" style="background: #ef4444; border: 1px solid #ef4444;">Excluir de TODOS os meses</button>
+        <button type="button" class="btn-light" id="cancel-delete">Manter despesa (Cancelar)</button>
+      </div>
+    </div>
+  </div>
+
+
   <div id="settings-modal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -3304,44 +3321,63 @@ function renderComprasDoCartao(item) {
     const item = despesasCache.find(d => d.id === id);
     if (!item) return;
 
-    try {
-      const itemNormalizado = normalizarCategoria(item);
+    const docRef = getColDespesas().doc(id);
+    const itemNormalizado = normalizarCategoria(item);
+    const recorrente = isRecorrenteMensal(itemNormalizado);
 
-      if (isRecorrenteMensal(itemNormalizado)) {
-        const excluirApenasMes = confirm(
-          `Deseja excluir "${item.descricao}" apenas de ${formatarMesTitulo(mesReferencia)}?\n\nClique em OK para excluir só deste mês.\nClique em Cancelar para escolher excluir de todos os meses.`
-        );
+    const deleteModal = document.getElementById("delete-confirm-modal");
+    const deleteTitle = document.getElementById("delete-confirm-title");
+    const deleteText = document.getElementById("delete-confirm-text");
+    const btnOnlyThis = document.getElementById("delete-only-this");
+    const btnAllFuture = document.getElementById("delete-all-future");
+    const btnCancel = document.getElementById("cancel-delete");
 
-        if (excluirApenasMes) {
-          const mesesIgnorados = getMesesIgnorados(item);
-          if (!mesReferencia) {
-            alert("Não foi possível identificar o mês da linha.");
-            return;
-          }
-
-          if (!mesesIgnorados.includes(mesReferencia)) {
-            mesesIgnorados.push(mesReferencia);
-          }
-
-          await getColDespesas().doc(id).update({ mesesIgnorados });
-          return;
-        }
-
-        const excluirTodos = confirm(
-          `Deseja excluir "${item.descricao}" de TODOS os meses?\n\nEssa ação apaga o item definitivamente.`
-        );
-
-        if (!excluirTodos) return;
-        await getColDespesas().doc(id).delete();
-        return;
-      }
-
-      const confirmarExclusao = confirm(`Deseja excluir "${item.descricao}"?`);
-      if (!confirmarExclusao) return;
-      await getColDespesas().doc(id).delete();
-    } catch (error) {
-      alert("Erro ao excluir despesa: " + error.message);
+    deleteTitle.textContent = `Excluir "${item.descricao}"`;
+    
+    if (recorrente) {
+      deleteText.textContent = `Esta despesa se repete em outros meses. Deseja excluir apenas de ${formatarMesTitulo(mesReferencia)} ou apagar tudo permanentemente?`;
+      btnOnlyThis.style.display = "block";
+    } else {
+      deleteText.textContent = "Deseja excluir esta despesa permanentemente?";
+      btnOnlyThis.style.display = "none";
     }
+
+    deleteModal.classList.remove("hidden");
+    lucide.createIcons();
+
+    return new Promise((resolve) => {
+      const cleanup = () => {
+        deleteModal.classList.add("hidden");
+        btnOnlyThis.removeEventListener("click", onOnlyThis);
+        btnAllFuture.removeEventListener("click", onAllFuture);
+        btnCancel.removeEventListener("click", onCancel);
+      };
+
+      const onOnlyThis = async () => {
+        const mesesIgnorados = getMesesIgnorados(item);
+        if (mesReferencia && !mesesIgnorados.includes(mesReferencia)) {
+          mesesIgnorados.push(mesReferencia);
+        }
+        await docRef.update({ mesesIgnorados });
+        cleanup();
+        resolve();
+      };
+
+      const onAllFuture = async () => {
+        await docRef.delete();
+        cleanup();
+        resolve();
+      };
+
+      const onCancel = () => {
+        cleanup();
+        resolve();
+      };
+
+      btnOnlyThis.addEventListener("click", onOnlyThis);
+      btnAllFuture.addEventListener("click", onAllFuture);
+      btnCancel.addEventListener("click", onCancel);
+    });
   }
 
   async function alternarIpva(indexReal) {
