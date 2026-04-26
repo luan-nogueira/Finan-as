@@ -1586,6 +1586,7 @@ function getOptionsCategoriasCompra(selected = "") {
         const status = u.status || "active";
         const expireDate = u.expireDate || "Não definido";
         const isBlocked = status === "blocked";
+        const hasNotice = u.showBillingNotice === true;
 
         html += `
           <div style="background: var(--bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;">
@@ -1598,9 +1599,10 @@ function getOptionsCategoriasCompra(selected = "") {
               <button class="btn-light" onclick="window.adminAcao('${uid}', '${isBlocked ? 'active' : 'blocked'}')" style="font-size: 12px;">
                 ${isBlocked ? '✅ Ativar' : '🚫 Bloquear'}
               </button>
-              <button class="btn-primary" onclick="window.adminCobranca('${uid}')" style="font-size: 12px; background: var(--primary-soft); color: var(--primary);">
-                💰 Cobrar
-              </button>
+              ${hasNotice 
+                ? `<button class="btn-primary" onclick="window.adminRetirarAviso('${uid}')" style="font-size: 12px; background: #fef08a; color: #854d0e;">🔕 Retirar Aviso</button>`
+                : `<button class="btn-primary" onclick="window.adminCobranca('${uid}')" style="font-size: 12px; background: var(--primary-soft); color: var(--primary);">💰 Cobrar</button>`
+              }
               <button class="btn-delete" onclick="window.adminExcluir('${uid}')" style="font-size: 12px;">
                 🗑️ Excluir
               </button>
@@ -1613,6 +1615,13 @@ function getOptionsCategoriasCompra(selected = "") {
       adminUserList.innerHTML = `<p style="color: var(--red);">Erro: ${e.message}</p>`;
     }
   }
+
+  window.adminRetirarAviso = async (uid) => {
+    try {
+      await db.collection("users").doc(uid).update({ showBillingNotice: false });
+      renderAdminUserList();
+    } catch (e) { alert("Erro ao retirar aviso: " + e.message); }
+  };
 
   window.adminAcao = async (uid, newStatus) => {
     try {
