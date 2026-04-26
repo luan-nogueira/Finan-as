@@ -729,6 +729,12 @@
   const loginBox = document.getElementById("loginBox");
   const appRoot = document.getElementById("appRoot");
 
+  // Recupera o último e-mail para facilitar o preenchimento automático
+  const ultimoEmailSalvo = localStorage.getItem("finance_last_email");
+  if (ultimoEmailSalvo && emailInput) {
+    emailInput.value = ultimoEmailSalvo;
+  }
+
   const authForm = document.getElementById("auth-form");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -3790,6 +3796,10 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
 
         await auth.signInWithEmailAndPassword(email, finalPassword);
       }
+      if (!isSignUpMode) {
+        localStorage.setItem("finance_last_email", email);
+      }
+      authMessage.textContent = "";
     } catch (error) {
       console.error("Auth error:", error);
       authMessage.textContent = traduzirErroAuth(error.code || error.message);
@@ -4338,6 +4348,15 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
 
 
   carregarTema();
+
+  // Tenta o Login Automático se o navegador preencher os campos sozinhos (Autofill)
+  setTimeout(() => {
+    // Só tenta se estiver na tela de login (loginBox visível) e não estiver logado
+    if (loginBox.style.display !== "none" && emailInput.value && passwordInput.value && !auth.currentUser) {
+      console.log("Detectado preenchimento automático. Tentando login...");
+      authForm.dispatchEvent(new Event("submit"));
+    }
+  }, 1500);
 
   const hoje = new Date();
   const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
