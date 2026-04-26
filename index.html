@@ -588,6 +588,12 @@
         <button type="button" class="btn-light" id="settings-ipva-btn" style="width: 100%;">Editar Parcelas do IPVA</button>
       </div>
 
+      <div class="settings-group" id="recovery-section" style="display: none; border: 1px dashed #ef4444;">
+        <h3 style="color: #ef4444;">⚠️ Recuperação de Dados</h3>
+        <p>Use esta opção se seus dados sumiram após trocar de login.</p>
+        <button type="button" class="btn-secondary" id="emergency-recovery-btn" style="width: 100%;">Buscar e Restaurar Dados</button>
+      </div>
+
       <div class="settings-group">
         <h3>ℹ️ Informações da Conta</h3>
         <p>Conectado como: <strong id="settings-user-email">...</strong></p>
@@ -1517,6 +1523,36 @@ function getOptionsCategoriasCompra(selected = "") {
       for (const item of DESPESAS_INICIAIS) {
         await getColDespesas().add(criarPayload(item));
       }
+    }
+  }
+
+  async function realizarRecuperacaoEmergencia() {
+    const email = auth.currentUser?.email;
+    if (!email) return;
+
+    authMessage.textContent = "Buscando dados perdidos...";
+    try {
+      // 1. Tenta buscar na coleção global (caso a limpeza não tenha ocorrido)
+      const globalSnap = await db.collection("despesas").get();
+      if (!globalSnap.empty) {
+        console.log("Dados encontrados na coleção global!");
+        const batch = db.batch();
+        globalSnap.docs.forEach(doc => {
+          batch.set(getColDespesas().doc(doc.id), doc.data());
+        });
+        await batch.commit();
+        alert("Dados recuperados da área global com sucesso!");
+        location.reload();
+        return;
+      }
+
+      // 2. Busca em ID antigo (sabendo que o Luan pode ter trocado de ID)
+      // Vou deixar um alerta com o que fazer se não achar
+      alert("Não encontramos dados na área comum. Por favor, me avise o seu e-mail para eu fazer a migração manual via código.");
+    } catch (e) {
+      alert("Erro na busca: " + e.message);
+    } finally {
+      authMessage.textContent = "";
     }
   }
 
@@ -3413,6 +3449,10 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     settingsUserEmail.textContent = auth.currentUser?.email || "";
     settingsGroupId.textContent = currentGroupId || "";
     shareLinkInput.value = `${window.location.origin}${window.location.pathname}?join=${currentGroupId}`;
+    if (auth.currentUser?.email === 'luanmnogueira@gmail.com' || auth.currentUser?.email === 'luantop138@gmail.com') {
+      document.getElementById("recovery-section").style.display = "block";
+    }
+
     renderGroupMembers();
     settingsModal.classList.remove("hidden");
     lucide.createIcons();
@@ -3422,6 +3462,12 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
     settingsModal.classList.add("hidden");
     ipvaModal.classList.remove("hidden");
     renderIpvaForm();
+  });
+
+  document.getElementById("emergency-recovery-btn")?.addEventListener("click", () => {
+    if (confirm("Isso vai tentar puxar seus dados de volta. Deseja continuar?")) {
+      realizarRecuperacaoEmergencia();
+    }
   });
 
   closeSettingsModal?.addEventListener("click", () => settingsModal.classList.add("hidden"));
