@@ -1730,11 +1730,12 @@ function getOptionsCategoriasCompra(selected = "") {
     const total = Math.max(Number(quantidade) || 1, 1);
 
     if (isMobile) {
-      wrapper.style.height = `${Math.min(520, Math.max(240, total * 58))}px`;
+      // Aumentado o limite máximo para evitar cortes em listas longas no celular
+      wrapper.style.height = `${Math.min(1000, Math.max(240, total * 52))}px`;
       return;
     }
 
-    wrapper.style.height = `${Math.min(440, Math.max(280, total * 42))}px`;
+    wrapper.style.height = `${Math.min(800, Math.max(280, total * 38))}px`;
   }
 
   function gerarDadosPorCartao(listaCartoes) {
@@ -1879,31 +1880,39 @@ function getOptionsCategoriasCompra(selected = "") {
     const topComprasList = document.getElementById("top-compras-list");
     if (!topComprasList) return;
     
-    const topCompras = getTopComprasCartoes(listaCartoes);
-    if (!topCompras.length) {
-      topComprasList.innerHTML = `<div class="card-next-empty">Nenhuma compra detalhada no mês.</div>`;
-      return;
-    }
+    topComprasList.innerHTML = "";
+
+    // -- Cartões Mês Que Vem --
+    const mapaMeses = gerarListaParaGraficoMensal();
+    const proximoMes = adicionarMesAoYyyyMm(getMesBaseCartoes(), 1);
+    let itensProximoMes = mapaMeses.get(proximoMes) || [];
+    itensProximoMes = itensProximoMes.filter(item => isCartao(item))
+      .filter(item => !cardDashboardFilterTerm || String(item.descricao || "").trim() === cardDashboardFilterTerm);
     
-    topComprasList.innerHTML = `
-      <div class="card-next-month-header">
-        <strong>Maiores Lançamentos</strong>
-        <span>Top ${topCompras.length}</span>
-      </div>
-      <div class="card-next-month-items">
-        ${topCompras.map((compra, index) => `
-          <div class="card-next-item">
-            <div class="card-next-item-top">
-              <span class="card-next-item-name">${index + 1}º ${escapeHtml(compra.nome)} <small style="color:var(--muted)">(${escapeHtml(compra.cartao)})</small></span>
-              <strong class="card-next-item-value">${formatarMoeda(compra.valor)}</strong>
+    const dadosProximoMes = gerarDadosPorCartao(itensProximoMes);
+    if (dadosProximoMes.length > 0) {
+      const isUmCartao = !!cardDashboardFilterTerm;
+      const tituloProximoMes = isUmCartao ? "Fatura prevista (Mês que vem)" : "Cartões (Mês que vem)";
+
+      topComprasList.innerHTML = `
+        <div class="card-next-month-header">
+          <strong>${tituloProximoMes}</strong>
+          <span style="color: var(--orange); font-weight: bold;">${formatarMesTitulo(proximoMes)}</span>
+        </div>
+        <div class="card-next-month-items">
+          ${dadosProximoMes.map(cartao => `
+            <div class="card-next-item">
+              <div class="card-next-item-top">
+                <span class="card-next-item-name">${escapeHtml(cartao.nome)}</span>
+                <strong class="card-next-item-value">${formatarMoeda(cartao.total)}</strong>
+              </div>
             </div>
-            <div class="card-next-item-bar" style="height:4px; margin-top:4px;">
-              <span style="width:${Math.max(10, 100 - (index * 15))}%; background-color:var(--primary);"></span>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
+          `).join('')}
+        </div>
+      `;
+    } else {
+      topComprasList.innerHTML = `<div class="card-next-empty">Nenhuma fatura projetada para o próximo mês.</div>`;
+    }
   }
 
   function destruirGraficosCartoes() {
@@ -2064,6 +2073,10 @@ function getOptionsCategoriasCompra(selected = "") {
 
     if (cardCategoryChartCanvas) {
       const dados = gerarDadosCategoriasCartoes(listaCartoes);
+      const isMobile = window.innerWidth <= 640;
+      const chartWrapper = cardCategoryChartCanvas.closest(".chart-box-category");
+      gerarAlturaDinamicaGrafico(chartWrapper, dados.length, isMobile);
+      
       const ctx = cardCategoryChartCanvas.getContext("2d");
 
       cardCategoryChart = new Chart(ctx, {
@@ -2722,7 +2735,7 @@ function renderComprasDoCartao(item) {
           <td class="obs-cell">${escapeHtml(observacaoExtra)}</td>
           <td class="status-cell">
             <span class="status-badge ${status === "Pago" ? "paid" : (status === "Vencido" ? "overdue" : "pending")}">
-              ${status}${status === "Pago" ? " ✅" : ""}
+              ${status === "Pago" ? "✅" : (status === "Vencido" ? "⚠️" : "⏳")} ${status}
             </span>
           </td>
           <td>
@@ -2806,7 +2819,7 @@ function renderComprasDoCartao(item) {
         <td>${formatarDataBR(item.data)}</td>
         <td>
           <span class="status-badge ${item.pago ? "paid" : "pending"}">
-            ${status}${item.pago ? " ✅" : ""}
+            ${item.pago ? "✅" : "⏳"} ${status}
           </span>
         </td>
       `;

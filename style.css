@@ -2039,7 +2039,7 @@ body.card-dashboard-open {
 #card-dashboard-panel .chart-scroll-x {
   width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
 }
@@ -2131,7 +2131,7 @@ body.card-dashboard-open {
 
 #card-dashboard-panel .chart-scroll-x {
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
 }
@@ -2163,3 +2163,28 @@ body.card-dashboard-open {
     padding: 12px !important;
   }
 }
+
+/* --- AJUSTES VISUAIS DA TABELA --- */
+
+.table-wrap::-webkit-scrollbar { width: 8px; height: 8px; }
+.table-wrap::-webkit-scrollbar-track { background: transparent; }
+.table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+.table-wrap::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+.col-value, .valor-cell { text-align: right; font-variant-numeric: tabular-nums; }
+th.col-value { text-align: right; }
+
+thead th::after { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+
+.table-wrap tbody tr:nth-child(even):not(.group-row):not(.row-paid):not(.row-overdue) { background-color: rgba(0, 0, 0, 0.015); }
+html[data-theme="dark"] .table-wrap tbody tr:nth-child(even):not(.group-row):not(.row-paid):not(.row-overdue) { background-color: rgba(255, 255, 255, 0.015); }
+
+.table-wrap tbody tr:hover:not(.group-row) { background-color: var(--bg-soft) !important; }
+
+.row-overdue td:first-child { box-shadow: inset 4px 0 0 var(--red); }
+
+.group-row { background: linear-gradient(90deg, var(--primary-soft) 0%, transparent 100%) !important; }
+.group-row td { background: transparent !important; }
+
+.status-badge { gap: 6px; min-width: 96px; }
+
