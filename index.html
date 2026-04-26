@@ -3748,16 +3748,21 @@ async function editarCompraDoCartao(cardId, mesReferencia, index) {
   });
 
   forgotPasswordBtn?.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
+    const email = emailInput.value.trim().toLowerCase();
     if (!email) {
-      alert("Por favor, digite seu e-mail no campo acima primeiro.");
+      authMessage.textContent = "Por favor, digite seu e-mail no campo acima primeiro.";
       return;
     }
+    
+    authMessage.textContent = "Enviando e-mail de recuperação...";
     try {
       await auth.sendPasswordResetEmail(email);
-      alert("E-mail de recuperação enviado! Verifique sua caixa de entrada (e o spam).");
+      authMessage.style.color = "var(--green)";
+      authMessage.textContent = "E-mail enviado! Verifique sua caixa de entrada e spam.";
+      setTimeout(() => { authMessage.style.color = ""; }, 5000);
     } catch (error) {
-      alert("Erro ao enviar e-mail: " + (error.message || error.code));
+      console.error("Reset password error:", error);
+      authMessage.textContent = "Erro ao enviar: " + (error.message || error.code);
     }
   });
 
