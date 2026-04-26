@@ -397,9 +397,11 @@ body {
 }
 
 .field {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   min-width: 0;
+  width: 100%;
 }
 
 .field.full,
@@ -418,6 +420,8 @@ select,
 button,
 textarea {
   font: inherit;
+  box-sizing: border-box !important;
+  max-width: 100%;
 }
 
 input,
