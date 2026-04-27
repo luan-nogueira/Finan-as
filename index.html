@@ -689,12 +689,18 @@
       </div>
       <h2>Aviso Importante! 💰</h2>
       <p id="billing-notice-text">Seu acesso irá vencer em breve.</p>
-      <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
-        <p style="font-size: 14px; margin-bottom: 8px;">Para renovar seu acesso, entre em contato:</p>
-        <strong style="font-size: 18px; color: var(--primary);">📲 (22) 99903-2428</strong>
+      <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin-bottom: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+        <p style="font-size: 14px; margin-bottom: 0;">Para renovar seu acesso, entre em contato:</p>
+        <strong style="font-size: 18px; color: var(--primary);">📲 (22) 99903-2342</strong>
+        
+        <a href="https://wa.me/5522999032342?text=quero%20regularizar%20meu%20acesso%20ao%20aplicativo%20de%20finan%C3%A7as" 
+           target="_blank" class="btn-primary" 
+           style="display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; width: 100%; background: #25d366; border-color: #25d366; color: white;">
+          <i data-lucide="message-circle" style="width: 20px; height: 20px;"></i> Regularizar via WhatsApp
+        </a>
       </div>
       <div class="modal-actions" style="justify-content: center;">
-        <button type="button" class="btn-primary" id="close-billing-modal">Entendi, vou regularizar</button>
+        <button type="button" class="btn-light" id="close-billing-modal">Fechar aviso</button>
       </div>
     </div>
   </div>
@@ -728,9 +734,15 @@
     <h1 style="font-size: 28px; margin-bottom: 12px;">Acesso Suspenso</h1>
     <p style="color: var(--muted); max-width: 400px; margin-bottom: 32px;">Seu acesso a este painel financeiro foi
       bloqueado. Entre em contato com o administrador para regularizar sua situação.</p>
-    <div style="background: var(--primary-soft); padding: 20px; border-radius: 16px; width: 100%; max-width: 300px;">
-      <p style="font-size: 14px; margin-bottom: 8px;">Fale com Luan:</p>
-      <strong style="font-size: 20px; color: var(--primary);">📲 (22) 99903-2428</strong>
+    <div style="background: var(--primary-soft); padding: 20px; border-radius: 16px; width: 100%; max-width: 320px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+      <p style="font-size: 14px; margin-bottom: 0;">Fale com Luan:</p>
+      <strong style="font-size: 20px; color: var(--primary);">📲 (22) 99903-2342</strong>
+      
+      <a href="https://wa.me/5522999032342?text=quero%20regularizar%20meu%20acesso%20ao%20aplicativo%20de%20finan%C3%A7as" 
+         target="_blank" class="btn-primary" 
+         style="display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; width: 100%; background: #25d366; border-color: #25d366; color: white;">
+        <i data-lucide="message-circle" style="width: 20px; height: 20px;"></i> Chamar no WhatsApp
+      </a>
     </div>
     <button type="button" class="btn-light" id="blocked-logout-btn" style="margin-top: 32px;">Sair da conta</button>
   </div>
