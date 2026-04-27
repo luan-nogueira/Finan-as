@@ -46,13 +46,20 @@ module.exports = async (req, res) => {
     for (const doc of usersSnapshot.docs) {
       const userData = doc.data();
       const fcmToken = userData.fcmToken;
+      const groupId = userData.groupId;
       
-      debugLog.push(`User ${doc.id} - Token: ${!!fcmToken}, Enabled: ${userData.notificationsEnabled}`);
+      debugLog.push(`User ${doc.id} - Token: ${!!fcmToken}, Enabled: ${userData.notificationsEnabled}, Group: ${groupId || 'Global'}`);
 
       // Pula se usuário desativou notificações ou não tem token
       if (!fcmToken || userData.notificationsEnabled === false) continue;
 
-      const despesasSnapshot = await db.collection("users").doc(doc.id).collection("despesas").get();
+      let despesasSnapshot;
+      if (groupId) {
+        despesasSnapshot = await db.collection("grupos").doc(groupId).collection("despesas").get();
+      } else {
+        despesasSnapshot = await db.collection("despesas").get();
+      }
+      
       const despesas = [];
       despesasSnapshot.forEach(d => {
         despesas.push({
