@@ -26,7 +26,7 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-const CACHE_NAME = 'financas-v4'; // Incrementado para v4 para forçar atualização completa
+const CACHE_NAME = 'financas-v5'; // Incrementado para v5 para forçar atualização completa
 const ASSETS = [
   './',
   './index.html',
@@ -36,9 +36,23 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then((keyList) => {
+      return Promise.all(keyList.map((key) => {
+        if (key !== CACHE_NAME) {
+          return caches.delete(key);
+        }
+      }));
+    })
+  );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
