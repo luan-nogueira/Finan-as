@@ -1264,6 +1264,7 @@ input[type="checkbox"] {
     padding: 0;
     border: none;
     display: block;
+    background: transparent !important;
   }
 
   td.group-row {
@@ -1272,7 +1273,7 @@ input[type="checkbox"] {
     padding: 10px;
     text-align: center;
     margin: 0;
-    background: var(--primary-soft);
+    background: var(--primary-soft) !important;
     color: var(--primary);
   }
 
