@@ -1170,23 +1170,27 @@
           return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
         }
 
-        despesas.forEach(d => {
-          if (d.pago || !d.vencimento) return;
-          
-          if (d.vencimento < hoje) {
+      despesas.forEach(d => {
+        if (d.pago || !d.vencimento) return;
+        
+        if (d.vencimento < hoje) {
+          // Só notifica contas que venceram nos últimos 7 dias para não ficar enviando spam de contas velhas
+          const diasVencida = Math.abs(calcularDiffDias(hoje, d.vencimento));
+          if (diasVencida <= 7) {
             vencidas.push(d);
-          } else if (d.vencimento === hoje) {
-            vencendoHoje.push(d);
-          } else if (d.vencimento <= limiteVencer) {
-            aVencer.push(d);
           }
-        });
+        } else if (d.vencimento === hoje) {
+          vencendoHoje.push(d);
+        } else if (d.vencimento <= limiteVencer) {
+          aVencer.push(d);
+        }
+      });
 
-        if (vencidas.length === 0 && vencendoHoje.length === 0 && aVencer.length === 0) return;
+      if (vencidas.length === 0 && vencendoHoje.length === 0 && aVencer.length === 0) return;
 
-        // Evita notificar várias vezes na mesma sessão (feche a aba e abra de novo para testar)
-        const ultimaNotificacao = sessionStorage.getItem("last_vencimento_alert");
-        if (ultimaNotificacao === hoje) return;
+      // Usar localStorage para avisar apenas 1 VEZ POR DIA, não importa quantas vezes abra o app
+      const ultimaNotificacao = localStorage.getItem("last_vencimento_alert");
+      if (ultimaNotificacao === hoje) return;
 
         if (vencidas.length > 0) {
           const bodyLines = vencidas.map(d => {
@@ -1221,7 +1225,7 @@
           });
         }
 
-        sessionStorage.setItem("last_vencimento_alert", hoje);
+        localStorage.setItem("last_vencimento_alert", hoje);
       }
 
       const CATEGORIA_FIXA = "Gastos fixos";

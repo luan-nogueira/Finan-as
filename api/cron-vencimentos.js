@@ -69,7 +69,10 @@ module.exports = async (req, res) => {
       despesas.forEach(d => {
         if (d.pago || !d.vencimento) return;
         if (d.vencimento < hoje) {
-          vencidas.push(d);
+          const diasVencida = Math.abs(calcularDiffDias(hoje, d.vencimento));
+          if (diasVencida <= 7) {
+            vencidas.push(d);
+          }
         } else if (d.vencimento === hoje) {
           vencendoHoje.push(d);
         } else if (d.vencimento <= limiteVencer) {
