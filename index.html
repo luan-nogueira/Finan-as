@@ -18,6 +18,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -624,6 +625,20 @@
           IPVA</button>
       </div>
 
+      <div class="settings-group">
+        <h3>🔔 Notificações</h3>
+        <p>Receba alertas de contas vencidas e atualizações do grupo.</p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button type="button" class="btn-primary" id="enable-notifications-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i data-lucide="bell" style="width: 18px; height: 18px;"></i> Ativar Notificações
+          </button>
+          <button type="button" class="btn-light" id="test-notification-btn" style="width: 100%; display: none;">
+            Enviar Notificação de Teste
+          </button>
+        </div>
+        <p id="notification-status" style="font-size: 12px; margin-top: 8px; color: var(--muted); text-align: center;"></p>
+      </div>
+
       <div class="settings-group" id="recovery-section" style="display: none; border: 1px dashed #ef4444;">
         <h3 style="color: #ef4444;">⚠️ Recuperação de Dados</h3>
         <p>Use esta opção se seus dados sumiram após trocar de login.</p>
@@ -1017,8 +1032,144 @@
 
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("sw.js").catch(() => { });
+          console.log("Tentando registrar Service Worker...");
+          navigator.serviceWorker.register("sw.js")
+            .then(reg => {
+              console.log("Service Worker registrado com sucesso.");
+              // Alerta de depuração para o usuário ver que o código novo carregou
+              // alert("Sistema de Notificações Pronto!"); 
+              initMessaging(reg);
+            })
+            .catch(err => {
+              console.error("Erro ao registrar SW:", err);
+              alert("Erro técnico no Service Worker: " + err.message);
+            });
         });
+      }
+
+      function initMessaging(registration) {
+        const messaging = firebase.messaging();
+        
+        // Configura o Service Worker para o Messaging
+        messaging.useServiceWorker(registration);
+
+        const notifyBtn = document.getElementById("enable-notifications-btn");
+        const notifyStatus = document.getElementById("notification-status");
+
+        if (Notification.permission === "granted") {
+          updateNotificationUI(true);
+        }
+
+        notifyBtn.addEventListener("click", async () => {
+          console.log("Botão de notificação clicado");
+          
+          // Verifica suporte básico
+          if (!('Notification' in window)) {
+            alert("Este navegador não suporta notificações.");
+            return;
+          }
+
+          // Verificação específica para iOS
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+          const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+          if (isIOS && !isStandalone) {
+            alert("No iPhone, você precisa primeiro 'Adicionar à Tela de Início' para ativar as notificações.");
+            return;
+          }
+
+          try {
+            notifyBtn.disabled = true;
+            notifyBtn.textContent = "Solicitando...";
+
+            const permission = await Notification.requestPermission();
+            console.log("Permissão:", permission);
+
+            if (permission === "granted") {
+              const token = await messaging.getToken({
+                vapidKey: "BCYYdqTBs9I_Cj2MgFFIWS0r6yGjATDy1DcpDdsTWhsDFrs2CYeycbbK75CYm5ozL_vnzo-ITFSsSPjJ1Ph9jkk"
+              });
+              
+              if (token) {
+                console.log("Token FCM gerado");
+                if (auth.currentUser) {
+                  await db.collection("users").doc(auth.currentUser.uid).update({
+                    fcmToken: token,
+                    notificationsEnabled: true
+                  });
+                }
+                updateNotificationUI(true);
+                alert("✅ Notificações ativadas com sucesso!");
+              } else {
+                alert("Não foi possível gerar o token de acesso. Tente novamente.");
+              }
+            } else if (permission === "denied") {
+              alert("⚠️ Permissão negada. Você precisa autorizar as notificações nas configurações do seu navegador (clique no ícone de cadeado na barra de endereços).");
+            }
+          } catch (error) {
+            console.error("Erro detalhado:", error);
+            alert("Erro ao ativar: " + error.message);
+          } finally {
+            if (Notification.permission !== "granted") {
+              notifyBtn.disabled = false;
+              notifyBtn.innerHTML = '<i data-lucide="bell" style="width: 18px; height: 18px;"></i> Ativar Notificações';
+              lucide.createIcons();
+            }
+          }
+        });
+
+        function updateNotificationUI(enabled) {
+          if (enabled) {
+            notifyBtn.innerHTML = '<i data-lucide="bell-off" style="width: 18px; height: 18px;"></i> Notificações Ativadas';
+            notifyBtn.style.background = "var(--primary-soft)";
+            notifyBtn.style.color = "var(--primary)";
+            notifyStatus.textContent = "Você já está recebendo notificações neste dispositivo.";
+          }
+        }
+
+        // Lidar com mensagens em primeiro plano (quando o app está aberto)
+        messaging.onMessage((payload) => {
+          console.log("Mensagem recebida em primeiro plano:", payload);
+          const { title, body, icon } = payload.notification;
+          new Notification(title, { body, icon: icon || "logo.jpg" });
+        });
+
+        // Botão de Teste
+        const testBtn = document.getElementById("test-notification-btn");
+        if (Notification.permission === "granted") testBtn.style.display = "block";
+        
+        testBtn.addEventListener("click", () => {
+          new Notification("Teste de Finanças 💰", {
+            body: "As notificações estão funcionando corretamente na sua barra de tarefas!",
+            icon: "logo.jpg"
+          });
+        });
+      }
+
+      function verificarAlertasVencimento(despesas) {
+        if (Notification.permission !== "granted") return;
+
+        const hoje = getTodayISO();
+        const vencidasOuHoje = despesas.filter(d => {
+          if (d.pago || !d.vencimento) return false;
+          // Notifica se vence hoje ou se já venceu há pouco tempo
+          return d.vencimento <= hoje;
+        });
+
+        if (vencidasOuHoje.length > 0) {
+          // Evita notificar várias vezes na mesma sessão
+          const ultimaNotificacao = sessionStorage.getItem("last_vencimento_alert");
+          if (ultimaNotificacao === hoje) return;
+
+          const totalVencido = vencidasOuHoje.reduce((acc, d) => acc + valorNumerico(d.valor), 0);
+          
+          new Notification("⚠️ Contas Vencidas!", {
+            body: `Você tem ${vencidasOuHoje.length} conta(s) pendente(s). Total: ${formatarMoeda(totalVencido)}.`,
+            icon: "logo.jpg",
+            tag: "alerta-vencimento" // Agrupa notificações similares
+          });
+
+          sessionStorage.setItem("last_vencimento_alert", hoje);
+        }
       }
 
       const CATEGORIA_FIXA = "Gastos fixos";
@@ -4434,6 +4585,7 @@
             renderGraficoMensal();
             renderGraficoCategorias();
             renderPainelCartoes();
+            verificarAlertasVencimento(despesasCache);
           }, (error) => {
             alert("Erro ao carregar despesas: " + (error.message || error.code || "desconhecido"));
           });
