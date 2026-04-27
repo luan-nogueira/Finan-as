@@ -345,18 +345,7 @@
             <div id="top-compras-list" class="card-next-month-list"></div>
           </div>
 
-          <div class="chart-card chart-card-full">
-            <div class="panel-header collapsible-header">
-              <h2>Categorias das compras no cartão</h2>
-              <p>Resumo das categorias lançadas dentro de “Ver compras” dos cartões. No celular, arraste para o lado se
-                necessário.</p>
-            </div>
-            <div class="chart-scroll-x">
-              <div class="chart-box card-chart-box chart-box-wide chart-box-category">
-                <canvas id="card-category-chart"></canvas>
-              </div>
-            </div>
-          </div>
+
         </div>
       </section>
       <section class="panel">
@@ -2683,61 +2672,7 @@
           });
         }
 
-        if (cardCategoryChartCanvas) {
-          const dados = gerarDadosCategoriasCartoes(listaCartoes);
-          const isMobile = window.innerWidth <= 640;
-          const chartWrapper = cardCategoryChartCanvas.closest(".chart-box-category");
-          gerarAlturaDinamicaGrafico(chartWrapper, dados.length, isMobile);
 
-          const ctx = cardCategoryChartCanvas.getContext("2d");
-
-          cardCategoryChart = new Chart(ctx, {
-            type: "bar",
-            data: {
-              labels: dados.length ? dados.map(item => item.categoria) : ["Sem compras cadastradas"],
-              datasets: [{
-                label: "Categoria",
-                data: dados.length ? dados.map(item => item.total) : [0],
-                backgroundColor: green,
-                borderRadius: 4,
-                borderSkipped: false,
-                maxBarThickness: isMobile ? 18 : 40,
-                barThickness: isMobile ? 18 : 24
-              }]
-            },
-            options: {
-              indexAxis: "y",
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  callbacks: {
-                    label(context) { return ` ${formatarMoeda(context.raw || 0)}`; }
-                  }
-                }
-              },
-              scales: {
-                x: {
-                  beginAtZero: true,
-                  ticks: { 
-                    color: corTexto, 
-                    font: { size: isMobile ? 9 : 12 },
-                    callback(value) { return formatarMoeda(value); } 
-                  },
-                  grid: { color: "rgba(148, 163, 184, 0.15)" }
-                },
-                y: { 
-                  ticks: { 
-                    color: corTexto, 
-                    font: { weight: "bold", size: isMobile ? 10 : 12 } 
-                  }, 
-                  grid: { display: false } 
-                }
-              }
-            }
-          });
-        }
       }
 
       function abrirPainelCartoes() {
