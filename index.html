@@ -1050,8 +1050,8 @@
       function initMessaging(registration) {
         const messaging = firebase.messaging();
         
-        // Configura o Service Worker para o Messaging
-        messaging.useServiceWorker(registration);
+        // No Firebase v9+ compat, useServiceWorker não é mais necessário/suportado aqui.
+        // O registro do SW é passado diretamente no getToken abaixo.
 
         const notifyBtn = document.getElementById("enable-notifications-btn");
         const notifyStatus = document.getElementById("notification-status");
@@ -1086,7 +1086,8 @@
 
             if (permission === "granted") {
               const token = await messaging.getToken({
-                vapidKey: "BCYYdqTBs9I_Cj2MgFFIWS0r6yGjATDy1DcpDdsTWhsDFrs2CYeycbbK75CYm5ozL_vnzo-ITFSsSPjJ1Ph9jkk"
+                vapidKey: "BCYYdqTBs9I_Cj2MgFFIWS0r6yGjATDy1DcpDdsTWhsDFrs2CYeycbbK75CYm5ozL_vnzo-ITFSsSPjJ1Ph9jkk",
+                serviceWorkerRegistration: registration
               });
               
               if (token) {
