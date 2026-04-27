@@ -1,0 +1,7 @@
+{
+  "name": "financas-backend",
+  "version": "1.0.0",
+  "dependencies": {
+    "firebase-admin": "^12.1.0"
+  }
+}
