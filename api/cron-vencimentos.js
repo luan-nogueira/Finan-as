@@ -41,11 +41,14 @@ module.exports = async (req, res) => {
   try {
     const usersSnapshot = await db.collection("users").get();
     let sentCount = 0;
+    let debugLog = [];
 
     for (const doc of usersSnapshot.docs) {
       const userData = doc.data();
       const fcmToken = userData.fcmToken;
       
+      debugLog.push(`User ${doc.id} - Token: ${!!fcmToken}, Enabled: ${userData.notificationsEnabled}`);
+
       // Pula se usuário desativou notificações ou não tem token
       if (!fcmToken || userData.notificationsEnabled === false) continue;
 
@@ -59,6 +62,8 @@ module.exports = async (req, res) => {
           vencimento: d.data().vencimento
         });
       });
+      
+      debugLog.push(`User ${doc.id} - Total Despesas: ${despesas.length}`);
 
       const hoje = getTodayISO();
       const dataLimite = new Date(hoje + "T00:00:00");
@@ -82,6 +87,8 @@ module.exports = async (req, res) => {
           aVencer.push(d);
         }
       });
+      
+      debugLog.push(`User ${doc.id} - Vencidas: ${vencidas.length}, Hoje: ${vencendoHoje.length}, AVencer: ${aVencer.length}`);
 
       const sendPush = async (title, body) => {
         try {
@@ -96,8 +103,10 @@ module.exports = async (req, res) => {
             }
           });
           sentCount++;
+          debugLog.push(`User ${doc.id} - Push Success: ${title}`);
         } catch (e) {
           console.error(`Erro ao enviar push para ${doc.id}:`, e);
+          debugLog.push(`User ${doc.id} - Push Error: ${e.code} - ${e.message}`);
           if (e.code === 'messaging/invalid-registration-token' || e.code === 'messaging/registration-token-not-registered') {
              await db.collection("users").doc(doc.id).update({ fcmToken: null });
           }
@@ -126,7 +135,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    return res.status(200).json({ success: true, messagesSent: sentCount });
+    return res.status(200).json({ success: true, messagesSent: sentCount, debug: debugLog });
 
   } catch (error) {
     console.error("Erro no Cron Job:", error);
