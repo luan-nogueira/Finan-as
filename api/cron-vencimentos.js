@@ -3,7 +3,8 @@ const admin = require('firebase-admin');
 // Inicializa o Firebase Admin usando a chave secreta colocada na Vercel
 if (!admin.apps.length) {
   try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const rawKey = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.CONTA_DE_SERVIÇO_FIREBASE;
+    const serviceAccount = JSON.parse(rawKey);
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
