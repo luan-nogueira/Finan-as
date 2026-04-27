@@ -211,14 +211,20 @@
               <input type="date" id="vencimento" />
             </div>
 
-            <div class="field">
-              <label for="parcela-atual">Parcela atual (Opcional)</label>
-              <input type="number" id="parcela-atual" min="1" placeholder="Ex: 12" />
+            <div class="field full" style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; margin-top: 4px; margin-bottom: 4px;">
+              <input type="checkbox" id="is-parcelado" style="width: 22px; height: 22px; margin: 0; cursor: pointer;" onchange="document.getElementById('parcelas-container').style.display = this.checked ? 'flex' : 'none'" />
+              <label for="is-parcelado" style="margin: 0; cursor: pointer; font-size: 14px; width: auto !important;">Essa despesa é parcelada?</label>
             </div>
 
-            <div class="field">
-              <label for="parcela-total">Total de parcelas (Opcional)</label>
-              <input type="number" id="parcela-total" min="1" placeholder="Ex: 48" />
+            <div id="parcelas-container" style="display: none; width: 100%; gap: 12px; margin-bottom: 12px;" class="full">
+              <div class="field" style="flex: 1;">
+                <label for="parcela-atual">Parcela atual</label>
+                <input type="number" id="parcela-atual" min="1" placeholder="Ex: 1" />
+              </div>
+              <div class="field" style="flex: 1;">
+                <label for="parcela-total">Total de parcelas</label>
+                <input type="number" id="parcela-total" min="1" placeholder="Ex: 12" />
+              </div>
             </div>
 
             <div class="field full">
@@ -463,14 +469,20 @@
           <input type="date" id="edit-vencimento" />
         </div>
 
-        <div class="field">
-          <label for="edit-parcela-atual">Parcela atual (Opcional)</label>
-          <input type="number" id="edit-parcela-atual" min="1" />
+        <div class="field full" style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; margin-top: 4px; margin-bottom: 4px;">
+          <input type="checkbox" id="edit-is-parcelado" style="width: 22px; height: 22px; margin: 0; cursor: pointer;" onchange="document.getElementById('edit-parcelas-container').style.display = this.checked ? 'flex' : 'none'" />
+          <label for="edit-is-parcelado" style="margin: 0; cursor: pointer; font-size: 14px; width: auto !important;">Essa despesa é parcelada?</label>
         </div>
 
-        <div class="field">
-          <label for="edit-parcela-total">Total de parcelas (Opcional)</label>
-          <input type="number" id="edit-parcela-total" min="1" />
+        <div id="edit-parcelas-container" style="display: none; width: 100%; gap: 12px; margin-bottom: 12px;" class="full">
+          <div class="field" style="flex: 1;">
+            <label for="edit-parcela-atual">Parcela atual</label>
+            <input type="number" id="edit-parcela-atual" min="1" />
+          </div>
+          <div class="field" style="flex: 1;">
+            <label for="edit-parcela-total">Total de parcelas</label>
+            <input type="number" id="edit-parcela-total" min="1" />
+          </div>
         </div>
 
         <div class="field full">
@@ -1410,8 +1422,16 @@
           : "";
         document.getElementById("edit-vencimento").value = item.vencimento || "";
         document.getElementById("edit-observacao").value = item.observacao || "";
-        document.getElementById("edit-parcela-atual").value = item.parcelaAtual || "";
-        document.getElementById("edit-parcela-total").value = item.parcelaTotal || "";
+
+        const temParcela = Boolean(item.parcelaTotal && item.parcelaTotal > 1);
+        const checkParcela = document.getElementById("edit-is-parcelado");
+        const containerParcela = document.getElementById("edit-parcelas-container");
+        if (checkParcela && containerParcela) {
+          checkParcela.checked = temParcela;
+          containerParcela.style.display = temParcela ? "flex" : "none";
+        }
+        document.getElementById("edit-parcela-atual").value = temParcela ? (item.parcelaAtual || "") : "";
+        document.getElementById("edit-parcela-total").value = temParcela ? (item.parcelaTotal || "") : "";
 
         const itemOriginal = despesasCache.find(d => d.id === (item.origemId || item.id));
         const recorrente = itemOriginal ? isRecorrenteMensal(normalizarCategoria(itemOriginal)) : false;
@@ -1437,6 +1457,11 @@
         if (infoEl) infoEl.textContent = "";
         if (hiddenMonthEl) hiddenMonthEl.value = "";
         if (hiddenMonthlyEl) hiddenMonthlyEl.value = "";
+        
+        const checkParcela = document.getElementById("edit-is-parcelado");
+        const containerParcela = document.getElementById("edit-parcelas-container");
+        if (checkParcela) checkParcela.checked = false;
+        if (containerParcela) containerParcela.style.display = "none";
       }
 
       function abrirModalIpva() {
@@ -3395,8 +3420,9 @@
         const valor = converterValorInput(valorDigitado);
         const vencimento = document.getElementById("vencimento").value.trim();
         const observacao = document.getElementById("observacao").value.trim();
-        const parcelaAtual = Number(document.getElementById("parcela-atual").value || 0);
-        const parcelaTotal = Number(document.getElementById("parcela-total").value || 0);
+        const isParcelado = document.getElementById("is-parcelado").checked;
+        const parcelaAtual = isParcelado ? Number(document.getElementById("parcela-atual").value || 0) : 0;
+        const parcelaTotal = isParcelado ? Number(document.getElementById("parcela-total").value || 0) : 0;
         const categoria = definirCategoriaAutomatica(descricao);
 
         if (!auth.currentUser) return;
@@ -3424,6 +3450,8 @@
           });
 
           form.reset();
+          document.getElementById("is-parcelado").checked = false;
+          document.getElementById("parcelas-container").style.display = "none";
           categoriaPreview.value = "Será definida automaticamente";
           tipoPreview.value = "Será definido automaticamente";
           expenseFormWrapper.classList.add("hidden");
@@ -3444,8 +3472,9 @@
         const valor = converterValorInput(valorDigitado);
         const vencimento = document.getElementById("edit-vencimento").value.trim();
         const observacao = document.getElementById("edit-observacao").value.trim();
-        const parcelaAtual = Number(document.getElementById("edit-parcela-atual").value || 0);
-        const parcelaTotal = Number(document.getElementById("edit-parcela-total").value || 0);
+        const isParcelado = document.getElementById("edit-is-parcelado").checked;
+        const parcelaAtual = isParcelado ? Number(document.getElementById("edit-parcela-atual").value || 0) : 0;
+        const parcelaTotal = isParcelado ? Number(document.getElementById("edit-parcela-total").value || 0) : 0;
         const mesReferencia = document.getElementById("edit-month-ref")?.value || "";
         const isMonthlyEdit = document.getElementById("edit-is-monthly")?.value === "true";
 
