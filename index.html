@@ -2341,8 +2341,9 @@
         const total = Math.max(Number(quantidade) || 1, 1);
 
         if (isMobile) {
-          // Aumentado o limite máximo para evitar cortes em listas longas no celular
-          wrapper.style.height = `${Math.min(1000, Math.max(240, total * 52))}px`;
+          // Ajustado para manter um tamanho fixo por barra e evitar esticamento exagerado
+          // 40px por barra + 80px de eixos
+          wrapper.style.height = `${(total * 40) + 80}px`;
           return;
         }
 
@@ -2698,9 +2699,10 @@
                 label: "Categoria",
                 data: dados.length ? dados.map(item => item.total) : [0],
                 backgroundColor: green,
-                borderRadius: 10,
+                borderRadius: 4,
                 borderSkipped: false,
-                maxBarThickness: 42
+                maxBarThickness: isMobile ? 18 : 40,
+                barThickness: isMobile ? 18 : 24
               }]
             },
             options: {
@@ -2718,10 +2720,20 @@
               scales: {
                 x: {
                   beginAtZero: true,
-                  ticks: { color: corTexto, callback(value) { return formatarMoeda(value); } },
+                  ticks: { 
+                    color: corTexto, 
+                    font: { size: isMobile ? 9 : 12 },
+                    callback(value) { return formatarMoeda(value); } 
+                  },
                   grid: { color: "rgba(148, 163, 184, 0.15)" }
                 },
-                y: { ticks: { color: corTexto, font: { weight: "bold" } }, grid: { display: false } }
+                y: { 
+                  ticks: { 
+                    color: corTexto, 
+                    font: { weight: "bold", size: isMobile ? 10 : 12 } 
+                  }, 
+                  grid: { display: false } 
+                }
               }
             }
           });

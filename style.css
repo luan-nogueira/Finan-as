@@ -1841,7 +1841,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
 }
 
 .chart-box-category {
-  height: 380px;
+  min-height: 300px;
 }
 
 @media (max-width: 920px) {
@@ -1860,7 +1860,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
   }
 
   .chart-box-category {
-    height: 300px;
+    min-height: 240px;
   }
 }
 
@@ -1989,7 +1989,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
 }
 
 .chart-box-category {
-  height: clamp(260px, 42vw, 380px);
+  height: auto;
 }
 
 .card-next-chart-box {
@@ -2016,7 +2016,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
   }
 
   .chart-box-category {
-    height: clamp(240px, 52vw, 320px);
+    height: auto;
   }
 
   .chart-box-wide {
@@ -2046,7 +2046,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
   }
 
   .chart-box-category {
-    height: clamp(240px, 72vw, 320px);
+    height: auto;
   }
 
   .card-next-chart-box {
@@ -2117,7 +2117,9 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
   .card-chart-box canvas,
   .chart-box-category canvas,
   .card-next-chart-box canvas {
-    pointer-events: none;
+    /* Permitir que o toque passe para a página se não for uma interação direta de clique/hover */
+    pointer-events: auto;
+    touch-action: pan-y;
   }
 }
 
@@ -2155,11 +2157,11 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
 .chart-scroll-x {
   width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-  touch-action: pan-x;
-  padding-bottom: 6px;
+  touch-action: pan-x pan-y;
+  padding-bottom: 24px; /* Aumentado para garantir que os valores do eixo X apareçam */
 }
 
 .chart-box-wide {
@@ -2167,7 +2169,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
 }
 
 .chart-box-category {
-  height: 380px;
+  min-height: 300px;
 }
 
 @media (max-width: 920px) {
@@ -2184,7 +2186,7 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
   }
 
   .chart-box-category {
-    height: clamp(240px, 52vw, 320px);
+    height: auto;
   }
 
   .chart-box-wide {
@@ -2216,40 +2218,13 @@ body.card-dashboard-open .container > :not(#floating-card-btn):not(#card-dashboa
   }
 
   .chart-box-category {
-    height: clamp(240px, 72vw, 320px);
+    height: auto;
   }
 
   .card-next-chart-box {
     min-height: clamp(280px, 72vw, 560px);
   }
 
-  .chart-box-wide {
-    min-width: 680px;
-  }
-
-  .chart-box,
-  .card-chart-box,
-  .chart-box-category,
-  .card-next-chart-box {
-    width: 100%;
-    max-width: 100%;
-    touch-action: pan-y;
-  }
-
-  .chart-box canvas,
-  .card-chart-box canvas,
-  .chart-box-category canvas,
-  .card-next-chart-box canvas {
-    display: block;
-    width: 100% !important;
-    height: 100% !important;
-    pointer-events: auto !important;
-    touch-action: manipulation;
-  }
-
-  .chart-scroll-x {
-    touch-action: pan-x;
-  }
 }
 
 /* ===== CORREﾃ�グ FINAL MOBILE: PAINEL DE CARTﾃ髭S COM ROLAGEM ===== */
