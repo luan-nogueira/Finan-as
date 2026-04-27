@@ -1056,7 +1056,7 @@
         const notifyBtn = document.getElementById("enable-notifications-btn");
         const notifyStatus = document.getElementById("notification-status");
 
-        if ('Notification' in window && Notification.permission === "granted") {
+        if (window.Notification && Notification.permission === "granted") {
           updateNotificationUI(true);
         }
 
@@ -1064,7 +1064,7 @@
           console.log("Botão de notificação clicado");
           
           // Verifica suporte básico
-          if (!('Notification' in window)) {
+          if (!window.Notification) {
             alert("Este navegador não suporta notificações.");
             return;
           }
@@ -1110,7 +1110,7 @@
             console.error("Erro detalhado:", error);
             alert("Erro ao ativar: " + error.message);
           } finally {
-            if (!('Notification' in window) || Notification.permission !== "granted") {
+            if (!window.Notification || Notification.permission !== "granted") {
               notifyBtn.disabled = false;
               notifyBtn.innerHTML = '<i data-lucide="bell" style="width: 18px; height: 18px;"></i> Ativar Notificações';
               lucide.createIcons();
@@ -1130,7 +1130,7 @@
         // Lidar com mensagens em primeiro plano (quando o app está aberto)
         messaging.onMessage((payload) => {
           console.log("Mensagem recebida em primeiro plano:", payload);
-          if ('Notification' in window) {
+          if (window.Notification && Notification.permission === "granted") {
             const { title, body, icon } = payload.notification;
             new Notification(title, { body, icon: icon || "logo.jpg" });
           }
@@ -1138,10 +1138,10 @@
 
         // Botão de Teste
         const testBtn = document.getElementById("test-notification-btn");
-        if ('Notification' in window && Notification.permission === "granted") testBtn.style.display = "block";
+        if (window.Notification && Notification.permission === "granted") testBtn.style.display = "block";
         
         testBtn.addEventListener("click", () => {
-          if ('Notification' in window) {
+          if (window.Notification && Notification.permission === "granted") {
             new Notification("Teste de Finanças 💰", {
               body: "As notificações estão funcionando corretamente na sua barra de tarefas!",
               icon: "logo.jpg"
@@ -1151,7 +1151,7 @@
       }
 
       function verificarAlertasVencimento(despesas) {
-        if (!('Notification' in window) || Notification.permission !== "granted") return;
+        if (!window.Notification || Notification.permission !== "granted") return;
 
         const hoje = getTodayISO();
         
