@@ -3804,11 +3804,27 @@
       googleLoginBtn?.addEventListener("click", async () => {
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
+        
         try {
-          // Usar redirecionamento em vez de popup para maior compatibilidade (especialmente mobile)
-          await auth.signInWithRedirect(provider);
+          // Detecta se é dispositivo móvel
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+          
+          if (isMobile) {
+            // Em mobile, Redirect costuma ser mais fluido que Popup
+            await auth.signInWithRedirect(provider);
+          } else {
+            // Em desktop, Popup é muito mais confiável e rápido
+            await auth.signInWithPopup(provider);
+          }
         } catch (error) {
-          alert("Erro no login com Google: " + (error.message || error.code));
+          console.error("Erro no login Google:", error);
+          if (error.code === 'auth/unauthorized-domain') {
+            alert("ERRO: Este domínio não está autorizado no Firebase. Adicione '" + window.location.hostname + "' na lista de domínios autorizados no Console do Firebase.");
+          } else if (error.code === 'auth/popup-blocked') {
+            alert("O navegador bloqueou o popup de login. Por favor, autorize popups para este site ou tente novamente.");
+          } else {
+            alert("Erro no login com Google: " + (error.message || error.code));
+          }
         }
       });
 
@@ -4323,13 +4339,14 @@
       // Processa o resultado do redirecionamento do Google (essencial para mobile)
       auth.getRedirectResult()
         .then((result) => {
-          if (result.user) console.log("Login via redirect completo");
+          if (result && result.user) console.log("Login via redirect completo");
         })
         .catch((error) => {
-          if (error.code === 'auth/cross-origin-isolated-stack' || error.code === 'auth/network-request-failed') {
-            console.warn("Possível bloqueio de rastreamento do Safari. Tentando contornar...");
-          } else {
-            alert("Erro no redirecionamento do Google: " + error.message);
+          console.error("Erro no getRedirectResult:", error);
+          if (error.code === 'auth/unauthorized-domain') {
+            alert("Aviso: O login falhou porque este domínio (" + window.location.hostname + ") não está autorizado no Console do Firebase.");
+          } else if (error.code === 'auth/cross-origin-isolated-stack' || error.code === 'auth/network-request-failed') {
+            console.warn("Possível bloqueio de rastreamento. Tentando contornar...");
           }
         });
 
