@@ -707,12 +707,13 @@
       </div>
       <div class="form-grid" style="margin-top: 16px;">
         <div class="field full">
-          <label>Data ou Frase de Vencimento</label>
-          <input type="text" id="expire-date-input" placeholder="Ex: 15 de Maio, Amanhã, etc." />
+          <label>Data de Vencimento</label>
+          <input type="date" id="expire-date-input" />
         </div>
-        <div class="modal-actions full" style="margin-top: 20px;">
-          <button type="button" class="btn-light" id="cancel-expire">Cancelar</button>
+        <div class="modal-actions full" style="margin-top: 20px; flex-direction: column; gap: 8px;">
           <button type="button" class="btn-primary" id="confirm-expire">Confirmar Cobrança</button>
+          <button type="button" class="btn-delete" id="stop-expire" style="display: none;">Parar de Cobrar</button>
+          <button type="button" class="btn-light" id="cancel-expire">Cancelar</button>
         </div>
       </div>
     </div>
@@ -839,6 +840,7 @@
       const closeExpireModal = document.getElementById("close-expire-modal");
       const cancelExpireBtn = document.getElementById("cancel-expire");
       const confirmExpireBtn = document.getElementById("confirm-expire");
+      const stopExpireBtn = document.getElementById("stop-expire");
       let currentUserToManage = null;
 
       // Tour Elements
@@ -1644,6 +1646,13 @@
             const status = u.status || "active";
             const expireDate = u.expireDate || "Não definido";
             const isBlocked = status === "blocked";
+            const isCobrando = Boolean(u.isCobrando);
+
+            let formattedExpireDate = expireDate;
+            if (expireDate && expireDate.includes("-")) {
+              const parts = expireDate.split("-");
+              if (parts.length === 3) formattedExpireDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
 
             html += `
           <div style="background: var(--bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;">
@@ -1651,12 +1660,12 @@
               <strong>${escapeHtml(u.email)}</strong>
               <span class="status-badge ${isBlocked ? 'overdue' : 'paid'}">${isBlocked ? 'Bloqueado' : 'Ativo'}</span>
             </div>
-            <p style="font-size: 13px; color: var(--muted);">Vencimento: <strong>${escapeHtml(expireDate)}</strong></p>
+            <p style="font-size: 13px; color: var(--muted);">Vencimento: <strong>${isCobrando ? escapeHtml(formattedExpireDate) : 'Sem cobrança ativa'}</strong></p>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 4px;">
               <button class="btn-light" onclick="window.adminAcao('${uid}', '${isBlocked ? 'active' : 'blocked'}')" style="font-size: 12px;">
                 ${isBlocked ? '✅ Ativar' : '🚫 Bloquear'}
               </button>
-              <button class="btn-primary" onclick="window.adminCobranca('${uid}')" style="font-size: 12px; background: var(--primary-soft); color: var(--primary);">
+              <button class="btn-primary" onclick="window.adminCobranca('${uid}', '${expireDate !== 'Não definido' ? expireDate : ''}', ${isCobrando})" style="font-size: 12px; background: var(--primary-soft); color: var(--primary);">
                 💰 Cobrar
               </button>
               <button class="btn-delete" onclick="window.adminExcluir('${uid}')" style="font-size: 12px;">
@@ -1691,11 +1700,27 @@
         }
       };
 
-      window.adminCobranca = (uid) => {
+      window.adminCobranca = (uid, currentDate, isCobrando) => {
         currentUserToManage = uid;
-        expireDateInput.value = "Em breve";
+        // Se já houver uma data salva, coloca no input, senão deixa vazio
+        expireDateInput.value = (currentDate && currentDate !== 'Não definido') ? currentDate : "";
+        // Mostra o botão de parar cobrança apenas se ela estiver ativa
+        stopExpireBtn.style.display = isCobrando ? "block" : "none";
         expireModal.classList.remove("hidden");
       };
+
+      stopExpireBtn.addEventListener("click", async () => {
+        if (!currentUserToManage) return;
+        try {
+          await db.collection("users").doc(currentUserToManage).update({
+            isCobrando: false,
+            showBillingNotice: false
+          });
+          alert("Cobrança interrompida para este usuário.");
+          expireModal.classList.add("hidden");
+          renderAdminUserList();
+        } catch (e) { alert("Erro ao parar cobrança: " + e.message); }
+      });
 
       closeExpireModal.addEventListener("click", () => expireModal.classList.add("hidden"));
       cancelExpireBtn.addEventListener("click", () => expireModal.classList.add("hidden"));
@@ -1703,15 +1728,20 @@
       confirmExpireBtn.addEventListener("click", async () => {
         if (!currentUserToManage) return;
         const dataVencimento = expireDateInput.value.trim();
+        if (!dataVencimento) {
+          alert("Por favor, selecione uma data de vencimento válida.");
+          return;
+        }
         try {
           await db.collection("users").doc(currentUserToManage).update({
             expireDate: dataVencimento,
+            isCobrando: true,
             showBillingNotice: true
           });
-          alert("Aviso de cobrança enviado!");
+          alert("Cobrança configurada com sucesso!");
           expireModal.classList.add("hidden");
           renderAdminUserList();
-        } catch (e) { alert("Erro: " + e.message); }
+        } catch (e) { alert("Erro ao configurar cobrança: " + e.message); }
       });
 
       async function renderGroupMembers() {
@@ -4320,11 +4350,26 @@
             }
 
             // 2. Aviso de Cobrança
-            if (uData.showBillingNotice) {
+            if (uData.isCobrando && uData.expireDate) {
+              const expireDate = new Date(uData.expireDate + "T23:59:59");
+              const today = new Date();
+              const diffTime = expireDate - today;
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              
+              if (diffDays <= 5 && diffDays >= 0) {
+                const parts = uData.expireDate.split("-");
+                const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : uData.expireDate;
+                billingNoticeText.textContent = `Seu acesso irá vencer em ${formattedDate} (${diffDays === 0 ? 'hoje' : diffDays + ' dias'}).`;
+                billingModal.classList.remove("hidden");
+              } else if (diffDays < 0) {
+                const parts = uData.expireDate.split("-");
+                const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : uData.expireDate;
+                billingNoticeText.textContent = `Seu acesso venceu no dia ${formattedDate}. Por favor, regularize.`;
+                billingModal.classList.remove("hidden");
+              }
+            } else if (uData.showBillingNotice) {
               billingNoticeText.textContent = `Seu acesso irá vencer em ${uData.expireDate || 'breve'}.`;
               billingModal.classList.remove("hidden");
-              // Limpa o aviso após mostrar uma vez? Ou mantém até o admin tirar? 
-              // Vamos manter até o admin tirar no banco de dados para ele não esquecer.
             }
           }
 
