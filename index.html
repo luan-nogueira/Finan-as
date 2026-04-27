@@ -1154,27 +1154,74 @@
         if (!('Notification' in window) || Notification.permission !== "granted") return;
 
         const hoje = getTodayISO();
-        const vencidasOuHoje = despesas.filter(d => {
-          if (d.pago || !d.vencimento) return false;
-          // Notifica se vence hoje ou se já venceu há pouco tempo
-          return d.vencimento <= hoje;
+        
+        // Data limite para "a vencer" (próximos 3 dias)
+        const dataLimite = new Date(hoje + "T00:00:00");
+        dataLimite.setDate(dataLimite.getDate() + 3);
+        const limiteVencer = dataLimite.toISOString().split('T')[0];
+
+        let vencidas = [];
+        let vencendoHoje = [];
+        let aVencer = [];
+
+        function calcularDiffDias(dataRef, dataAlvo) {
+          const d1 = new Date(dataRef + "T00:00:00");
+          const d2 = new Date(dataAlvo + "T00:00:00");
+          return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+        }
+
+        despesas.forEach(d => {
+          if (d.pago || !d.vencimento) return;
+          
+          if (d.vencimento < hoje) {
+            vencidas.push(d);
+          } else if (d.vencimento === hoje) {
+            vencendoHoje.push(d);
+          } else if (d.vencimento <= limiteVencer) {
+            aVencer.push(d);
+          }
         });
 
-        if (vencidasOuHoje.length > 0) {
-          // Evita notificar várias vezes na mesma sessão
-          const ultimaNotificacao = sessionStorage.getItem("last_vencimento_alert");
-          if (ultimaNotificacao === hoje) return;
+        if (vencidas.length === 0 && vencendoHoje.length === 0 && aVencer.length === 0) return;
 
-          const totalVencido = vencidasOuHoje.reduce((acc, d) => acc + valorNumerico(d.valor), 0);
-          
-          new Notification("⚠️ Contas Vencidas!", {
-            body: `Você tem ${vencidasOuHoje.length} conta(s) pendente(s). Total: ${formatarMoeda(totalVencido)}.`,
+        // Evita notificar várias vezes na mesma sessão (feche a aba e abra de novo para testar)
+        const ultimaNotificacao = sessionStorage.getItem("last_vencimento_alert");
+        if (ultimaNotificacao === hoje) return;
+
+        if (vencidas.length > 0) {
+          const bodyLines = vencidas.map(d => {
+            const dias = Math.abs(calcularDiffDias(hoje, d.vencimento));
+            return `${d.descricao} venceu há ${dias} dia(s)`;
+          }).join('\n');
+          new Notification("🚨 Contas Vencidas!", {
+            body: bodyLines,
             icon: "logo.jpg",
-            tag: "alerta-vencimento" // Agrupa notificações similares
+            tag: "alerta-vencidas"
           });
-
-          sessionStorage.setItem("last_vencimento_alert", hoje);
         }
+
+        if (vencendoHoje.length > 0) {
+          const bodyLines = vencendoHoje.map(d => `${d.descricao} vence HOJE`).join('\n');
+          new Notification("⚠️ Vencendo Hoje!", {
+            body: bodyLines,
+            icon: "logo.jpg",
+            tag: "alerta-hoje"
+          });
+        }
+
+        if (aVencer.length > 0) {
+          const bodyLines = aVencer.map(d => {
+            const dias = calcularDiffDias(hoje, d.vencimento);
+            return `${d.descricao} irá vencer daqui a ${dias} dia(s)`;
+          }).join('\n');
+          new Notification("📅 Próximos Vencimentos", {
+            body: bodyLines,
+            icon: "logo.jpg",
+            tag: "alerta-avencer"
+          });
+        }
+
+        sessionStorage.setItem("last_vencimento_alert", hoje);
       }
 
       const CATEGORIA_FIXA = "Gastos fixos";
