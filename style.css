@@ -1228,24 +1228,32 @@ input[type="checkbox"] {
   }
 
   tr {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 2px 10px;
     align-items: center;
     background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 8px;
-    padding: 10px;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    margin-bottom: 0;
+    padding: 12px 10px;
+  }
+
+  tr:last-child {
+    border-bottom: none;
   }
 
   tr.compras-row {
+    display: block;
     padding: 0;
     border: none;
     background: transparent;
-    margin-bottom: 16px;
+    margin-bottom: 0;
   }
 
   tr:has(.group-row) {
+    display: block;
     padding: 0;
     border: none;
     background: transparent;
@@ -1260,36 +1268,51 @@ input[type="checkbox"] {
 
   td.group-row {
     width: 100%;
-    border-radius: 12px;
+    border-radius: 0;
     padding: 10px;
     text-align: center;
-    margin-bottom: 4px;
+    margin: 0;
+    background: var(--primary-soft);
+    color: var(--primary);
   }
 
   td:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    align-self: start;
+    margin-top: 2px;
     width: auto;
-    padding-right: 12px;
+    padding: 0;
   }
 
   td:nth-child(2) {
-    flex: 1;
+    grid-column: 2;
+    grid-row: 1 / 4;
+    align-self: start;
     min-width: 0;
   }
 
-  td:nth-child(3),
-  td:nth-child(4) {
-    width: 50%;
-    margin-top: 8px;
+  td:nth-child(3) {
+    grid-column: 3;
+    grid-row: 1;
+    text-align: right;
+    margin: 0;
+    width: auto;
   }
 
   td:nth-child(4) {
+    grid-column: 3;
+    grid-row: 2;
     text-align: right;
     color: var(--muted);
     font-size: 11px;
+    margin: 0;
+    width: auto;
   }
 
   td.valor-cell {
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 800;
   }
 
   .col-obs,
@@ -1302,31 +1325,41 @@ input[type="checkbox"] {
   }
 
   td:last-child {
-    width: 100%;
-    margin-top: 14px;
+    grid-column: 3;
+    grid-row: 3;
+    justify-self: end;
+    margin-top: 6px;
+    width: auto;
   }
 
   .mobile-obs {
     display: block;
-    margin-top: 6px;
+    margin-top: 2px;
   }
 
   .parcelas-info {
-    font-size: 12px;
-    margin-top: 4px;
+    font-size: 11px;
+    margin-top: 2px;
+    color: var(--muted);
   }
 
   .actions-cell {
+    display: flex;
     flex-direction: row;
-    gap: 6px;
+    justify-content: flex-end;
+    gap: 8px;
   }
 
   .action-btn {
-    flex: 1;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     font-size: 13px;
-    border-radius: 10px;
+    border-radius: 6px;
     padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
   }
 
   .descricao-cell-text {
@@ -1334,11 +1367,13 @@ input[type="checkbox"] {
     line-height: 1.2;
     font-size: 13px;
     font-weight: bold;
+    margin-bottom: 2px;
   }
 
   input[type="checkbox"] {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
+    margin: 0;
   }
 
   .chart-box {
@@ -1457,55 +1492,84 @@ input[type="checkbox"] {
   }
 
   .compras-subtable tr {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 8px;
     align-items: center;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px;
-    background: var(--card-2);
+    border: none;
+    border-bottom: 1px dashed var(--border);
+    border-radius: 0;
+    padding: 10px 0;
+    background: transparent;
     margin-bottom: 0;
+  }
+
+  .compras-subtable tr:last-child {
+    border-bottom: none;
   }
 
   .compras-subtable td {
     display: block;
     border: none;
     padding: 0;
+    width: auto !important;
   }
 
   .compras-subtable td:nth-child(1) {
-    width: 100%;
+    grid-column: 1;
+    grid-row: 1;
     font-size: 13px;
-    margin-bottom: 6px;
+    font-weight: bold;
+    margin: 0;
   }
 
-  .compras-subtable td:nth-child(2),
-  .compras-subtable td:nth-child(3),
-  .compras-subtable td:nth-child(4) {
-    width: 33.33%;
+  .compras-subtable td:nth-child(2) {
+    grid-column: 1;
+    grid-row: 2;
     font-size: 11px;
-    margin-top: 0;
+    margin: 0;
+  }
+  
+  .compras-subtable td:nth-child(3) {
+    grid-column: 1;
+    grid-row: 3;
+    font-size: 11px;
+    margin: 0;
   }
 
   .compras-subtable td:nth-child(4) {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 13px;
+    font-weight: 800;
     text-align: right;
+    margin: 0;
   }
 
   .compras-subtable td:nth-child(5) {
-    width: 100%;
-    margin-top: 12px;
+    grid-column: 2;
+    grid-row: 2 / 4;
+    justify-self: end;
+    align-self: end;
+    margin: 0;
   }
 
   .compras-subtable .compra-actions {
+    display: flex;
     flex-direction: row;
-    width: 100%;
-    gap: 6px;
+    gap: 8px;
   }
 
   .compras-subtable .compra-action-btn {
-    flex: 1;
-    height: 36px;
-    font-size: 13px;
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    flex: none;
   }
 
   .compra-form {
