@@ -28,9 +28,11 @@ function calcularDiffDias(dataRef, dataAlvo) {
 }
 
 module.exports = async (req, res) => {
-  // Autenticação oficial do Vercel Cron Job
+  // Autenticação oficial do Vercel Cron Job ou Teste Manual via URL
   const authHeader = req.headers.authorization;
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const querySecret = req.query.secret;
+  
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && querySecret !== process.env.CRON_SECRET) {
     console.warn("Acesso não autorizado ao Cron Job.");
     return res.status(401).json({ error: 'Unauthorized' });
   }
