@@ -97,7 +97,33 @@ module.exports = async (req, res) => {
       
       debugLog.push(`User ${doc.id} - Vencidas: ${vencidas.length}, Hoje: ${vencendoHoje.length}, AVencer: ${aVencer.length}`);
 
-      const sendPush = async (title, body) => {
+      let notificationLines = [];
+
+      if (vencidas.length > 0) {
+        const lines = vencidas.map(d => {
+          const dias = Math.abs(calcularDiffDias(hoje, d.vencimento));
+          return `🚨 ${d.descricao} (Venceu há ${dias}d)`;
+        });
+        notificationLines.push(...lines);
+      }
+
+      if (vencendoHoje.length > 0) {
+        const lines = vencendoHoje.map(d => `⚠️ ${d.descricao} (Vence HOJE)`);
+        notificationLines.push(...lines);
+      }
+
+      if (aVencer.length > 0) {
+        const lines = aVencer.map(d => {
+          const dias = calcularDiffDias(hoje, d.vencimento);
+          return `📅 ${d.descricao} (Vence em ${dias}d)`;
+        });
+        notificationLines.push(...lines);
+      }
+
+      if (notificationLines.length > 0) {
+        const title = "Resumo de Contas 💰";
+        const body = notificationLines.join('\n');
+        
         try {
           await admin.messaging().send({
             token: fcmToken,
@@ -110,39 +136,16 @@ module.exports = async (req, res) => {
             }
           });
           sentCount++;
-          debugLog.push(`User ${doc.id} - Push Success: ${title}`);
         } catch (e) {
           console.error(`Erro ao enviar push para ${doc.id}:`, e);
-          debugLog.push(`User ${doc.id} - Push Error: ${e.code} - ${e.message}`);
           if (e.code === 'messaging/invalid-registration-token' || e.code === 'messaging/registration-token-not-registered') {
              await db.collection("users").doc(doc.id).update({ fcmToken: null });
           }
         }
-      };
-
-      if (vencidas.length > 0) {
-        const bodyLines = vencidas.map(d => {
-          const dias = Math.abs(calcularDiffDias(hoje, d.vencimento));
-          return `${d.descricao} venceu há ${dias} dia(s)`;
-        }).join('\n');
-        await sendPush("🚨 Contas Vencidas!", bodyLines);
-      }
-
-      if (vencendoHoje.length > 0) {
-        const bodyLines = vencendoHoje.map(d => `${d.descricao} vence HOJE`).join('\n');
-        await sendPush("⚠️ Vencendo Hoje!", bodyLines);
-      }
-
-      if (aVencer.length > 0) {
-        const bodyLines = aVencer.map(d => {
-          const dias = calcularDiffDias(hoje, d.vencimento);
-          return `${d.descricao} irá vencer daqui a ${dias} dia(s)`;
-        }).join('\n');
-        await sendPush("📅 Próximos Vencimentos", bodyLines);
       }
     }
 
-    return res.status(200).json({ success: true, messagesSent: sentCount, debug: debugLog });
+    return res.status(200).json({ success: true, messagesSent: sentCount });
 
   } catch (error) {
     console.error("Erro no Cron Job:", error);
