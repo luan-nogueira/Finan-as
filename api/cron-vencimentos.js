@@ -62,11 +62,22 @@ module.exports = async (req, res) => {
       
       const despesas = [];
       despesasSnapshot.forEach(d => {
+        const data = d.data();
+        let isPago = data.pago;
+        
+        // Verifica se existe um ajuste mensal para o mês desta conta
+        if (data.vencimento && data.ajustesMensais) {
+          const mesKey = data.vencimento.substring(0, 7); // Ex: "2026-04"
+          if (data.ajustesMensais[mesKey] && typeof data.ajustesMensais[mesKey].pago === "boolean") {
+            isPago = data.ajustesMensais[mesKey].pago;
+          }
+        }
+
         despesas.push({
-          descricao: d.data().descricao,
-          valor: d.data().valor,
-          pago: d.data().pago,
-          vencimento: d.data().vencimento
+          descricao: data.descricao,
+          valor: data.valor,
+          pago: isPago,
+          vencimento: data.vencimento
         });
       });
       
