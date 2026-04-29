@@ -127,12 +127,16 @@
           <h3 id="total-pago">R$ 0,00</h3>
         </div>
         <div class="summary-card">
-          <p>Itens pendentes</p>
-          <h3 id="qtd-pendentes">0</h3>
+          <p>Saldo (Salário - Gastos)</p>
+          <h3 id="total-saldo" style="color: var(--green);">R$ 0,00</h3>
         </div>
         <div class="summary-card">
-          <p>Itens pagos</p>
-          <h3 id="qtd-pagos">0</h3>
+          <p>Itens (Pago/Pendente)</p>
+          <div style="display: flex; gap: 8px; justify-content: center; align-items: baseline;">
+            <strong id="qtd-pagos" style="color: var(--green); font-size: 18px;">0</strong>
+            <span style="color: var(--muted); font-size: 14px;">/</span>
+            <strong id="qtd-pendentes" style="color: var(--orange); font-size: 18px;">0</strong>
+          </div>
         </div>
       </section>
 
@@ -219,11 +223,11 @@
 
             <div id="parcelas-container" style="display: none; width: 100%; gap: 12px; margin-bottom: 12px;" class="full">
               <div class="field" style="flex: 1;">
-                <label for="parcela-atual">Parcela atual</label>
-                <input type="number" id="parcela-atual" min="1" placeholder="Ex: 1" />
+                <label for="valor-total-calculo">Valor Total da Compra</label>
+                <input type="text" id="valor-total-calculo" placeholder="Ex: 1200,00" />
               </div>
               <div class="field" style="flex: 1;">
-                <label for="parcela-total">Total de parcelas</label>
+                <label for="parcela-total">Qtd. de parcelas</label>
                 <input type="number" id="parcela-total" min="1" placeholder="Ex: 12" />
               </div>
             </div>
@@ -237,6 +241,29 @@
               <button type="submit" class="btn-primary">Salvar despesa</button>
             </div>
           </form>
+        </div>
+      </section>
+
+      <!-- Gestão Salarial -->
+      <section class="panel collapsible-panel" style="margin-top: 16px;">
+        <button id="toggle-salary-panel" type="button" class="collapse-toggle-btn" aria-expanded="false">
+          <span style="display:flex; align-items:center; gap:6px;"><i data-lucide="banknote" style="width:18px;height:18px;"></i> Gestão Salarial</span>
+          <span id="salary-toggle-icon"><i data-lucide="chevron-down" style="width:18px;height:18px;"></i></span>
+        </button>
+        <div id="salary-panel-wrapper" class="collapsible-content hidden">
+          <div class="panel-header" style="margin-top: 16px;">
+            <h2>Configurar Salário</h2>
+            <p>Informe o valor que você recebe para calcular o saldo final do mês.</p>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="salary-input">Valor do Salário (R$)</label>
+              <input type="text" id="salary-input" placeholder="Ex: 5.000,00" />
+            </div>
+            <div class="field" style="display: flex; align-items: flex-end;">
+              <button id="save-salary-btn" class="btn-primary" style="width: 100%;">Salvar Salário</button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -506,6 +533,45 @@
     </div>
   </div>
 
+  <!-- Modal Passo a Passo Notificação -->
+  <div id="notification-guide-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2>Como ativar Notificações</h2>
+        <button type="button" class="modal-close" id="close-notification-guide">&times;</button>
+      </div>
+      <div class="notification-steps" style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
+        <div class="step-item" style="display: flex; gap: 12px; align-items: flex-start;">
+          <div class="step-number" style="width: 24px; height: 24px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; font-weight: bold;">1</div>
+          <div class="step-text" style="font-size: 14px;">
+            <strong>Instale o App (PWA):</strong> No celular, use o menu do navegador e escolha <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela de início"</strong>.
+          </div>
+        </div>
+        <div class="step-item" style="display: flex; gap: 12px; align-items: flex-start;">
+          <div class="step-number" style="width: 24px; height: 24px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; font-weight: bold;">2</div>
+          <div class="step-text" style="font-size: 14px;">
+            <strong>Permita notificações:</strong> Abra o aplicativo instalado e, se solicitado, clique em <strong>"Permitir"</strong> quando perguntado sobre notificações.
+          </div>
+        </div>
+        <div class="step-item" style="display: flex; gap: 12px; align-items: flex-start;">
+          <div class="step-number" style="width: 24px; height: 24px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; font-weight: bold;">3</div>
+          <div class="step-text" style="font-size: 14px;">
+            <strong>Configuração do Sistema:</strong> Certifique-se de que o modo "Não perturbe" está desativado e que o sistema operacional permite notificações do app instalado.
+          </div>
+        </div>
+        <div class="step-item" style="background: var(--primary-soft); padding: 12px; border-radius: 8px; margin-top: 8px;">
+          <div style="font-size: 13px; color: var(--primary); display: flex; gap: 8px;">
+            <i data-lucide="info" style="flex-shrink: 0; width: 18px; height: 18px;"></i>
+            <span><strong>Nota para iOS (iPhone):</strong> As notificações só funcionam se você adicionar o site à Tela de Início usando o botão Compartilhar do Safari.</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-primary" onclick="document.getElementById('notification-guide-modal').classList.add('hidden')">Entendi</button>
+      </div>
+    </div>
+  </div>
+
   <div id="edit-compra-modal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -598,6 +664,14 @@
           style="margin: 0; padding: 0; list-style: none; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
           <li style="color: var(--muted);">Carregando membros...</li>
         </ul>
+      </div>
+
+      <div class="settings-group">
+        <h3>🔔 Notificações Push</h3>
+        <p>Ative avisos de vencimento diretamente no seu celular ou computador.</p>
+        <button type="button" class="btn-light" style="width: 100%; justify-content: center; gap: 8px; margin-top: 8px;" onclick="window.mostrarPassoAPassoNotificacao()">
+          <i data-lucide="help-circle"></i> Ver passo a passo
+        </button>
       </div>
 
       <div class="settings-group">
@@ -925,7 +999,57 @@
       let currentGroupId = null;
       let isSignUpMode = false;
       let isNewUser = false;
+      let salaryValue = 0;
       let currentTourStep = 0;
+      
+      const totalSaldoEl = document.getElementById("total-saldo");
+      const salaryInput = document.getElementById("salary-input");
+      const saveSalaryBtn = document.getElementById("save-salary-btn");
+      const salaryPanelWrapper = document.getElementById("salary-panel-wrapper");
+      const toggleSalaryPanelBtn = document.getElementById("toggle-salary-panel");
+      const closeNotificationGuide = document.getElementById("close-notification-guide");
+      const notificationGuideModal = document.getElementById("notification-guide-modal");
+
+      window.mostrarPassoAPassoNotificacao = () => {
+        notificationGuideModal.classList.remove("hidden");
+        lucide.createIcons();
+      };
+      
+      closeNotificationGuide?.addEventListener("click", () => notificationGuideModal.classList.add("hidden"));
+      
+      toggleSalaryPanelBtn?.addEventListener("click", () => {
+        const expanded = toggleSalaryPanelBtn.getAttribute("aria-expanded") === "true";
+        toggleSalaryPanelBtn.setAttribute("aria-expanded", !expanded);
+        salaryPanelWrapper.classList.toggle("hidden");
+        document.getElementById("salary-toggle-icon").innerHTML = expanded 
+          ? '<i data-lucide="chevron-down" style="width:18px;height:18px;"></i>' 
+          : '<i data-lucide="chevron-up" style="width:18px;height:18px;"></i>';
+        lucide.createIcons();
+      });
+
+      saveSalaryBtn?.addEventListener("click", async () => {
+        if (!currentGroupId) return;
+        const valorRaw = salaryInput.value;
+        const valor = converterValorInput(valorRaw);
+        
+        saveSalaryBtn.disabled = true;
+        saveSalaryBtn.textContent = "Salvando...";
+        
+        try {
+          await db.collection("grupos").doc(currentGroupId).collection("configuracoes").doc("geral").set({
+            salary: valor
+          }, { merge: true });
+          salaryValue = valor;
+          renderResumo(aplicarFiltros(despesasCache));
+          alert("Salário salvo com sucesso!");
+        } catch (error) {
+          console.error("Erro ao salvar salário:", error);
+          alert("Erro ao salvar salário.");
+        } finally {
+          saveSalaryBtn.disabled = false;
+          saveSalaryBtn.textContent = "Salvar Salário";
+        }
+      });
 
       const TOUR_STEPS = [
         {
@@ -2950,6 +3074,12 @@
 
         totalGeralEl.textContent = formatarMoeda(totalGeral);
         totalPagoEl.textContent = formatarMoeda(totalPago);
+        
+        if (totalSaldoEl) {
+          const saldo = salaryValue - totalGeral;
+          totalSaldoEl.textContent = formatarMoeda(saldo);
+          totalSaldoEl.style.color = saldo >= 0 ? "var(--green)" : "var(--orange)";
+        }
         totalPendenteEl.textContent = formatarMoeda(totalPendente);
         qtdPagosEl.textContent = String(qtdPagos);
         qtdPendentesEl.textContent = String(qtdPendentes);
@@ -3617,7 +3747,6 @@
         const vencimento = document.getElementById("vencimento").value.trim();
         const observacao = document.getElementById("observacao").value.trim();
         const isParcelado = document.getElementById("is-parcelado").checked;
-        const parcelaAtual = isParcelado ? Number(document.getElementById("parcela-atual").value || 0) : 0;
         const parcelaTotal = isParcelado ? Number(document.getElementById("parcela-total").value || 0) : 0;
         const categoria = definirCategoriaAutomatica(descricao);
 
@@ -3629,21 +3758,44 @@
         if (!validarParcelas(parcelaAtual, parcelaTotal)) return;
 
         try {
-          await getColDespesas().add({
-            descricao,
-            categoria,
-            valor,
-            vencimento,
-            observacao,
-            parcelaAtual: parcelaAtual || null,
-            parcelaTotal: parcelaTotal || null,
-            mesesIgnorados: [],
-            compras: [],
-            ajustesMensais: {},
-            pago: false,
-            uid: auth.currentUser.uid,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
+          if (isParcelado && parcelaTotal > 1) {
+            const batch = db.batch();
+            const baseDate = new Date(vencimento + "T12:00:00");
+            
+            for (let i = 0; i < parcelaTotal; i++) {
+              const futureDate = new Date(baseDate);
+              futureDate.setMonth(baseDate.getMonth() + i);
+              const mesRef = `${futureDate.getFullYear()}-${String(futureDate.getMonth() + 1).padStart(2, "0")}`;
+              
+              const docRef = getColDespesas().doc();
+              batch.set(docRef, {
+                descricao,
+                valor,
+                vencimento: futureDate.toISOString().split("T")[0],
+                mesReferencia: mesRef,
+                observacao,
+                categoria,
+                pago: false,
+                parcelado: true,
+                parcela: `${i + 1}/${parcelaTotal}`,
+                uid: auth.currentUser.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            }
+            await batch.commit();
+          } else {
+            await getColDespesas().add({
+              descricao,
+              categoria,
+              valor,
+              vencimento,
+              mesReferencia: vencimento.substring(0, 7),
+              observacao,
+              pago: false,
+              uid: auth.currentUser.uid,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }
 
           form.reset();
           document.getElementById("is-parcelado").checked = false;
@@ -4558,6 +4710,14 @@
 
           currentGroupId = await getOrCreateUserGroup(user);
 
+          db.collection("grupos").doc(currentGroupId).collection("configuracoes").doc("geral").get().then(doc => {
+            if (doc.exists && doc.data().salary !== undefined) {
+              salaryValue = doc.data().salary;
+              if (salaryInput) salaryInput.value = formatarMoeda(salaryValue).replace("R$ ", "");
+              renderResumo(aplicarFiltros(despesasCache));
+            }
+          });
+
           // LIBERA A TELA AQUI: Usuário validado e grupo identificado
           mostrarApp(true);
           if (splashScreen) splashScreen.classList.add("fade-out");
@@ -4702,6 +4862,22 @@
         }
       }, 8000);
     })();
+
+    // Cálculo automático de parcelas
+    function atualizarCalculoParcela() {
+      const totalRaw = document.getElementById("valor-total-calculo")?.value;
+      const total = converterValorInput(totalRaw || "");
+      const qtd = parseInt(document.getElementById("parcela-total")?.value || "0");
+      
+      if (total > 0 && qtd > 0) {
+        const vParcela = total / qtd;
+        const valorEl = document.getElementById("valor");
+        if (valorEl) valorEl.value = vParcela.toFixed(2).replace(".", ",");
+        atualizarPreviewCategoria();
+      }
+    }
+    document.getElementById("valor-total-calculo")?.addEventListener("input", atualizarCalculoParcela);
+    document.getElementById("parcela-total")?.addEventListener("input", atualizarCalculoParcela);
 
     // Initialize Lucide icons
     lucide.createIcons();
