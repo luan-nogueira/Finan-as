@@ -576,7 +576,8 @@
   </div>
 
   <div id="news-modal" class="modal hidden">
-    <div class="modal-content" style="max-width: 450px; text-align: center;">
+    <div class="modal-content" style="max-width: 450px; text-align: center; position: relative;">
+      <button type="button" class="modal-close" style="position: absolute; right: 16px; top: 16px;" onclick="window.fecharNovidades()">&times;</button>
       <div style="font-size: 40px; margin-bottom: 16px;">🚀</div>
       <h2 style="margin-bottom: 12px;">Novas Funções Disponíveis!</h2>
       <p style="color: var(--muted); margin-bottom: 20px; font-size: 14px; line-height: 1.5;">
@@ -4791,6 +4792,7 @@
           if (!localStorage.getItem("news_v1_seen")) {
             setTimeout(() => {
               document.getElementById("news-modal")?.classList.remove("hidden");
+              localStorage.setItem("news_v1_seen", "true");
             }, 3000);
           }
 
