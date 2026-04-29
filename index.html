@@ -575,6 +575,17 @@
     </div>
   </div>
 
+  <div id="news-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 450px; text-align: center;">
+      <div style="font-size: 40px; margin-bottom: 16px;">🚀</div>
+      <h2 style="margin-bottom: 12px;">Novas Funções Disponíveis!</h2>
+      <p style="color: var(--muted); margin-bottom: 20px; font-size: 14px; line-height: 1.5;">
+        Adicionamos a <strong>Gestão de Salário</strong>, <strong>Parcelamento Automático</strong> e um <strong>Guia de Notificações</strong> para facilitar seu controle financeiro.
+      </p>
+      <button type="button" class="btn-primary" style="width: 100%;" onclick="window.fecharNovidades()">Ver Novidades</button>
+    </div>
+  </div>
+
   <div id="edit-compra-modal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -1099,6 +1110,16 @@
           icon: "users",
           title: "Divida as Contas",
           text: "No ícone de engrenagem (⚙️), você gera um link para convidar alguém para o seu grupo."
+        },
+        {
+          icon: "banknote",
+          title: "Gestão Salarial",
+          text: "Configure seu salário no painel para que o sistema calcule automaticamente o seu Saldo (quanto sobra) no final do mês."
+        },
+        {
+          icon: "bell",
+          title: "Notificações Push",
+          text: "Ative os avisos de vencimento nas configurações (⚙️) para receber alertas direto no seu celular."
         },
         {
           icon: "smartphone",
@@ -4747,6 +4768,18 @@
           mostrarApp(true);
           if (splashScreen) splashScreen.classList.add("fade-out");
           userEmail.textContent = user.email || "Usuário logado";
+
+          // Verifica se deve mostrar o modal de novidades (v1)
+          if (!localStorage.getItem("news_v1_seen")) {
+            setTimeout(() => {
+              document.getElementById("news-modal")?.classList.remove("hidden");
+            }, 3000);
+          }
+
+          window.fecharNovidades = () => {
+            localStorage.setItem("news_v1_seen", "true");
+            document.getElementById("news-modal")?.classList.add("hidden");
+          };
 
           // Lógica de Migração Inicial (Roda em background agora)
           (async () => {
