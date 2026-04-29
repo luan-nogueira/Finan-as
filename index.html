@@ -1052,10 +1052,33 @@
         lucide.createIcons();
       });
 
+      async function carregarSalarioMensal() {
+        if (!currentGroupId || !monthFilter.value) return;
+        const mes = monthFilter.value;
+        try {
+          const doc = await db.collection("grupos").doc(currentGroupId)
+            .collection("configuracoes").doc("salarios")
+            .collection("meses").doc(mes).get();
+          
+          if (doc.exists && doc.data().salary !== undefined) {
+            salaryValue = Number(doc.data().salary) || 0;
+          } else {
+            salaryValue = 0;
+          }
+          
+          const sInput = document.getElementById("salary-input");
+          if (sInput) sInput.value = salaryValue > 0 ? formatarMoeda(salaryValue).replace("R$ ", "") : "";
+          renderResumo(aplicarFiltros(despesasCache));
+        } catch (e) {
+          console.warn("Erro ao carregar salário mensal:", e);
+        }
+      }
+
       saveSalaryBtn?.addEventListener("click", async () => {
-        if (!currentGroupId) return;
+        if (!currentGroupId || !monthFilter.value) return;
         const valorRaw = salaryInput.value;
         const valor = converterValorInput(valorRaw);
+        const mes = monthFilter.value;
         
         if (Number.isNaN(valor)) {
           alert("Digite um valor de salário válido.");
@@ -1066,18 +1089,19 @@
         saveSalaryBtn.textContent = "Salvando...";
         
         try {
-          await db.collection("grupos").doc(currentGroupId).collection("configuracoes").doc("geral").set({
-            salary: valor
-          }, { merge: true });
+          await db.collection("grupos").doc(currentGroupId)
+            .collection("configuracoes").doc("salarios")
+            .collection("meses").doc(mes).set({
+              salary: valor,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
           
           salaryValue = valor;
-          // Força o campo a mostrar o valor formatado
           salaryInput.value = formatarMoeda(valor).replace("R$ ", "");
-          
           renderResumo(aplicarFiltros(despesasCache));
-          alert("Salário salvo e saldo atualizado!");
+          alert(`Salário de ${formatarMesTitulo(mes)} salvo com sucesso!`);
         } catch (error) {
-          console.error("Erro ao salvar salário:", error);
+          console.error("Erro ao salvar salário mensal:", error);
           alert("Erro ao salvar salário.");
         } finally {
           saveSalaryBtn.disabled = false;
@@ -4463,6 +4487,7 @@
 
       monthFilter.addEventListener("input", () => {
         monthTerm = monthFilter.value;
+        carregarSalarioMensal();
         renderTabelaPrincipal();
         renderIpva();
         renderGraficoMensal();
@@ -4753,16 +4778,9 @@
           }
 
           currentGroupId = await getOrCreateUserGroup(user);
+          carregarSalarioMensal();
 
-          db.collection("grupos").doc(currentGroupId).collection("configuracoes").doc("geral").get().then(doc => {
-            if (doc.exists && doc.data().salary !== undefined) {
-              salaryValue = Number(doc.data().salary) || 0;
-              const sInput = document.getElementById("salary-input");
-              if (sInput) sInput.value = formatarMoeda(salaryValue).replace("R$ ", "");
-              // Garante que o resumo rode APÓS o salário carregar
-              renderResumo(aplicarFiltros(despesasCache));
-            }
-          });
+
 
           // LIBERA A TELA AQUI: Usuário validado e grupo identificado
           mostrarApp(true);
