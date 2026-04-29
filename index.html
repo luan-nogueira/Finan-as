@@ -1032,6 +1032,11 @@
         const valorRaw = salaryInput.value;
         const valor = converterValorInput(valorRaw);
         
+        if (Number.isNaN(valor)) {
+          alert("Digite um valor de salário válido.");
+          return;
+        }
+
         saveSalaryBtn.disabled = true;
         saveSalaryBtn.textContent = "Salvando...";
         
@@ -1039,9 +1044,13 @@
           await db.collection("grupos").doc(currentGroupId).collection("configuracoes").doc("geral").set({
             salary: valor
           }, { merge: true });
+          
           salaryValue = valor;
+          // Força o campo a mostrar o valor formatado
+          salaryInput.value = formatarMoeda(valor).replace("R$ ", "");
+          
           renderResumo(aplicarFiltros(despesasCache));
-          alert("Salário salvo com sucesso!");
+          alert("Salário salvo e saldo atualizado!");
         } catch (error) {
           console.error("Erro ao salvar salário:", error);
           alert("Erro ao salvar salário.");
@@ -4712,8 +4721,10 @@
 
           db.collection("grupos").doc(currentGroupId).collection("configuracoes").doc("geral").get().then(doc => {
             if (doc.exists && doc.data().salary !== undefined) {
-              salaryValue = doc.data().salary;
-              if (salaryInput) salaryInput.value = formatarMoeda(salaryValue).replace("R$ ", "");
+              salaryValue = Number(doc.data().salary) || 0;
+              const sInput = document.getElementById("salary-input");
+              if (sInput) sInput.value = formatarMoeda(salaryValue).replace("R$ ", "");
+              // Garante que o resumo rode APÓS o salário carregar
               renderResumo(aplicarFiltros(despesasCache));
             }
           });
