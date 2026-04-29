@@ -258,7 +258,10 @@
           <div class="form-grid">
             <div class="field">
               <label for="salary-input">Valor do Salário (R$)</label>
-              <input type="text" id="salary-input" placeholder="Ex: 5.000,00" inputmode="numeric" />
+              <div style="position: relative; display: flex; align-items: center;">
+                <span style="position: absolute; left: 12px; color: var(--muted); font-size: 14px;">R$</span>
+                <input type="text" id="salary-input" placeholder="0,00" inputmode="numeric" style="padding-left: 35px;" />
+              </div>
             </div>
             <div class="field" style="display: flex; align-items: flex-end;">
               <button id="save-salary-btn" class="btn-primary" style="width: 100%;">Salvar Salário</button>
@@ -1004,6 +1007,17 @@
       
       const totalSaldoEl = document.getElementById("total-saldo");
       const salaryInput = document.getElementById("salary-input");
+      
+      salaryInput?.addEventListener("input", (e) => {
+        let value = e.target.value.replace(/\D/g, "");
+        value = (Number(value) / 100).toFixed(2).replace(".", ",");
+        value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        e.target.value = value;
+      });
+
+      salaryInput?.addEventListener("focus", (e) => {
+        if (e.target.value === "0,00") e.target.value = "";
+      });
       const saveSalaryBtn = document.getElementById("save-salary-btn");
       const salaryPanelWrapper = document.getElementById("salary-panel-wrapper");
       const toggleSalaryPanelBtn = document.getElementById("toggle-salary-panel");
