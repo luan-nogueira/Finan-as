@@ -208,12 +208,12 @@
 
             <div class="field">
               <label for="valor">Valor</label>
-              <input type="text" id="valor" placeholder="0,00" inputmode="numeric" />
+              <input type="text" id="valor" placeholder="0,00" inputmode="numeric" required />
             </div>
 
             <div class="field">
               <label for="vencimento">Vencimento</label>
-              <input type="date" id="vencimento" />
+              <input type="date" id="vencimento" required />
             </div>
 
             <div class="field full" style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; margin-top: 4px; margin-bottom: 4px;">
@@ -3808,25 +3808,55 @@
       }
 
       async function salvarDespesa(e) {
-        e.preventDefault();
-
-        const descricao = document.getElementById("descricao").value.trim();
-        const valorDigitado = document.getElementById("valor").value;
-        const valor = converterValorInput(valorDigitado);
-        const vencimento = document.getElementById("vencimento").value.trim();
-        const observacao = document.getElementById("observacao").value.trim();
-        const isParcelado = document.getElementById("is-parcelado").checked;
-        const parcelaTotal = isParcelado ? Number(document.getElementById("parcela-total").value || 0) : 0;
-        const categoria = definirCategoriaAutomatica(descricao);
-
-        if (!auth.currentUser) return;
-        if (Number.isNaN(valor)) {
-          alert("Digite um valor válido.");
-          return;
-        }
-        if (!validarParcelas(parcelaAtual, parcelaTotal)) return;
+        if (e) e.preventDefault();
+        console.log("Iniciando salvamento de despesa...");
 
         try {
+          const descricaoEl = document.getElementById("descricao");
+          const valorEl = document.getElementById("valor");
+          const vencimentoEl = document.getElementById("vencimento");
+          const observacaoEl = document.getElementById("observacao");
+          const isParceladoEl = document.getElementById("is-parcelado");
+          const parcelaTotalEl = document.getElementById("parcela-total");
+
+          const descricao = descricaoEl.value.trim();
+          const valorDigitado = valorEl.value;
+          const valor = converterValorInput(valorDigitado);
+          const vencimento = vencimentoEl.value.trim();
+          const observacao = observacaoEl.value.trim();
+          const isParcelado = isParceladoEl.checked;
+          const parcelaTotal = isParcelado ? Number(parcelaTotalEl.value || 0) : 0;
+          const categoria = definirCategoriaAutomatica(descricao);
+
+          if (!auth.currentUser) {
+            alert("Erro: Você precisa estar logado para salvar uma despesa.");
+            return;
+          }
+
+          if (!currentGroupId) {
+            console.warn("Aviso: currentGroupId não definido. Salvando na área pública...");
+          }
+
+          if (valor === null || Number.isNaN(valor)) {
+            alert("Por favor, digite um valor válido.");
+            return;
+          }
+
+          if (!descricao) {
+            alert("Por favor, digite uma descrição.");
+            return;
+          }
+
+          if (!vencimento) {
+            alert("Por favor, selecione uma data de vencimento.");
+            return;
+          }
+
+          const pAtual = isParcelado ? 1 : 0;
+          if (!validarParcelas(pAtual, parcelaTotal)) return;
+
+          console.log("Dados validados. Salvando no Firestore...", { descricao, valor, vencimento, currentGroupId });
+
           if (isParcelado && parcelaTotal > 1) {
             const batch = db.batch();
             const baseDate = new Date(vencimento + "T12:00:00");
@@ -3846,12 +3876,14 @@
                 categoria,
                 pago: false,
                 parcelado: true,
-                parcela: `${i + 1}/${parcelaTotal}`,
+                parcelaAtual: i + 1,
+                parcelaTotal: parcelaTotal,
                 uid: auth.currentUser.uid,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
               });
             }
             await batch.commit();
+            console.log("Batch de parcelas salvo com sucesso.");
           } else {
             await getColDespesas().add({
               descricao,
@@ -3864,18 +3896,23 @@
               uid: auth.currentUser.uid,
               createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+            console.log("Despesa única salva com sucesso.");
           }
 
-          form.reset();
-          document.getElementById("is-parcelado").checked = false;
+          // Limpa o formulário e fecha
+          if (form) form.reset();
+          isParceladoEl.checked = false;
           document.getElementById("parcelas-container").style.display = "none";
-          categoriaPreview.value = "Será definida automaticamente";
-          tipoPreview.value = "Será definido automaticamente";
+          if (categoriaPreview) categoriaPreview.value = "Será definida automaticamente";
+          if (tipoPreview) tipoPreview.value = "Será definido automaticamente";
+          
           expenseFormWrapper.classList.add("hidden");
           toggleExpenseFormBtn.setAttribute("aria-expanded", "false");
           expenseToggleIcon.textContent = "▼";
+
         } catch (error) {
-          alert("Erro ao salvar despesa: " + error.message);
+          console.error("Erro detalhado ao salvar despesa:", error);
+          alert("Erro ao salvar despesa: " + (error.message || error.code || error));
         }
       }
 
