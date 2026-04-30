@@ -762,7 +762,7 @@
         </button>
       </div>
 
-      <div class="table-wrap" style="max-height: 450px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+      <div class="table-wrap" style="max-height: 450px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border); border-radius: 12px;">
         <table style="width: 100%; text-align: left; border-collapse: collapse; background: var(--bg);">
           <thead style="background: var(--surface);">
             <tr style="border-bottom: 1px solid var(--border); color: var(--muted); font-size: 13px;">
@@ -776,6 +776,40 @@
             <tr><td colspan="4" style="padding: 24px; text-align: center; color: var(--muted);">Buscando usuários...</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Notificação Customizado -->
+  <div id="admin-notify-modal" class="modal hidden" style="z-index: 10000;">
+    <div class="modal-content" style="max-width: 500px; padding: 24px;">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 16px;">
+        <h2 style="margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="bell" style="color: var(--primary); width: 20px; height: 20px;"></i> Enviar Notificação
+        </h2>
+        <button type="button" class="modal-close" id="close-admin-notify-modal">&times;</button>
+      </div>
+
+      <div class="field">
+        <label for="admin-notify-message">Mensagem da notificação</label>
+        <textarea id="admin-notify-message" rows="3" placeholder="Ex: Aviso importante: O sistema entrará em manutenção." style="resize: vertical;"></textarea>
+      </div>
+
+      <div class="field" style="margin-top: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="margin: 0;">Selecione os usuários</label>
+          <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="admin-notify-select-all" checked> Marcar todos
+          </label>
+        </div>
+        <div id="admin-notify-user-list" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 8px; background: var(--surface);">
+          <!-- Preenchido via JS -->
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="button" class="btn-light" id="cancel-admin-notify" style="flex: 1;">Cancelar</button>
+        <button type="button" class="btn-primary" id="confirm-admin-notify" style="flex: 1; background: var(--primary); color: white;">Enviar</button>
       </div>
     </div>
   </div>
@@ -937,6 +971,14 @@
       const adminModal = document.getElementById("admin-modal");
       const adminUserList = document.getElementById("admin-user-list");
       const closeAdminModal = document.getElementById("close-admin-modal");
+      
+      const adminNotifyModal = document.getElementById("admin-notify-modal");
+      const closeAdminNotifyModal = document.getElementById("close-admin-notify-modal");
+      const cancelAdminNotify = document.getElementById("cancel-admin-notify");
+      const confirmAdminNotify = document.getElementById("confirm-admin-notify");
+      const adminNotifyUserList = document.getElementById("admin-notify-user-list");
+      const adminNotifySelectAll = document.getElementById("admin-notify-select-all");
+
       const billingModal = document.getElementById("billing-modal");
       const billingNoticeText = document.getElementById("billing-notice-text");
       const closeBillingModal = document.getElementById("close-billing-modal");
@@ -2034,15 +2076,19 @@
         await getColDespesas().doc(cardId).update({ ajustesMensais });
       }
 
+      let adminUsersCache = [];
+
       async function renderAdminUserList() {
         adminUserList.innerHTML = '<tr><td colspan="4" style="padding: 24px; text-align: center; color: var(--muted);">Buscando todos os usuários...</td></tr>';
         try {
           const snapshot = await db.collection("users").get();
           if (snapshot.empty) {
+            adminUsersCache = [];
             adminUserList.innerHTML = '<tr><td colspan="4" style="padding: 24px; text-align: center;">Nenhum usuário encontrado.</td></tr>';
             return;
           }
 
+          adminUsersCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           let html = "";
           snapshot.docs.forEach(doc => {
             const u = doc.data();
@@ -2109,16 +2155,59 @@
         }
       };
 
-      window.adminGlobalNotify = async () => {
-        const msg = prompt("🔔 Digite a mensagem de Notificação Geral para enviar a TODOS os usuários (Simulação):");
-        if (!msg) return;
-        
+      window.adminGlobalNotify = () => {
+        if (adminUsersCache.length === 0) {
+          alert("Nenhum usuário carregado.");
+          return;
+        }
+
+        adminNotifyUserList.innerHTML = "";
+        adminUsersCache.forEach(u => {
+          if(u.status === "blocked") return; // Apenas usuários ativos
+          adminNotifyUserList.innerHTML += `
+            <label style="display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 6px; cursor: pointer; background: var(--bg);">
+              <input type="checkbox" class="admin-notify-checkbox" value="${u.id}" checked>
+              <span style="font-size: 13px;">${escapeHtml(u.email || "Sem e-mail")}</span>
+            </label>
+          `;
+        });
+
+        document.getElementById("admin-notify-message").value = "";
+        adminNotifySelectAll.checked = true;
+        adminNotifyModal.classList.remove("hidden");
+        if(window.lucide) window.lucide.createIcons();
+      };
+
+      adminNotifySelectAll.addEventListener("change", (e) => {
+        const checkboxes = document.querySelectorAll(".admin-notify-checkbox");
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+      });
+
+      closeAdminNotifyModal.addEventListener("click", () => adminNotifyModal.classList.add("hidden"));
+      cancelAdminNotify.addEventListener("click", () => adminNotifyModal.classList.add("hidden"));
+
+      confirmAdminNotify.addEventListener("click", async () => {
+        const msg = document.getElementById("admin-notify-message").value.trim();
+        if (!msg) {
+          alert("Por favor, digite a mensagem da notificação.");
+          return;
+        }
+
+        const checkboxes = document.querySelectorAll(".admin-notify-checkbox:checked");
+        const selectedUsers = Array.from(checkboxes).map(cb => cb.value);
+
+        if (selectedUsers.length === 0) {
+          alert("Por favor, selecione pelo menos um usuário.");
+          return;
+        }
+
         try {
-          alert(`✅ Notificação Simulada Enviada com Sucesso!\n\nMensagem: "${msg}"\nTodos os usuários ativos foram alertados.`);
+          alert(`✅ Notificação Simulada Enviada com Sucesso!\n\nMensagem: "${msg}"\nEnviado para ${selectedUsers.length} usuários selecionados.`);
+          adminNotifyModal.classList.add("hidden");
         } catch(e) {
           alert("Erro: " + e.message);
         }
-      };
+      });
 
       window.adminStopAllBilling = async () => {
         if(!confirm("⚠️ Tem certeza que deseja cancelar TODAS as cobranças ativas? Nenhum usuário verá mais o aviso de vencimento.")) return;
