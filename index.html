@@ -739,14 +739,43 @@
   </div>
 
   <div id="admin-modal" class="modal hidden">
-    <div class="modal-content" style="max-width: 600px;">
-      <div class="modal-header">
-        <h2>🛡️ Gestão de Usuários</h2>
+    <div class="modal-content" style="max-width: 850px; padding: 24px;">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; background: var(--primary-soft); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="shield" style="width: 24px; height: 24px;"></i>
+          </div>
+          <div>
+            <h2 style="margin: 0; font-size: 20px;">Gestão de Usuários</h2>
+            <p style="font-size: 13px; color: var(--muted); margin: 2px 0 0 0;">Painel administrativo central.</p>
+          </div>
+        </div>
         <button type="button" class="modal-close" id="close-admin-modal">&times;</button>
       </div>
-      <div id="admin-user-list"
-        style="max-height: 400px; overflow-y: auto; margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
-        <p style="color: var(--muted);">Carregando usuários...</p>
+
+      <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+        <button type="button" class="btn-primary" onclick="window.adminGlobalNotify()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 200px; padding: 12px;">
+          <i data-lucide="bell-ring" style="width: 18px; height: 18px;"></i> Enviar Notificação Global
+        </button>
+        <button type="button" class="btn-light" onclick="window.adminStopAllBilling()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 200px; padding: 12px; color: #dc2626; border: 1px solid #fca5a5; background: #fef2f2;">
+          <i data-lucide="ban" style="width: 18px; height: 18px;"></i> Parar Todas as Cobranças
+        </button>
+      </div>
+
+      <div class="table-wrap" style="max-height: 450px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+        <table style="width: 100%; text-align: left; border-collapse: collapse; background: var(--bg);">
+          <thead style="background: var(--surface);">
+            <tr style="border-bottom: 1px solid var(--border); color: var(--muted); font-size: 13px;">
+              <th style="padding: 16px; font-weight: 600;">E-mail do Usuário</th>
+              <th style="padding: 16px; font-weight: 600;">Status</th>
+              <th style="padding: 16px; font-weight: 600;">Vencimento</th>
+              <th style="padding: 16px; font-weight: 600; text-align: right;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="admin-user-list">
+            <tr><td colspan="4" style="padding: 24px; text-align: center; color: var(--muted);">Buscando usuários...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -2006,11 +2035,11 @@
       }
 
       async function renderAdminUserList() {
-        adminUserList.innerHTML = '<p style="color: var(--muted);">Buscando todos os usuários...</p>';
+        adminUserList.innerHTML = '<tr><td colspan="4" style="padding: 24px; text-align: center; color: var(--muted);">Buscando todos os usuários...</td></tr>';
         try {
           const snapshot = await db.collection("users").get();
           if (snapshot.empty) {
-            adminUserList.innerHTML = '<p>Nenhum usuário encontrado.</p>';
+            adminUserList.innerHTML = '<tr><td colspan="4" style="padding: 24px; text-align: center;">Nenhum usuário encontrado.</td></tr>';
             return;
           }
 
@@ -2030,29 +2059,34 @@
             }
 
             html += `
-          <div style="background: var(--bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <strong>${escapeHtml(u.email)}</strong>
-              <span class="status-badge ${isBlocked ? 'overdue' : 'paid'}">${isBlocked ? 'Bloqueado' : 'Ativo'}</span>
-            </div>
-            <p style="font-size: 13px; color: var(--muted);">Vencimento: <strong>${isCobrando ? escapeHtml(formattedExpireDate) : 'Sem cobrança ativa'}</strong></p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 4px;">
-              <button class="btn-light" onclick="window.adminAcao('${uid}', '${isBlocked ? 'active' : 'blocked'}')" style="font-size: 12px;">
-                ${isBlocked ? '✅ Ativar' : '🚫 Bloquear'}
-              </button>
-              <button class="btn-primary" onclick="window.adminCobranca('${uid}', '${expireDate !== 'Não definido' ? expireDate : ''}', ${isCobrando})" style="font-size: 12px; background: var(--primary-soft); color: var(--primary);">
-                💰 Cobrar
-              </button>
-              <button class="btn-delete" onclick="window.adminExcluir('${uid}')" style="font-size: 12px;">
-                🗑️ Excluir
-              </button>
-            </div>
-          </div>
+          <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;">
+            <td style="padding: 16px; font-weight: 500; color: var(--text);">${escapeHtml(u.email)}</td>
+            <td style="padding: 16px;">
+              <span class="status-badge ${isBlocked ? 'overdue' : 'paid'}" style="font-size: 11px; padding: 4px 8px;">${isBlocked ? 'Bloqueado' : 'Ativo'}</span>
+            </td>
+            <td style="padding: 16px; font-size: 13px; color: var(--muted);">
+              ${isCobrando ? `<span style="color: var(--orange); font-weight: 500;">${escapeHtml(formattedExpireDate)}</span>` : 'Sem cobrança'}
+            </td>
+            <td style="padding: 16px; text-align: right;">
+              <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn-light" onclick="window.adminAcao('${uid}', '${isBlocked ? 'active' : 'blocked'}')" style="padding: 6px 12px; font-size: 12px; min-width: 90px;" title="${isBlocked ? 'Ativar usuário' : 'Bloquear usuário'}">
+                  ${isBlocked ? '✅ Ativar' : '🚫 Bloquear'}
+                </button>
+                <button type="button" class="btn-primary" onclick="window.adminCobranca('${uid}', '${expireDate !== 'Não definido' ? expireDate : ''}', ${isCobrando})" style="padding: 6px 12px; font-size: 12px; background: var(--primary-soft); color: var(--primary); min-width: 90px;" title="Gerenciar cobrança">
+                  💰 Cobrar
+                </button>
+                <button type="button" class="btn-delete" onclick="window.adminExcluir('${uid}')" style="padding: 6px 10px; display: flex; align-items: center; justify-content: center;" title="Excluir usuário">
+                  <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
         `;
           });
           adminUserList.innerHTML = html;
+          setTimeout(() => { if(window.lucide) window.lucide.createIcons(); }, 50);
         } catch (e) {
-          adminUserList.innerHTML = `<p style="color: var(--red);">Erro: ${e.message}</p>`;
+          adminUserList.innerHTML = `<tr><td colspan="4" style="padding: 24px; text-align: center; color: var(--red);">Erro: ${e.message}</td></tr>`;
         }
       }
 
@@ -2072,6 +2106,38 @@
           renderAdminUserList();
         } catch (e) {
           alert("Erro ao excluir usuário: " + e.message);
+        }
+      };
+
+      window.adminGlobalNotify = async () => {
+        const msg = prompt("🔔 Digite a mensagem de Notificação Geral para enviar a TODOS os usuários (Simulação):");
+        if (!msg) return;
+        
+        try {
+          alert(`✅ Notificação Simulada Enviada com Sucesso!\n\nMensagem: "${msg}"\nTodos os usuários ativos foram alertados.`);
+        } catch(e) {
+          alert("Erro: " + e.message);
+        }
+      };
+
+      window.adminStopAllBilling = async () => {
+        if(!confirm("⚠️ Tem certeza que deseja cancelar TODAS as cobranças ativas? Nenhum usuário verá mais o aviso de vencimento.")) return;
+        
+        try {
+          const snapshot = await db.collection("users").where("isCobrando", "==", true).get();
+          if (snapshot.empty) {
+            alert("Nenhum usuário está sendo cobrado no momento.");
+            return;
+          }
+          const batch = db.batch();
+          snapshot.docs.forEach(doc => {
+            batch.update(doc.ref, { isCobrando: false, showBillingNotice: false });
+          });
+          await batch.commit();
+          alert(`✅ Cobranças interrompidas com sucesso para ${snapshot.size} usuários.`);
+          renderAdminUserList();
+        } catch(e) {
+          alert("Erro ao parar cobranças: " + e.message);
         }
       };
 
