@@ -5026,6 +5026,21 @@
                 }
                 msgText.textContent = uData.pendingNotice;
                 msgModal.classList.remove("hidden");
+
+                // Efeito Estilo WhatsApp (Vibração e Notificação de Sistema)
+                if ("vibrate" in navigator) {
+                  navigator.vibrate([200, 100, 200]); // Vibração dupla estilo mensagem
+                }
+
+                if (window.Notification && Notification.permission === "granted") {
+                  try {
+                    new Notification(config.title, {
+                      body: uData.pendingNotice,
+                      icon: "logo.jpg",
+                      silent: false
+                    });
+                  } catch (e) { console.warn("Erro ao disparar notificação nativa", e); }
+                }
                 
                 userDocRef.update({ 
                   pendingNotice: firebase.firestore.FieldValue.delete(),
