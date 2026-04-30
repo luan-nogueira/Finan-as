@@ -167,35 +167,17 @@
           <form id="expense-form" class="form-grid">
             <div class="field">
               <label for="descricao">Descrição</label>
-              <input list="gastos-list" type="text" id="descricao" placeholder="Ex: Supermercado, Aluguel, Internet" required />
-              <datalist id="gastos-list">
-                <option value="Aluguel"></option>
-                <option value="Condomínio"></option>
-                <option value="Internet"></option>
-                <option value="Energia Elétrica"></option>
-                <option value="Gás Residencial"></option>
-                <option value="Manutenção Veicular"></option>
-                <option value="Supermercado"></option>
-                <option value="Cartão de Crédito"></option>
-                <option value="Empréstimo"></option>
-                <option value="Financiamento"></option>
-                <option value="Assinaturas e Serviços"></option>
-                <option value="Educação / Faculdade"></option>
-                <option value="Saúde / Farmácia"></option>
-                <option value="Lazer / Alimentação"></option>
-                <option value="Investimentos"></option>
-                <option value="Reserva de Emergência"></option>
-              </datalist>
+              <input type="text" id="descricao" placeholder="Ex: Supermercado, Aluguel, Internet" required />
             </div>
 
             <div class="field">
-              <label for="categoria-preview">Categoria principal</label>
-              <input type="text" id="categoria-preview" value="Será definida automaticamente" readonly />
-            </div>
-
-            <div class="field">
-              <label for="tipo-preview">Grupo na tabela</label>
-              <input type="text" id="tipo-preview" value="Será definido automaticamente" readonly />
+              <label for="categoria">Categoria principal</label>
+              <select id="categoria" required>
+                <option value="Gastos comuns">Gastos comuns</option>
+                <option value="Gastos fixos">Gastos fixos (Mantém o valor)</option>
+                <option value="Gastos fixos variáveis">Gastos fixos variáveis (Zera no mês seguinte)</option>
+                <option value="Cartões">Cartões</option>
+              </select>
             </div>
 
             <div class="field">
@@ -459,13 +441,14 @@
 
         <div class="field">
           <label for="edit-descricao">Descrição</label>
-          <input list="gastos-list" type="text" id="edit-descricao" required />
+          <input type="text" id="edit-descricao" required />
         </div>
 
         <div class="field">
           <label for="edit-categoria">Categoria principal</label>
           <select id="edit-categoria" required>
             <option value="Gastos fixos">Gastos fixos</option>
+            <option value="Gastos fixos variáveis">Gastos fixos variáveis</option>
             <option value="Cartões">Cartões</option>
             <option value="Gastos comuns">Gastos comuns</option>
           </select>
@@ -898,8 +881,6 @@
       const monthFilter = document.getElementById("month-filter");
       const searchInput = document.getElementById("search-input");
       const monthHeader = document.getElementById("month-header");
-      const categoriaPreview = document.getElementById("categoria-preview");
-      const tipoPreview = document.getElementById("tipo-preview");
 
       const mainTableBody = document.getElementById("main-table-body");
       const ipvaTableBody = document.getElementById("ipva-table-body");
@@ -1414,6 +1395,7 @@
       }
 
       const CATEGORIA_FIXA = "Gastos fixos";
+      const CATEGORIA_FIXA_VARIAVEL = "Gastos fixos variáveis";
       const CATEGORIA_CARTOES = "Cartões";
       const CATEGORIA_COMUM = "Gastos comuns";
 
@@ -1530,23 +1512,23 @@
 
       function getGrupoVisual(item) {
         const categoria = item.categoria || definirCategoriaAutomatica(item.descricao);
-        if (categoria === CATEGORIA_FIXA) return "Fixos";
+        if (categoria === CATEGORIA_FIXA || categoria === CATEGORIA_FIXA_VARIAVEL) return "Fixos";
         if (categoria === CATEGORIA_CARTOES) return "Cartões";
         return "Outros";
       }
 
       function atualizarPreviewCategoria() {
         const descricao = document.getElementById("descricao").value.trim();
+        const categoriaEl = document.getElementById("categoria");
+        if (!categoriaEl) return;
+        
         if (!descricao) {
-          categoriaPreview.value = "Será definida automaticamente";
-          tipoPreview.value = "Será definido automaticamente";
+          categoriaEl.value = "Gastos comuns";
           return;
         }
 
         const categoria = definirCategoriaAutomatica(descricao);
-        const grupo = getGrupoVisual({ descricao, categoria });
-        categoriaPreview.value = categoria;
-        tipoPreview.value = grupo;
+        categoriaEl.value = categoria;
       }
 
       function mostrarApp(logado) {
@@ -2300,7 +2282,13 @@
       }
 
       function isGastoFixo(item) {
-        return (item.categoria || definirCategoriaAutomatica(item.descricao)) === CATEGORIA_FIXA;
+        const cat = item.categoria || definirCategoriaAutomatica(item.descricao);
+        return cat === CATEGORIA_FIXA || cat === CATEGORIA_FIXA_VARIAVEL;
+      }
+
+      function isFixoVariavel(item) {
+        const cat = item.categoria || definirCategoriaAutomatica(item.descricao);
+        return cat === CATEGORIA_FIXA_VARIAVEL;
       }
 
       function isCartao(item) {
@@ -2312,12 +2300,15 @@
       }
 
       function criarInstanciaMes(item, yyyyMm, recorrenteMesFuturo = false) {
+        const isZerado = recorrenteMesFuturo && isFixoVariavel(item);
         const instancia = {
           ...item,
           origemId: item.id,
           mesReferencia: yyyyMm,
           vencimento: item.vencimento ? ajustarDataParaMes(item.vencimento, yyyyMm) : "",
           recorrenteMesFuturo,
+          recorrenteZerado: isZerado,
+          valor: isZerado ? 0 : item.valor,
           pago: recorrenteMesFuturo ? false : Boolean(item.pago),
           compras: getComprasBasePorMes(item, yyyyMm)
         };
@@ -2381,11 +2372,14 @@
 
             if (!item.vencimento) {
               if (isGastoFixo(item)) {
+                const isZerado = isFixoVariavel(item);
                 resultado.push(aplicarAjusteMensalNaInstancia({
                   ...item,
                   origemId: item.id,
                   mesReferencia: monthTerm,
                   recorrenteMesFuturo: true,
+                  recorrenteZerado: isZerado,
+                  valor: isZerado ? 0 : item.valor,
                   pago: false,
                   compras: getComprasBasePorMes(item, monthTerm)
                 }));
@@ -2518,8 +2512,8 @@
                     origemId: item.id,
                     mesReferencia: yyyyMm,
                     recorrenteMesFuturo: true,
-                    recorrenteZerado: isCartao(item),
-                    valor: isCartao(item) ? 0 : item.valor,
+                    recorrenteZerado: isCartao(item) || isFixoVariavel(item),
+                    valor: (isCartao(item) || isFixoVariavel(item)) ? 0 : item.valor,
                     pago: false,
                     vencimento: "",
                     compras: getComprasBasePorMes(item, yyyyMm)
@@ -3818,7 +3812,7 @@
           const observacao = observacaoEl.value.trim();
           const isParcelado = isParceladoEl.checked;
           const parcelaTotal = isParcelado ? Number(parcelaTotalEl.value || 0) : 0;
-          const categoria = definirCategoriaAutomatica(descricao);
+          const categoria = document.getElementById("categoria").value;
 
           if (!auth.currentUser) {
             alert("Erro: Você precisa estar logado para salvar uma despesa.");
@@ -3895,8 +3889,8 @@
           if (form) form.reset();
           isParceladoEl.checked = false;
           document.getElementById("parcelas-container").style.display = "none";
-          if (categoriaPreview) categoriaPreview.value = "Será definida automaticamente";
-          if (tipoPreview) tipoPreview.value = "Será definido automaticamente";
+          const catEl = document.getElementById("categoria");
+          if (catEl) catEl.value = "Gastos comuns";
           
           expenseFormWrapper.classList.add("hidden");
           toggleExpenseFormBtn.setAttribute("aria-expanded", "false");
