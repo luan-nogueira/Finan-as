@@ -167,32 +167,24 @@
           <form id="expense-form" class="form-grid">
             <div class="field">
               <label for="descricao">Descrição</label>
-              <input list="gastos-list" type="text" id="descricao" placeholder="Ex: Condomínio" required />
+              <input list="gastos-list" type="text" id="descricao" placeholder="Ex: Supermercado, Aluguel, Internet" required />
               <datalist id="gastos-list">
+                <option value="Aluguel"></option>
                 <option value="Condomínio"></option>
                 <option value="Internet"></option>
-                <option value="Luz"></option>
-                <option value="Gás"></option>
-                <option value="Carro"></option>
-                <option value="Cartão mercado pago"></option>
-                <option value="Mercado pago"></option>
-                <option value="Riachuelo"></option>
-                <option value="Cartão Carrefour"></option>
-                <option value="Cartão Renner"></option>
-                <option value="C&A"></option>
-                <option value="Cartão Nubank"></option>
-                <option value="Cartão Santander"></option>
-                <option value="Cartão BB"></option>
-                <option value="Vivo"></option>
-                <option value="Claro"></option>
-                <option value="Cartão preto"></option>
-                <option value="Cartão inter"></option>
-                <option value="Reneg. Itaú"></option>
-                <option value="Reneg. Casas Bahia"></option>
-                <option value="Faculdade"></option>
-                <option value="Coren"></option>
-                <option value="Cartão caixa"></option>
-                <option value="Personal"></option>
+                <option value="Energia Elétrica"></option>
+                <option value="Gás Residencial"></option>
+                <option value="Manutenção Veicular"></option>
+                <option value="Supermercado"></option>
+                <option value="Cartão de Crédito"></option>
+                <option value="Empréstimo"></option>
+                <option value="Financiamento"></option>
+                <option value="Assinaturas e Serviços"></option>
+                <option value="Educação / Faculdade"></option>
+                <option value="Saúde / Farmácia"></option>
+                <option value="Lazer / Alimentação"></option>
+                <option value="Investimentos"></option>
+                <option value="Reserva de Emergência"></option>
               </datalist>
             </div>
 
@@ -234,7 +226,7 @@
 
             <div class="field full">
               <label for="observacao">Observação</label>
-              <input type="text" id="observacao" placeholder="Ex: 300$ mãe / Parcela 12/48" />
+              <input type="text" id="observacao" placeholder="Ex: Detalhes da despesa ou Parcela (ex: 02/10)" />
             </div>
 
             <div class="full">
@@ -393,7 +385,7 @@
 
           <div class="field">
             <label for="search-input">Buscar</label>
-            <input type="text" id="search-input" placeholder="Ex: condomínio, mercado pago, cartão" />
+            <input type="text" id="search-input" placeholder="Ex: Supermercado, Aluguel, Cartão..." />
           </div>
         </div>
 
@@ -507,7 +499,7 @@
 
         <div class="field full">
           <label for="edit-observacao">Observação</label>
-          <input type="text" id="edit-observacao" />
+          <input type="text" id="edit-observacao" placeholder="Ex: Detalhes da despesa ou Parcela (ex: 02/10)" />
         </div>
 
         <div class="modal-actions full">
@@ -3587,7 +3579,7 @@
         <form class="compra-form form-add-compra" data-card-id="${cardId}" data-mes="${mesReferencia}">
           <div class="field">
             <label>Nome da compra</label>
-            <input type="text" name="nome" placeholder="Ex: Mercado, farmácia, lanche" required />
+            <input type="text" name="nome" placeholder="Ex: Supermercado, Farmácia, Alimentação" required />
           </div>
 
           <div class="field">
