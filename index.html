@@ -564,10 +564,23 @@
 
   <div id="admin-message-modal" class="modal hidden" style="z-index: 12000;">
     <div class="modal-content" style="max-width: 450px; text-align: center; position: relative;">
-      <div style="font-size: 40px; margin-bottom: 16px;">🔔</div>
-      <h2 style="margin-bottom: 12px;">Aviso Importante</h2>
+      <div id="admin-message-icon" style="font-size: 40px; margin-bottom: 16px;">🔔</div>
+      <h2 id="admin-message-title" style="margin-bottom: 12px;">Aviso Importante</h2>
       <p id="admin-message-text" style="color: var(--text); margin-bottom: 24px; font-size: 15px; line-height: 1.5;"></p>
       <button type="button" class="btn-primary" style="width: 100%;" id="close-admin-message">Entendido</button>
+    </div>
+  </div>
+
+  <!-- Modal de Resumo Diário (Assistente Financeiro) -->
+  <div id="daily-digest-modal" class="modal hidden" style="z-index: 12000;">
+    <div class="modal-content" style="max-width: 450px; text-align: center;">
+      <div style="font-size: 40px; margin-bottom: 16px;">💰</div>
+      <h2 style="margin-bottom: 8px;">Resumo do Dia</h2>
+      <p style="color: var(--muted); font-size: 14px; margin-bottom: 20px;">Confira como estão suas finanças hoje.</p>
+      <div id="daily-digest-content" style="text-align: left; background: var(--surface); padding: 16px; border-radius: 12px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <!-- Preenchido via JS -->
+      </div>
+      <button type="button" class="btn-primary" style="width: 100%;" onclick="document.getElementById('daily-digest-modal').classList.add('hidden')">Obrigado pelo resumo!</button>
     </div>
   </div>
 
@@ -802,6 +815,16 @@
       <div class="field">
         <label for="admin-notify-message">Mensagem da notificação</label>
         <textarea id="admin-notify-message" rows="3" placeholder="Ex: Aviso importante: O sistema entrará em manutenção." style="resize: vertical;"></textarea>
+      </div>
+
+      <div class="field" style="margin-top: 12px;">
+        <label for="admin-notify-urgency">Nível de Urgência</label>
+        <select id="admin-notify-urgency" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+          <option value="info">🔵 Informativo (Azul)</option>
+          <option value="warning">🟠 Alerta (Laranja)</option>
+          <option value="danger">🔴 Urgente (Vermelho)</option>
+          <option value="success">🟢 Sucesso (Verde)</option>
+        </select>
       </div>
 
       <div class="field" style="margin-top: 16px;">
@@ -1397,8 +1420,6 @@
       }
 
       function verificarAlertasVencimento(despesas) {
-        if (!window.Notification || Notification.permission !== "granted") return;
-
         const hoje = getTodayISO();
         
         // Data limite para "a vencer" (próximos 3 dias)
@@ -1416,62 +1437,68 @@
           return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
         }
 
-      despesas.forEach(d => {
-        if (d.pago || !d.vencimento) return;
-        
-        if (d.vencimento < hoje) {
-          // Só notifica contas que venceram nos últimos 7 dias para não ficar enviando spam de contas velhas
-          const diasVencida = Math.abs(calcularDiffDias(hoje, d.vencimento));
-          if (diasVencida <= 7) {
-            vencidas.push(d);
+        despesas.forEach(d => {
+          if (d.pago || !d.vencimento) return;
+          
+          if (d.vencimento < hoje) {
+            const diasVencida = Math.abs(calcularDiffDias(hoje, d.vencimento));
+            if (diasVencida <= 7) vencidas.push(d);
+          } else if (d.vencimento === hoje) {
+            vencendoHoje.push(d);
+          } else if (d.vencimento <= limiteVencer) {
+            aVencer.push(d);
           }
-        } else if (d.vencimento === hoje) {
-          vencendoHoje.push(d);
-        } else if (d.vencimento <= limiteVencer) {
-          aVencer.push(d);
+        });
+
+        if (vencidas.length === 0 && vencendoHoje.length === 0 && aVencer.length === 0) return;
+
+        // Avisar apenas 1 VEZ POR DIA
+        const ultimaNotificacao = localStorage.getItem("last_daily_digest");
+        if (ultimaNotificacao === hoje) return;
+
+        const digestModal = document.getElementById("daily-digest-modal");
+        const digestContent = document.getElementById("daily-digest-content");
+        
+        if (digestModal && digestContent) {
+          let html = "";
+          
+          if (vencidas.length > 0) {
+            html += `
+              <div style="border-left: 4px solid var(--red); padding-left: 12px;">
+                <strong style="color: var(--red); font-size: 13px; display: block; margin-bottom: 4px;">🚨 CONTAS VENCIDAS (${vencidas.length})</strong>
+                <ul style="margin: 0; padding: 0 0 0 16px; font-size: 13px; color: var(--text);">
+                  ${vencidas.map(d => `<li>${escapeHtml(d.descricao)} (${formatarMoeda(getValorPrincipalItem(d))})</li>`).join("")}
+                </ul>
+              </div>
+            `;
+          }
+
+          if (vencendoHoje.length > 0) {
+            html += `
+              <div style="border-left: 4px solid var(--orange); padding-left: 12px;">
+                <strong style="color: var(--orange); font-size: 13px; display: block; margin-bottom: 4px;">⚠️ VENCENDO HOJE (${vencendoHoje.length})</strong>
+                <ul style="margin: 0; padding: 0 0 0 16px; font-size: 13px; color: var(--text);">
+                  ${vencendoHoje.map(d => `<li>${escapeHtml(d.descricao)} (${formatarMoeda(getValorPrincipalItem(d))})</li>`).join("")}
+                </ul>
+              </div>
+            `;
+          }
+
+          if (aVencer.length > 0) {
+            html += `
+              <div style="border-left: 4px solid var(--primary); padding-left: 12px;">
+                <strong style="color: var(--primary); font-size: 13px; display: block; margin-bottom: 4px;">📅 PRÓXIMOS DIAS (${aVencer.length})</strong>
+                <p style="margin: 0; font-size: 13px; color: var(--muted);">Você tem contas para pagar em breve. Fique atento!</p>
+              </div>
+            `;
+          }
+
+          digestContent.innerHTML = html;
+          setTimeout(() => {
+            digestModal.classList.remove("hidden");
+            localStorage.setItem("last_daily_digest", hoje);
+          }, 3500); // Mostra um pouco depois que o app carrega
         }
-      });
-
-      if (vencidas.length === 0 && vencendoHoje.length === 0 && aVencer.length === 0) return;
-
-      // Usar localStorage para avisar apenas 1 VEZ POR DIA, não importa quantas vezes abra o app
-      const ultimaNotificacao = localStorage.getItem("last_vencimento_alert");
-      if (ultimaNotificacao === hoje) return;
-
-        if (vencidas.length > 0) {
-          const bodyLines = vencidas.map(d => {
-            const dias = Math.abs(calcularDiffDias(hoje, d.vencimento));
-            return `${d.descricao} venceu há ${dias} dia(s)`;
-          }).join('\n');
-          new Notification("🚨 Contas Vencidas!", {
-            body: bodyLines,
-            icon: "logo.jpg",
-            tag: "alerta-vencidas"
-          });
-        }
-
-        if (vencendoHoje.length > 0) {
-          const bodyLines = vencendoHoje.map(d => `${d.descricao} vence HOJE`).join('\n');
-          new Notification("⚠️ Vencendo Hoje!", {
-            body: bodyLines,
-            icon: "logo.jpg",
-            tag: "alerta-hoje"
-          });
-        }
-
-        if (aVencer.length > 0) {
-          const bodyLines = aVencer.map(d => {
-            const dias = calcularDiffDias(hoje, d.vencimento);
-            return `${d.descricao} irá vencer daqui a ${dias} dia(s)`;
-          }).join('\n');
-          new Notification("📅 Próximos Vencimentos", {
-            body: bodyLines,
-            icon: "logo.jpg",
-            tag: "alerta-avencer"
-          });
-        }
-
-        localStorage.setItem("last_vencimento_alert", hoje);
       }
 
       const CATEGORIA_FIXA = "Gastos fixos";
@@ -2197,6 +2224,7 @@
 
       confirmAdminNotify.addEventListener("click", async () => {
         const msg = document.getElementById("admin-notify-message").value.trim();
+        const urgency = document.getElementById("admin-notify-urgency").value;
         if (!msg) {
           alert("Por favor, digite a mensagem da notificação.");
           return;
@@ -2214,7 +2242,10 @@
           const batch = db.batch();
           selectedUsers.forEach(uid => {
             const userRef = db.collection("users").doc(uid);
-            batch.update(userRef, { pendingNotice: msg });
+            batch.update(userRef, { 
+              pendingNotice: msg,
+              pendingNoticeUrgency: urgency
+            });
           });
           await batch.commit();
           
@@ -4976,12 +5007,30 @@
               const msgText = document.getElementById("admin-message-text");
               const msgModal = document.getElementById("admin-message-modal");
               const closeMsgBtn = document.getElementById("close-admin-message");
+              const msgIcon = document.getElementById("admin-message-icon");
+              const msgTitle = document.getElementById("admin-message-title");
               
+              const urgencyMap = {
+                info: { icon: "ℹ️", title: "Aviso Importante", color: "var(--primary)" },
+                warning: { icon: "⚠️", title: "Atenção", color: "var(--orange)" },
+                danger: { icon: "🚨", title: "Aviso Urgente", color: "var(--red)" },
+                success: { icon: "✅", title: "Boas Notícias", color: "var(--green)" }
+              };
+              const config = urgencyMap[uData.pendingNoticeUrgency || "info"];
+
               if (msgText && msgModal) {
+                if (msgIcon) msgIcon.textContent = config.icon;
+                if (msgTitle) {
+                  msgTitle.textContent = config.title;
+                  msgTitle.style.color = config.color;
+                }
                 msgText.textContent = uData.pendingNotice;
                 msgModal.classList.remove("hidden");
                 
-                userDocRef.update({ pendingNotice: firebase.firestore.FieldValue.delete() }).catch(err => console.warn("Erro ao limpar aviso", err));
+                userDocRef.update({ 
+                  pendingNotice: firebase.firestore.FieldValue.delete(),
+                  pendingNoticeUrgency: firebase.firestore.FieldValue.delete()
+                }).catch(err => console.warn("Erro ao limpar aviso", err));
                 
                 closeMsgBtn.onclick = () => msgModal.classList.add("hidden");
               }
@@ -4990,8 +5039,6 @@
 
           currentGroupId = await getOrCreateUserGroup(user);
           carregarSalarioMensal();
-
-
 
           // LIBERA A TELA AQUI: Usuário validado e grupo identificado
           mostrarApp(true);
