@@ -562,6 +562,15 @@
     </div>
   </div>
 
+  <div id="admin-message-modal" class="modal hidden" style="z-index: 12000;">
+    <div class="modal-content" style="max-width: 450px; text-align: center; position: relative;">
+      <div style="font-size: 40px; margin-bottom: 16px;">🔔</div>
+      <h2 style="margin-bottom: 12px;">Aviso Importante</h2>
+      <p id="admin-message-text" style="color: var(--text); margin-bottom: 24px; font-size: 15px; line-height: 1.5;"></p>
+      <button type="button" class="btn-primary" style="width: 100%;" id="close-admin-message">Entendido</button>
+    </div>
+  </div>
+
   <div id="edit-compra-modal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -2202,10 +2211,17 @@
         }
 
         try {
-          alert(`✅ Notificação Simulada Enviada com Sucesso!\n\nMensagem: "${msg}"\nEnviado para ${selectedUsers.length} usuários selecionados.`);
+          const batch = db.batch();
+          selectedUsers.forEach(uid => {
+            const userRef = db.collection("users").doc(uid);
+            batch.update(userRef, { pendingNotice: msg });
+          });
+          await batch.commit();
+          
+          alert(`✅ Aviso enviado com sucesso para ${selectedUsers.length} usuário(s).\nEles verão a mensagem assim que entrarem no aplicativo.`);
           adminNotifyModal.classList.add("hidden");
         } catch(e) {
-          alert("Erro: " + e.message);
+          alert("Erro ao enviar aviso: " + e.message);
         }
       });
 
@@ -4953,6 +4969,22 @@
             } else if (uData.showBillingNotice) {
               billingNoticeText.textContent = `Seu acesso irá vencer em ${uData.expireDate || 'breve'}.`;
               billingModal.classList.remove("hidden");
+            }
+
+            // 3. Aviso Pendente do Admin
+            if (uData.pendingNotice) {
+              const msgText = document.getElementById("admin-message-text");
+              const msgModal = document.getElementById("admin-message-modal");
+              const closeMsgBtn = document.getElementById("close-admin-message");
+              
+              if (msgText && msgModal) {
+                msgText.textContent = uData.pendingNotice;
+                msgModal.classList.remove("hidden");
+                
+                userDocRef.update({ pendingNotice: firebase.firestore.FieldValue.delete() }).catch(err => console.warn("Erro ao limpar aviso", err));
+                
+                closeMsgBtn.onclick = () => msgModal.classList.add("hidden");
+              }
             }
           }
 
