@@ -183,6 +183,7 @@
                 <option value="Gastos comuns">💸 Gastos Gerais</option>
                 <option value="Gastos fixos">🔒 Gastos Fixos (valor não muda)</option>
                 <option value="Gastos fixos variáveis">🔄 Gastos que Alternam (valor varia)</option>
+                <option value="Assinaturas">📱 Assinaturas (repete todo mês)</option>
                 <option value="Cartões">💳 Cartões de Crédito</option>
               </select>
             </div>
@@ -546,6 +547,7 @@
             <option value="Gastos comuns">💸 Gastos Gerais</option>
             <option value="Gastos fixos">🔒 Gastos Fixos (valor não muda)</option>
             <option value="Gastos fixos variáveis">🔄 Gastos que Alternam (valor varia)</option>
+            <option value="Assinaturas">📱 Assinaturas (repete todo mês)</option>
             <option value="Cartões">💳 Cartões de Crédito</option>
           </select>
         </div>
@@ -1146,6 +1148,11 @@
 
       const auth = firebase.auth();
       const db = firebase.firestore();
+
+      const CATEGORIA_FIXA = "Gastos fixos";
+      const CATEGORIA_FIXA_VARIAVEL = "Gastos fixos variáveis";
+      const CATEGORIA_CARTOES = "Cartões";
+      const CATEGORIA_ASSINATURAS = "Assinaturas";
 
       // Habilita persistência offline do Firestore para manter dados e sessão resilientes
       db.enablePersistence()
@@ -2957,7 +2964,7 @@
 
       function isGastoFixo(item) {
         const cat = item.categoria || definirCategoriaAutomatica(item.descricao);
-        return cat === CATEGORIA_FIXA || cat === CATEGORIA_FIXA_VARIAVEL;
+        return cat === CATEGORIA_FIXA || cat === CATEGORIA_FIXA_VARIAVEL || cat === CATEGORIA_ASSINATURAS;
       }
 
       function isFixoVariavel(item) {
@@ -2969,8 +2976,14 @@
         return (item.categoria || definirCategoriaAutomatica(item.descricao)) === CATEGORIA_CARTOES;
       }
 
+      function getGrupoVisual(item) {
+        if (isCartao(item)) return "Cartões";
+        if (isGastoFixo(item) || Boolean(item.isAssinatura)) return "Fixos";
+        return "Outros";
+      }
+
       function isRecorrenteMensal(item) {
-        return isGastoFixo(item) || isCartao(item) || Boolean(item.isAssinatura);
+        return isGastoFixo(item) || isCartao(item) || Boolean(item.isAssinatura) || (item.categoria === CATEGORIA_ASSINATURAS);
       }
 
       function criarInstanciaMes(item, yyyyMm, recorrenteMesFuturo = false) {
