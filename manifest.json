@@ -1,0 +1,17 @@
+{
+  "name": "Finanças Compartilhadas",
+  "short_name": "Finanças",
+  "description": "Controle financeiro compartilhado para casais.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1d4ed8",
+  "icons": [
+    {
+      "src": "logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

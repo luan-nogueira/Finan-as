@@ -1,0 +1,24 @@
+﻿{
+  "name": "financas-notification-server",
+  "version": "2.0.0",
+  "description": "Servidor de notificacoes em tempo real para o app Financas Compartilhadas",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "pm2:start": "pm2 start server.js --name financas-notif",
+    "pm2:stop": "pm2 stop financas-notif",
+    "pm2:restart": "pm2 restart financas-notif",
+    "pm2:logs": "pm2 logs financas-notif",
+    "pm2:monitor": "pm2 monit"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "firebase-admin": "^12.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["firebase", "fcm", "telegram", "notifications", "financas"],
+  "author": "Luan Nogueira"
+}
