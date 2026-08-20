@@ -69,7 +69,7 @@ if (!valor || isNaN(parseFloat(String(valor).replace(',', '.')))) {
     return res.status(400).json({ ok: false, erro: "Valor deve ser maior que zero." });
   }
 
-  try {
+try {
     const userDoc = await db.collection('users').doc(uid).get();
     if (!userDoc.exists) {
       return res.status(403).json({ ok: false, erro: "Usuario nao encontrado." });
@@ -80,6 +80,30 @@ if (!valor || isNaN(parseFloat(String(valor).replace(',', '.')))) {
     }
   } catch (e) {
     return res.status(500).json({ ok: false, erro: "Erro ao verificar usuario: " + e.message });
+  }
+
+  // Modo "listas": devolve os cartões do cliente em texto puro (uma por linha)
+  // para o Atalho usar em "Dividir Texto" -> "Escolher da Lista"
+  const acao = String(params.acao || "");
+  if (acao === "cartoes") {
+    try {
+      const snapshot = await db.collection('grupos')
+        .doc(groupId)
+        .collection('despesas')
+        .where('categoria', '==', 'Cartões')
+        .get();
+
+      const nomes = [...new Set(
+        snapshot.docs
+          .map(d => String(d.data().descricao || "").trim())
+          .filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      return res.status(200).send(nomes.length ? nomes.join('\n') : 'Nenhum cartão encontrado');
+    } catch (e) {
+      return res.status(500).json({ ok: false, erro: "Erro ao listar cartões: " + e.message });
+    }
   }
 
 // Usa data enviada pelo Atalho (ex: AAAA-MM-DD) ou a data atual (Fuso Brasília)
