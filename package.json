@@ -1,6 +1,10 @@
 {
   "name": "financas-backend",
   "version": "1.0.0",
+  "scripts": {
+    "deploy": "powershell -ExecutionPolicy Bypass -File deploy.ps1",
+    "deploy:push": "git add -A && git commit -m \"deploy: $(Get-Date -Format yyyy-MM-dd)\" && git push origin main"
+  },
   "dependencies": {
     "firebase-admin": "^12.1.0"
   }
