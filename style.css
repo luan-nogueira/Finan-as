@@ -1760,9 +1760,11 @@ input[type="checkbox"] {
 }
 
 .floating-card-btn {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
+  position: fixed !important;
+  right: 18px !important;
+  bottom: 18px !important;
+  top: auto !important;
+  left: auto !important;
   width: 62px;
   height: 62px;
   border: 0;
@@ -1774,7 +1776,7 @@ input[type="checkbox"] {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 950;
+  z-index: 99999 !important;
 }
 
 .floating-card-btn-icon {
@@ -1875,8 +1877,11 @@ input[type="checkbox"] {
 
 @media (max-width: 640px) {
   .floating-card-btn {
-    right: 12px;
-    bottom: 12px;
+    position: fixed !important;
+    right: 14px !important;
+    bottom: 14px !important;
+    top: auto !important;
+    left: auto !important;
     width: 56px;
     height: 56px;
   }

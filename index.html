@@ -105,6 +105,13 @@
               title="Painel Admin"><i data-lucide="shield" style="width:18px;height:18px;"></i></button>
             <button id="settings-btn" type="button" class="btn-light" title="Configurações e Compartilhamento"><i
                 data-lucide="settings" style="width:18px;height:18px;"></i></button>
+            <button id="sync-status-btn" type="button" class="btn-light" title="Status de sincronização" style="display:flex;align-items:center;gap:6px;">
+              <i data-lucide="wifi" id="sync-status-icon" style="width:18px;height:18px;"></i>
+              <span id="sync-status-text">Sincronizando...</span>
+            </button>
+            <button id="force-sync-btn" type="button" class="btn-light" title="Forçar sincronização agora" style="display:flex;align-items:center;gap:6px;">
+              <i data-lucide="refresh-cw" style="width:18px;height:18px;"></i>
+            </button>
             <button id="logout-btn" type="button" class="btn-secondary">Sair</button>
           </div>
         </div>
@@ -5793,6 +5800,7 @@
           mostrarApp(true);
           if (splashScreen) splashScreen.classList.add("fade-out");
           userEmail.textContent = user.email || "Usuário logado";
+          atualizarSyncStatus('connecting', 'Conectando...');
 
           // Verifica se deve mostrar o modal de novidades (v1)
           if (!localStorage.getItem("news_v1_seen")) {
@@ -5894,6 +5902,8 @@
           console.warn("Nem todos os dados iniciais puderam ser preparados neste acesso.");
         }
 
+        atualizarSyncStatus('connecting', 'Conectando...');
+
         unsubscribe = getColDespesas()
           .onSnapshot((snapshot) => {
             despesasCache = snapshot.docs.map(doc => ({
@@ -5911,8 +5921,10 @@
               vencimento: calcularVencimentoEfetivo(item, mesRealAtual)
             }));
             verificarAlertasVencimento(despesasComVencimentoEfetivo);
+            atualizarSyncStatus('connected', 'Sincronizado');
           }, (error) => {
             alert("Erro ao carregar despesas: " + (error.message || error.code || "desconhecido"));
+            atualizarSyncStatus('error', 'Erro');
           });
 
         unsubscribeIpva = getDocIpva()
@@ -6455,6 +6467,71 @@
       }
       document.getElementById("valor-total-calculo")?.addEventListener("input", atualizarCalculoParcela);
       document.getElementById("parcela-total")?.addEventListener("input", atualizarCalculoParcela);
+
+      // Sync status functions
+      function atualizarSyncStatus(status, texto) {
+        const icon = document.getElementById('sync-status-icon');
+        const text = document.getElementById('sync-status-text');
+        if (!icon || !text) return;
+        
+        if (status === 'connected') {
+          icon.setAttribute('data-lucide', 'wifi');
+          icon.style.color = 'var(--green)';
+          text.textContent = 'Sincronizado';
+        } else if (status === 'connecting') {
+          icon.setAttribute('data-lucide', 'loader');
+          icon.style.color = 'var(--orange)';
+          text.textContent = 'Conectando...';
+        } else if (status === 'error') {
+          icon.setAttribute('data-lucide', 'wifi-off');
+          icon.style.color = 'var(--red)';
+          text.textContent = 'Erro';
+        }
+        lucide.createIcons({ nodes: [icon] });
+      }
+
+      // Forçar sincronização manual
+      const forceSyncBtn = document.getElementById('force-sync-btn');
+      if (forceSyncBtn) {
+        forceSyncBtn.addEventListener('click', async () => {
+          atualizarSyncStatus('connecting', 'Sincronizando...');
+          try {
+            // Force refresh by re-reading from server
+            await getColDespesas().get({ source: 'server' });
+            await getDocIpva().get({ source: 'server' });
+            await getColLucros().get({ source: 'server' });
+            atualizarSyncStatus('connected', 'Sincronizado');
+          } catch (e) {
+            console.error('Erro ao forçar sync:', e);
+            atualizarSyncStatus('error', 'Erro');
+          }
+        });
+      }
+
+      // Monitorar estado de conexão do Firestore
+      if (db) {
+        db.enableNetwork().catch(() => {});
+        
+        window.addEventListener('online', () => {
+          atualizarSyncStatus('connecting', 'Reconectando...');
+          db.enableNetwork();
+        });
+        
+        window.addEventListener('offline', () => {
+          atualizarSyncStatus('error', 'Offline');
+        });
+        
+        // Verificar visibilidade da aba (tab throttling)
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden && currentGroupId) {
+            atualizarSyncStatus('connecting', 'Reconectando...');
+            // Força reconexão ao voltar para a aba
+            db.enableNetwork();
+            setTimeout(() => atualizarSyncStatus('connected', 'Sincronizado'), 1500);
+          }
+        });
+      }
+
     })();
 
     // Initialize Lucide icons

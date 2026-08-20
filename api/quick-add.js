@@ -30,8 +30,26 @@ function getMesAtual() {
 
 function limparPlaceholder(valor) {
   const str = String(valor || "").trim();
-  if (!str || str.includes("[") || str.includes("]")) return undefined;
+  if (!str) return undefined;
+  if (/^\[(SEU_UID|SEU_GROUP_ID|Escolha da Lista|Entrada Fornecida)[^\]]*\]$/i.test(str)) {
+    return undefined;
+  }
   return str;
+}
+
+function normalizarTexto(txt) {
+  return String(txt || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^\w\s]/gi, " ")
+    .trim();
+}
+
+function ehDocumentoDeCartao(data) {
+  const cat = String(data.categoria || "");
+  const desc = normalizarTexto(data.descricao);
+  return cat === "Cartões" || cat === "Assinaturas" || Boolean(data.isAssinatura) || desc.startsWith("cartao") || desc.includes("cartao") || desc.includes("nubank") || desc.includes("itau") || desc.includes("santander") || desc.includes("bradesco") || desc.includes("inter") || desc.includes("caixa");
 }
 
 module.exports = async (req, res) => {
@@ -51,25 +69,14 @@ module.exports = async (req, res) => {
     return res.status(500).json({ ok: false, erro: "Firebase nao configurado." });
   }
 
-  const params = req.method === 'GET' ? req.query : (req.body || {});
+  const params = { ...(req.query || {}), ...(req.body || {}) };
   const { uid, groupId, categoria, cartao, valor, descricao, data, dispositivo, observacao } = params;
 
   if (!uid || !groupId) {
     return res.status(401).json({ ok: false, erro: "UID e groupId sao obrigatorios." });
   }
 
-if (!valor || isNaN(parseFloat(String(valor).replace(',', '.')))) {
-    const temPlaceholder = /\[[^\]]*\]/.test(String(valor));
-    return res.status(400).json({ ok: false, erro: temPlaceholder ? "Preencha o campo [valor] no atalho antes de usar." : "Valor invalido." });
-  }
-
-  const valorNumerico = parseFloat(String(valor).replace(',', '.'));
-
-  if (valorNumerico <= 0) {
-    return res.status(400).json({ ok: false, erro: "Valor deve ser maior que zero." });
-  }
-
-try {
+  try {
     const userDoc = await db.collection('users').doc(uid).get();
     if (!userDoc.exists) {
       return res.status(403).json({ ok: false, erro: "Usuario nao encontrado." });
@@ -83,18 +90,17 @@ try {
   }
 
   // Modo "listas": devolve os cartões do cliente em texto puro (uma por linha)
-  // para o Atalho usar em "Dividir Texto" -> "Escolher da Lista"
   const acao = String(params.acao || "");
   if (acao === "cartoes") {
     try {
       const snapshot = await db.collection('grupos')
         .doc(groupId)
         .collection('despesas')
-        .where('categoria', '==', 'Cartões')
         .get();
 
       const nomes = [...new Set(
         snapshot.docs
+          .filter(d => ehDocumentoDeCartao(d.data()))
           .map(d => String(d.data().descricao || "").trim())
           .filter(Boolean)
       )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
@@ -106,68 +112,219 @@ try {
     }
   }
 
-// Usa data enviada pelo Atalho (ex: AAAA-MM-DD) ou a data atual (Fuso Brasília)
-  const dataFinal = (data && /^\d{4}-\d{2}-\d{2}$/.test(data)) ? data : getTodayISO();
-  const mesFinal = dataFinal.substring(0, 7);
+  if (!valor || isNaN(parseFloat(String(valor).replace(',', '.')))) {
+    const temPlaceholder = /\[[^\]]*\]/.test(String(valor));
+    return res.status(400).json({ ok: false, erro: temPlaceholder ? "Preencha o campo [valor] no atalho antes de usar." : "Valor invalido." });
+  }
 
-  // Placeholders como [Escolha]/[Entrada] viram valores vazios (cliente colou a URL sem preencher)
-  const categoriaFinal = limparPlaceholder(categoria) || "Outros";
+  const valorNumerico = parseFloat(String(valor).replace(',', '.'));
+
+  if (valorNumerico <= 0) {
+    return res.status(400).json({ ok: false, erro: "Valor deve ser maior que zero." });
+  }
+
+function adicionarMesAoYyyyMm(yyyyMm, quantidade) {
+  if (!yyyyMm) return "";
+  const [ano, mes] = yyyyMm.split("-").map(Number);
+  const data = new Date(ano, (mes - 1) + Number(quantidade || 0), 1);
+  return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function calcularValorParcelaCompra(valorTotal, parcelaAtual, parcelaTotal) {
+  const totalCentavos = Math.round(Number(valorTotal || 0) * 100);
+  const totalParcelas = Math.max(1, Number(parcelaTotal || 1));
+  const indiceParcela = Math.max(1, Number(parcelaAtual || 1));
+  const base = Math.floor(totalCentavos / totalParcelas);
+  const resto = totalCentavos % totalParcelas;
+  const valorCentavos = base + (indiceParcela <= resto ? 1 : 0);
+  return Number((valorCentavos / 100).toFixed(2));
+}
+
+  const dataFinal = data || getTodayISO();
+  const mesFinal = dataFinal.substring(0, 7);
+  const categoriaFinal = categoria || "Outros";
+
   const cartaoFinal = limparPlaceholder(cartao);
-  const descricaoFinal = limparPlaceholder(descricao);
+  const descricaoFinal = limparPlaceholder(descricao) || limparPlaceholder(params.nome);
   const observacaoFinal = limparPlaceholder(observacao) || "";
   const dispositivoFinal = limparPlaceholder(dispositivo) || "iPhone Atalho";
 
-  const novaDespesa = {
-    descricao: descricaoFinal || (cartaoFinal ? `Cartão ${cartaoFinal}` : 'Despesa via Atalho'),
-    categoria: 'Cartões',
-    subcategoria: categoriaFinal,
-    valor: valorNumerico,
-    vencimento: dataFinal,
-    observacao: observacaoFinal,
-    dispositivo: dispositivoFinal,
-    pago: false,
-    isAssinatura: false,
-    mesReferencia: mesFinal,
-    historico: true,
-    compras: [
-      {
-        nome: descricaoFinal || categoriaFinal || 'Compra',
+  const numParcelas = Math.max(1, parseInt(String(params.parcelas || params.parcela || 1)) || 1);
+  const grupoParcelaId = "compra_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
+  const nomeFinalCompra = descricaoFinal || categoriaFinal || "Compra";
+
+  // Gera a lista de compras (à vista ou parceladas)
+  const listaNovasCompras = [];
+  if (categoriaFinal === "Assinatura") {
+    for (let i = 0; i < 12; i++) {
+      const mesDest = adicionarMesAoYyyyMm(mesFinal, i);
+      listaNovasCompras.push({
+        id: grupoParcelaId + "_" + i,
+        parcelamentoId: "",
+        nome: nomeFinalCompra,
+        categoria: "Assinatura",
         valor: valorNumerico,
-        parcelas: 1,
+        valorTotal: valorNumerico,
+        parcelaAtual: 1,
+        parcelaTotal: 1,
+        mesOrigem: mesFinal,
+        mesDestino: mesDest,
+        repetirMensal: true
+      });
+    }
+  } else {
+    for (let i = 0; i < numParcelas; i++) {
+      const mesDest = adicionarMesAoYyyyMm(mesFinal, i);
+      const vParc = calcularValorParcelaCompra(valorNumerico, i + 1, numParcelas);
+      listaNovasCompras.push({
+        id: grupoParcelaId + "_" + (i + 1),
+        parcelamentoId: numParcelas > 1 ? grupoParcelaId : "",
+        nome: nomeFinalCompra,
         categoria: categoriaFinal,
-        cartaoNome: cartaoFinal || '',
-        mes: mesFinal,
-        criadoEm: new Date().toISOString()
-      }
-    ],
-    cartaoNome: cartaoFinal || '',
-    criadoVia: dispositivoFinal === "iPhone Atalho" ? 'atalho-ios' : `atalho-ios (${dispositivoFinal})`,
-    criadoPor: uid,
-    criadoEm: admin.firestore.FieldValue.serverTimestamp()
-  };
+        valor: vParc,
+        valorTotal: valorNumerico,
+        parcelaAtual: i + 1,
+        parcelaTotal: numParcelas,
+        mesOrigem: mesFinal,
+        mesDestino: mesDest
+      });
+    }
+  }
+
+  const primeiraCompra = listaNovasCompras[0];
 
   try {
-    const ref = await db.collection('grupos')
+    // 1. Procura se o cartão já existe no grupo (busca inteligente)
+    const despesasSnap = await db.collection('grupos')
       .doc(groupId)
       .collection('despesas')
-      .add(novaDespesa);
+      .get();
 
-return res.status(200).json({
-      ok: true,
-      id: ref.id,
-      mensagem: "Despesa salva com sucesso! " + (categoriaFinal || '') + " - R$ " + valorNumerico.toFixed(2).replace('.', ','),
-      despesa: {
-        id: ref.id,
-        descricao: novaDespesa.descricao,
-        categoria: novaDespesa.subcategoria,
-        cartao: cartaoFinal || '',
+    let cartaoDoc = null;
+    const buscaNome = (cartaoFinal || "").trim();
+
+    if (buscaNome) {
+      const buscaNorm = normalizarTexto(buscaNome);
+      const palavrasBusca = buscaNorm.replace(/\b(cartao|de|credito|da|do)\b/g, "").split(/\s+/).filter(p => p.length >= 2);
+
+      cartaoDoc = despesasSnap.docs.find(d => {
+        const data = d.data();
+        if (!ehDocumentoDeCartao(data)) return false;
+
+        const descNorm = normalizarTexto(data.descricao);
+        const cNomeNorm = normalizarTexto(data.cartaoNome);
+
+        if (descNorm.includes(buscaNorm) || cNomeNorm.includes(buscaNorm) || buscaNorm.includes(descNorm)) {
+          return true;
+        }
+
+        if (palavrasBusca.length > 0 && palavrasBusca.every(p => descNorm.includes(p) || cNomeNorm.includes(p))) {
+          return true;
+        }
+
+        return false;
+      });
+    }
+
+    if (cartaoDoc) {
+      // 2. Se o cartão JÁ EXISTE, adiciona a compra/parcelas no cartão!
+      const cardData = cartaoDoc.data();
+      const ajustesMensais = cardData.ajustesMensais || {};
+
+      listaNovasCompras.forEach(compraObj => {
+        const mDest = compraObj.mesDestino || mesFinal;
+        const ajusteMes = ajustesMensais[mDest] || {};
+        const comprasMes = Array.isArray(ajusteMes.compras) ? [...ajusteMes.compras] : [];
+        comprasMes.push(compraObj);
+        ajustesMensais[mDest] = {
+          ...ajusteMes,
+          compras: comprasMes
+        };
+      });
+
+      const comprasGlobais = Array.isArray(cardData.compras)
+        ? [...cardData.compras, primeiraCompra]
+        : [primeiraCompra];
+
+      await cartaoDoc.ref.update({
+        vencimento: "",
+        compras: comprasGlobais,
+        ajustesMensais: ajustesMensais,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      const textoParcelas = numParcelas > 1 ? ` (${numParcelas}x de R$ ${primeiraCompra.valor.toFixed(2).replace('.', ',')})` : " (À vista)";
+
+      return res.status(200).json({
+        ok: true,
+        id: cartaoDoc.id,
+        mensagem: `✅ "${nomeFinalCompra}" adicionado ao ${cardData.descricao || cartaoFinal}! ${categoriaFinal}${textoParcelas} - R$ ${valorNumerico.toFixed(2).replace('.', ',')}`,
+        despesa: {
+          id: cartaoDoc.id,
+          nome: nomeFinalCompra,
+          cartao: cardData.descricao,
+          categoria: categoriaFinal,
+          valor: valorNumerico,
+          parcelas: numParcelas,
+          data: dataFinal
+        }
+      });
+
+    } else {
+      // 3. Se o cartão NÃO existe ainda, cria um novo cartão com as parcelas inseridas
+      const ajustesMensais = {};
+      listaNovasCompras.forEach(compraObj => {
+        const mDest = compraObj.mesDestino || mesFinal;
+        ajustesMensais[mDest] = {
+          compras: [compraObj]
+        };
+      });
+
+      const novaDespesaCartao = {
+        descricao: cartaoFinal ? (cartaoFinal.toLowerCase().startsWith("cartão") ? cartaoFinal : `Cartão ${cartaoFinal}`) : 'Cartão de Crédito',
+        categoria: 'Cartões',
+        subcategoria: categoriaFinal,
         valor: valorNumerico,
-        data: dataFinal
-      }
-    });
+        vencimento: dataFinal,
+        observacao: observacaoFinal,
+        dispositivo: dispositivoFinal,
+        pago: false,
+        isAssinatura: false,
+        mesReferencia: mesFinal,
+        historico: true,
+        compras: [primeiraCompra],
+        ajustesMensais: ajustesMensais,
+        cartaoNome: cartaoFinal || '',
+        criadoVia: dispositivoFinal === "iPhone Atalho" ? 'atalho-ios' : `atalho-ios (${dispositivoFinal})`,
+        criadoPor: uid,
+        criadoEm: admin.firestore.FieldValue.serverTimestamp()
+      };
+
+      const ref = await db.collection('grupos')
+        .doc(groupId)
+        .collection('despesas')
+        .add(novaDespesaCartao);
+
+      const textoParcelas = numParcelas > 1 ? ` (${numParcelas}x de R$ ${primeiraCompra.valor.toFixed(2).replace('.', ',')})` : " (À vista)";
+
+      return res.status(200).json({
+        ok: true,
+        id: ref.id,
+        mensagem: `✅ Novo cartão criado e "${nomeFinalCompra}" salvo! ${categoriaFinal}${textoParcelas} - R$ ${valorNumerico.toFixed(2).replace('.', ',')}`,
+        despesa: {
+          id: ref.id,
+          nome: nomeFinalCompra,
+          descricao: novaDespesaCartao.descricao,
+          categoria: categoriaFinal,
+          valor: valorNumerico,
+          parcelas: numParcelas,
+          data: dataFinal
+        }
+      });
+    }
 
   } catch (e) {
-    console.error("Erro ao salvar despesa:", e);
+    console.error("Erro ao salvar despesa no cartão:", e);
     return res.status(500).json({ ok: false, erro: "Erro ao salvar: " + e.message });
   }
 };
