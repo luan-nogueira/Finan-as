@@ -183,7 +183,7 @@
                 <option value="Gastos comuns">💸 Gastos Gerais</option>
                 <option value="Gastos fixos">🔒 Gastos Fixos (valor não muda)</option>
                 <option value="Gastos fixos variáveis">🔄 Gastos que Alternam (valor varia)</option>
-                <option value="Assinaturas">📱 Assinaturas (repete todo mês)</option>
+                <option value="Assinaturas">📱 Assinaturas no Cartão (repete todo mês)</option>
                 <option value="Cartões">💳 Cartões de Crédito</option>
               </select>
             </div>
@@ -547,7 +547,7 @@
             <option value="Gastos comuns">💸 Gastos Gerais</option>
             <option value="Gastos fixos">🔒 Gastos Fixos (valor não muda)</option>
             <option value="Gastos fixos variáveis">🔄 Gastos que Alternam (valor varia)</option>
-            <option value="Assinaturas">📱 Assinaturas (repete todo mês)</option>
+            <option value="Assinaturas">📱 Assinaturas no Cartão (repete todo mês)</option>
             <option value="Cartões">💳 Cartões de Crédito</option>
           </select>
         </div>
@@ -951,8 +951,109 @@
             style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">...</code></p>
       </div>
 
+      <div class="settings-group" style="border: 2px solid var(--primary); background: var(--primary-soft);">
+        <h3>🍎 Atalho iOS (Toque na Maçã)</h3>
+        <p style="font-size: 13px;">Configure um Atalho no iPhone para registrar gastos <strong>sem abrir o app</strong> — só dar 2 toques na maçã do iPhone!</p>
+        <button type="button" class="btn-primary" id="ios-shortcut-btn" style="width: 100%; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <i data-lucide="smartphone" style="width: 18px; height: 18px;"></i> Configurar Atalho iOS
+        </button>
+      </div>
+
       <div class="modal-actions">
         <button type="button" class="btn-light" id="close-settings-btn">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ATALHO iOS -->
+  <div id="ios-shortcut-modal" class="modal hidden" style="z-index: 12000;">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h2>🍎 Atalho iOS — Toque na Maçã</h2>
+        <button type="button" class="modal-close" id="close-ios-shortcut-modal">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 8px;">
+
+        <div style="background: var(--surface); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+          <p style="font-size: 13px; color: var(--muted); margin: 0;">Copie estas chaves — você vai precisar delas no Atalho:</p>
+          <div>
+            <label style="font-size: 12px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px;">SEU UID (Chave do Usuário)</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <code id="ios-uid-display" style="flex: 1; background: var(--bg); padding: 8px 12px; border-radius: 8px; font-size: 11px; word-break: break-all; color: var(--primary);">Carregando...</code>
+              <button type="button" class="btn-light" id="copy-ios-uid" style="width: auto; height: 36px; padding: 0 12px; flex-shrink: 0;">Copiar</button>
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px;">SEU GROUP ID (Chave do Grupo)</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <code id="ios-groupid-display" style="flex: 1; background: var(--bg); padding: 8px 12px; border-radius: 8px; font-size: 11px; word-break: break-all; color: var(--primary);">Carregando...</code>
+              <button type="button" class="btn-light" id="copy-ios-groupid" style="width: auto; height: 36px; padding: 0 12px; flex-shrink: 0;">Copiar</button>
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px;">URL DA API</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <code id="ios-api-url-display" style="flex: 1; background: var(--bg); padding: 8px 12px; border-radius: 8px; font-size: 11px; word-break: break-all; color: var(--primary);">Carregando...</code>
+              <button type="button" class="btn-light" id="copy-ios-api-url" style="width: auto; height: 36px; padding: 0 12px; flex-shrink: 0;">Copiar</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <h3 style="margin: 0; font-size: 15px;">📋 Passo a Passo no iPhone:</h3>
+
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; flex-shrink: 0;">1</div>
+            <div style="font-size: 13px;">Abra o app <strong>Atalhos</strong> no iPhone → toque em <strong>"+"</strong> (novo atalho)</div>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; flex-shrink: 0;">2</div>
+            <div style="font-size: 13px;">Adicione <strong>"Escolher da lista"</strong> com as categorias:<br>
+              <code style="font-size: 11px; background: var(--surface); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px;">Alimentação, Transporte, Lazer, Saúde, Shopping, Serviços, Outros</code>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; flex-shrink: 0;">3</div>
+            <div style="font-size: 13px;">Adicione <strong>"Escolher da lista"</strong> com seus cartões:<br>
+              <code style="font-size: 11px; background: var(--surface); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px;">Nubank, Itaú, Santander, BB, Inter, Caixa</code>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; flex-shrink: 0;">4</div>
+            <div style="font-size: 13px;">Adicione <strong>"Pedir entrada"</strong> → Tipo: <strong>Número</strong> → Pergunta: <em>"Qual o valor?"</em></div>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; flex-shrink: 0;">5</div>
+            <div style="font-size: 13px;">Adicione <strong>"Obter conteúdo da URL"</strong> — método <strong>GET</strong>:<br>
+              <code id="ios-shortcut-url-example" style="font-size: 10px; background: var(--surface); padding: 4px 8px; border-radius: 4px; display: block; margin-top: 4px; word-break: break-all;">https://...api/quick-add?uid=UID&amp;groupId=GID&amp;categoria=[item1]&amp;cartao=[item2]&amp;valor=[entrada]</code>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; flex-shrink: 0;">6</div>
+            <div style="font-size: 13px;">Adicione <strong>"Mostrar resultado"</strong> para ver a confirmação do gasto</div>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 28px; height: 28px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; flex-shrink: 0;">7</div>
+            <div style="font-size: 13px;"><strong>Ajustes → Acessibilidade → Toque → Toque nas Costas → Toque Duplo</strong> → selecione seu atalho! ✅</div>
+          </div>
+        </div>
+
+        <div style="background: #fef3c7; border-radius: 12px; padding: 12px; display: flex; gap: 10px; align-items: flex-start;">
+          <span style="font-size: 18px; flex-shrink: 0;">⚠️</span>
+          <p style="font-size: 12px; color: #92400e; margin: 0;">Substitua os valores copiados acima na URL. O atalho funciona mesmo com o app fechado!</p>
+        </div>
+
+      </div>
+
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button type="button" class="btn-light" id="close-ios-shortcut-modal-bottom">Fechar</button>
       </div>
     </div>
   </div>
@@ -1929,9 +2030,6 @@
         }
       }
 
-      const CATEGORIA_FIXA = "Gastos fixos";
-      const CATEGORIA_FIXA_VARIAVEL = "Gastos fixos variáveis";
-      const CATEGORIA_CARTOES = "Cartões";
       const CATEGORIA_COMUM = "Gastos comuns";
 
       const CATEGORIAS_COMPRA = [
@@ -2039,17 +2137,11 @@
 
       function definirCategoriaAutomatica(descricao) {
         const desc = normalizarTexto(descricao);
-        const ehFixo = GASTOS_FIXOS.some(item => normalizarTexto(item) === desc) || desc.includes("assinatura");
+        if (desc.includes("assinatura")) return CATEGORIA_ASSINATURAS;
+        const ehFixo = GASTOS_FIXOS.some(item => normalizarTexto(item) === desc);
         if (ehFixo) return CATEGORIA_FIXA;
         if (desc.includes("cartao")) return CATEGORIA_CARTOES;
         return CATEGORIA_COMUM;
-      }
-
-      function getGrupoVisual(item) {
-        const categoria = item.categoria || definirCategoriaAutomatica(item.descricao);
-        if (categoria === CATEGORIA_FIXA || categoria === CATEGORIA_FIXA_VARIAVEL) return "Fixos";
-        if (categoria === CATEGORIA_CARTOES) return "Cartões";
-        return "Outros";
       }
 
       function atualizarPreviewCategoria() {
@@ -2964,7 +3056,7 @@
 
       function isGastoFixo(item) {
         const cat = item.categoria || definirCategoriaAutomatica(item.descricao);
-        return cat === CATEGORIA_FIXA || cat === CATEGORIA_FIXA_VARIAVEL || cat === CATEGORIA_ASSINATURAS;
+        return cat === CATEGORIA_FIXA || cat === CATEGORIA_FIXA_VARIAVEL;
       }
 
       function isFixoVariavel(item) {
@@ -2973,17 +3065,22 @@
       }
 
       function isCartao(item) {
-        return (item.categoria || definirCategoriaAutomatica(item.descricao)) === CATEGORIA_CARTOES;
+        const cat = item.categoria || definirCategoriaAutomatica(item.descricao);
+        return cat === CATEGORIA_CARTOES || cat === CATEGORIA_ASSINATURAS || Boolean(item.isAssinatura);
       }
 
       function getGrupoVisual(item) {
         if (isCartao(item)) return "Cartões";
-        if (isGastoFixo(item) || Boolean(item.isAssinatura)) return "Fixos";
+        if (isGastoFixo(item)) return "Fixos";
         return "Outros";
       }
 
       function isRecorrenteMensal(item) {
-        return isGastoFixo(item) || isCartao(item) || Boolean(item.isAssinatura) || (item.categoria === CATEGORIA_ASSINATURAS);
+        return isGastoFixo(item) || isCartao(item);
+      }
+
+      function isAssinaturaValorFixo(item) {
+        return Boolean(item.isAssinatura) || item.categoria === CATEGORIA_ASSINATURAS;
       }
 
       function criarInstanciaMes(item, yyyyMm, recorrenteMesFuturo = false) {
@@ -3004,15 +3101,16 @@
       }
 
       function criarInstanciaCartaoFuturo(item, yyyyMm) {
+        const assinaturaFixa = isAssinaturaValorFixo(item);
         const instancia = {
           ...item,
           origemId: item.id,
           mesReferencia: yyyyMm,
           vencimento: item.vencimento ? ajustarDataParaMes(item.vencimento, yyyyMm) : "",
-          valor: 0,
+          valor: assinaturaFixa ? item.valor : 0,
           pago: false,
           recorrenteMesFuturo: true,
-          recorrenteZerado: true,
+          recorrenteZerado: !assinaturaFixa,
           compras: getComprasBasePorMes(item, yyyyMm)
         };
 
@@ -3071,13 +3169,14 @@
                   compras: getComprasBasePorMes(item, monthTerm)
                 }));
               } else if (isCartao(item)) {
+                const assinaturaFixa = isAssinaturaValorFixo(item);
                 resultado.push(aplicarAjusteMensalNaInstancia({
                   ...item,
                   origemId: item.id,
                   mesReferencia: monthTerm,
                   recorrenteMesFuturo: true,
-                  recorrenteZerado: true,
-                  valor: 0,
+                  recorrenteZerado: !assinaturaFixa,
+                  valor: assinaturaFixa ? item.valor : 0,
                   pago: false,
                   compras: getComprasBasePorMes(item, monthTerm)
                 }));
@@ -3194,13 +3293,14 @@
                 const yyyyMm = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
                 if (!mesEstaIgnorado(item, yyyyMm)) {
                   if (!mapaMeses.has(yyyyMm)) mapaMeses.set(yyyyMm, []);
+                  const ehZerado = (isCartao(item) && !isAssinaturaValorFixo(item)) || isFixoVariavel(item);
                   mapaMeses.get(yyyyMm).push(aplicarAjusteMensalNaInstancia({
                     ...item,
                     origemId: item.id,
                     mesReferencia: yyyyMm,
                     recorrenteMesFuturo: true,
-                    recorrenteZerado: isCartao(item) || isFixoVariavel(item),
-                    valor: (isCartao(item) || isFixoVariavel(item)) ? 0 : item.valor,
+                    recorrenteZerado: ehZerado,
+                    valor: ehZerado ? 0 : item.valor,
                     pago: false,
                     vencimento: "",
                     compras: getComprasBasePorMes(item, yyyyMm)
@@ -4975,8 +5075,7 @@
 
       document.getElementById("settings-ipva-btn")?.addEventListener("click", () => {
         settingsModal.classList.add("hidden");
-        ipvaModal.classList.remove("hidden");
-        renderIpvaForm();
+        abrirModalIpva();
       });
 
       document.getElementById("emergency-recovery-btn")?.addEventListener("click", () => {
@@ -6132,6 +6231,108 @@
 
       setTimeout(carregarLimites, 4000);
 
+      // ═══════════════════════════════════════════════════════
+      // 🍎 ATALHO iOS — configuração e modal
+      // ═══════════════════════════════════════════════════════
+      (function initIosShortcutModal() {
+        const iosShortcutBtn = document.getElementById("ios-shortcut-btn");
+        const iosShortcutModal = document.getElementById("ios-shortcut-modal");
+        const closeIosModal = document.getElementById("close-ios-shortcut-modal");
+        const closeIosModalBottom = document.getElementById("close-ios-shortcut-modal-bottom");
+        const iosUidDisplay = document.getElementById("ios-uid-display");
+        const iosGroupIdDisplay = document.getElementById("ios-groupid-display");
+        const iosApiUrlDisplay = document.getElementById("ios-api-url-display");
+        const iosUrlExample = document.getElementById("ios-shortcut-url-example");
+        const copyUidBtn = document.getElementById("copy-ios-uid");
+        const copyGroupIdBtn = document.getElementById("copy-ios-groupid");
+        const copyApiUrlBtn = document.getElementById("copy-ios-api-url");
+
+        function copiarTexto(texto, btn) {
+          if (!texto || texto === "Carregando...") return;
+
+          const sucesso = () => {
+            const orig = btn.textContent;
+            btn.textContent = "✓ Copiado!";
+            btn.style.color = "var(--green)";
+            setTimeout(() => {
+              btn.textContent = orig;
+              btn.style.color = "";
+            }, 1800);
+          };
+
+          const fallback = () => {
+            // Fallback para iOS Safari
+            const el = document.createElement("textarea");
+            el.value = texto;
+            el.style.position = "fixed";
+            el.style.opacity = "0";
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand("copy");
+            document.body.removeChild(el);
+            sucesso();
+          };
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(texto).then(sucesso).catch(fallback);
+          } else {
+            fallback();
+          }
+        }
+
+        function abrirIosShortcutModal() {
+          const uid = auth.currentUser ? auth.currentUser.uid : "";
+          const gid = currentGroupId || "";
+          const apiUrl = `${window.location.origin}/api/quick-add`;
+
+          if (iosUidDisplay) iosUidDisplay.textContent = uid || "Faça login primeiro";
+          if (iosGroupIdDisplay) iosGroupIdDisplay.textContent = gid || "Não encontrado";
+          if (iosApiUrlDisplay) iosApiUrlDisplay.textContent = apiUrl;
+
+          // Monta URL de exemplo completa
+          if (iosUrlExample && uid && gid) {
+            iosUrlExample.textContent = `${apiUrl}?uid=${uid}&groupId=${gid}&categoria=[item1]&cartao=[item2]&valor=[entrada]`;
+          }
+
+          if (copyUidBtn) copyUidBtn.onclick = () => copiarTexto(uid, copyUidBtn);
+          if (copyGroupIdBtn) copyGroupIdBtn.onclick = () => copiarTexto(gid, copyGroupIdBtn);
+          if (copyApiUrlBtn) copyApiUrlBtn.onclick = () => copiarTexto(apiUrl, copyApiUrlBtn);
+
+          if (iosShortcutModal) {
+            iosShortcutModal.classList.remove("hidden");
+            lucide.createIcons();
+          }
+        }
+
+        if (iosShortcutBtn) {
+          iosShortcutBtn.addEventListener("click", () => {
+            // Fecha o modal de settings primeiro
+            const settingsModal = document.getElementById("settings-modal");
+            if (settingsModal) settingsModal.classList.add("hidden");
+            abrirIosShortcutModal();
+          });
+        }
+
+        if (closeIosModal) {
+          closeIosModal.addEventListener("click", () => {
+            if (iosShortcutModal) iosShortcutModal.classList.add("hidden");
+          });
+        }
+
+        if (closeIosModalBottom) {
+          closeIosModalBottom.addEventListener("click", () => {
+            if (iosShortcutModal) iosShortcutModal.classList.add("hidden");
+          });
+        }
+
+        // Fecha ao clicar no backdrop
+        if (iosShortcutModal) {
+          iosShortcutModal.addEventListener("click", (e) => {
+            if (e.target === iosShortcutModal) iosShortcutModal.classList.add("hidden");
+          });
+        }
+      })();
+
       // Segurança: Se o Splash ainda estiver visível após 8 segundos, remove-o de qualquer forma
       setTimeout(() => {
         if (splashScreen && !splashScreen.classList.contains("fade-out")) {
@@ -6139,23 +6340,23 @@
           splashScreen.classList.add("fade-out");
         }
       }, 8000);
-    })();
 
-    // Cálculo automático de parcelas
-    function atualizarCalculoParcela() {
-      const totalRaw = document.getElementById("valor-total-calculo")?.value;
-      const total = converterValorInput(totalRaw || "");
-      const qtd = parseInt(document.getElementById("parcela-total")?.value || "0");
-      
-      if (total > 0 && qtd > 0) {
-        const vParcela = total / qtd;
-        const valorEl = document.getElementById("valor");
-        if (valorEl) valorEl.value = vParcela.toFixed(2).replace(".", ",");
-        atualizarPreviewCategoria();
+      // Cálculo automático de parcelas
+      function atualizarCalculoParcela() {
+        const totalRaw = document.getElementById("valor-total-calculo")?.value;
+        const total = converterValorInput(totalRaw || "");
+        const qtd = parseInt(document.getElementById("parcela-total")?.value || "0");
+
+        if (total > 0 && qtd > 0) {
+          const vParcela = total / qtd;
+          const valorEl = document.getElementById("valor");
+          if (valorEl) valorEl.value = vParcela.toFixed(2).replace(".", ",");
+          atualizarPreviewCategoria();
+        }
       }
-    }
-    document.getElementById("valor-total-calculo")?.addEventListener("input", atualizarCalculoParcela);
-    document.getElementById("parcela-total")?.addEventListener("input", atualizarCalculoParcela);
+      document.getElementById("valor-total-calculo")?.addEventListener("input", atualizarCalculoParcela);
+      document.getElementById("parcela-total")?.addEventListener("input", atualizarCalculoParcela);
+    })();
 
     // Initialize Lucide icons
     lucide.createIcons();
