@@ -2034,6 +2034,7 @@
 
       const CATEGORIAS_COMPRA = [
         "Alimentação",
+        "Assinatura",
         "Fast food",
         "Lazer",
         "Mercado",
@@ -2340,7 +2341,8 @@
               valorTotal,
               parcelaAtual,
               parcelaTotal,
-              mesOrigem: String(compra?.mesOrigem || "").trim()
+              mesOrigem: String(compra?.mesOrigem || "").trim(),
+              repetirMensal: Boolean(compra?.repetirMensal)
             };
           })
           .filter(compra => compra.nome);
@@ -2615,6 +2617,27 @@
         const resto = totalCentavos % totalParcelas;
         const valorCentavos = base + (indiceParcela <= resto ? 1 : 0);
         return Number((valorCentavos / 100).toFixed(2));
+      }
+
+      const MESES_ASSINATURA = 12;
+
+      function getMesesAssinatura(mesOrigem) {
+        return Array.from({ length: MESES_ASSINATURA }, (_, i) => adicionarMesAoYyyyMm(mesOrigem, i));
+      }
+
+      function montarCompraAssinatura({ id, nome, valor, mesOrigem }) {
+        return {
+          id: id || gerarIdCompra(),
+          parcelamentoId: "",
+          nome: String(nome || "").trim(),
+          categoria: "Assinatura",
+          valor: numeroSeguro(valor),
+          valorTotal: numeroSeguro(valor),
+          parcelaAtual: 1,
+          parcelaTotal: 1,
+          mesOrigem,
+          repetirMensal: true
+        };
       }
 
       function criarParcelasCompra({ nome, categoria, valorTotal, parcelas, mesOrigem, parcelamentoId }) {
@@ -4299,9 +4322,11 @@
                   </thead>
                   <tbody>
                     ${compras.map((compra, index) => {
-              const textoParcela = Number(compra.parcelaTotal || 1) > 1
-                ? `${compra.parcelaAtual}/${compra.parcelaTotal}`
-                : "À vista";
+              const textoParcela = compra.repetirMensal
+                ? "Mensal"
+                : Number(compra.parcelaTotal || 1) > 1
+                  ? `${compra.parcelaAtual}/${compra.parcelaTotal}`
+                  : "À vista";
 
               const detalheValor = Number(compra.parcelaTotal || 1) > 1
                 ? `<small class="compra-total-info">Total: ${formatarMoeda(compra.valorTotal)}</small>`
@@ -4922,6 +4947,19 @@
 
         const mapaAtualizado = {};
 
+        if (categoria === "Assinatura") {
+          const compraAssinatura = montarCompraAssinatura({ nome, valor, mesOrigem: mesBase });
+
+          getMesesAssinatura(mesBase).forEach(mesDestino => {
+            const comprasDoMes = getComprasBasePorMes(item, mesDestino);
+            comprasDoMes.push({ ...compraAssinatura });
+            mapaAtualizado[mesDestino] = comprasDoMes;
+          });
+
+          await salvarComprasPorMes(cardId, item, mapaAtualizado);
+          return;
+        }
+
         novasParcelas.forEach(compra => {
           const mesDestino = compra.mesDestino;
           const comprasDoMes = getComprasBasePorMes(item, mesDestino);
@@ -4953,6 +4991,16 @@
 
         const compraNormalizada = normalizarCompras({ compras: [compraAtual] })[0];
         const mapaAtualizado = {};
+
+        if (compraNormalizada.repetirMensal && compraNormalizada.mesOrigem) {
+          getMesesAssinatura(compraNormalizada.mesOrigem).forEach(mes => {
+            mapaAtualizado[mes] = getComprasBasePorMes(item, mes)
+              .filter(compra => String(compra?.id || "") !== String(compraNormalizada.id));
+          });
+
+          await salvarComprasPorMes(cardId, item, mapaAtualizado);
+          return;
+        }
 
         if (compraNormalizada.parcelaTotal > 1 && compraNormalizada.parcelamentoId) {
           getMesesRelacionadosCompra(compraNormalizada, mesReferencia, item).forEach(mes => {
@@ -5280,6 +5328,28 @@
             });
 
             await salvarComprasPorMes(cardId, item, mapaAtualizado);
+          } else if (novaCategoria === "Assinatura") {
+            const compraAtualizada = montarCompraAssinatura({
+              id: compra.id || compra.parcelamentoId || gerarIdCompra(),
+              nome: novoNome,
+              valor: novoValor,
+              mesOrigem
+            });
+
+            getMesesAssinatura(mesOrigem).forEach(mes => {
+              const listaMes = getComprasBasePorMes(item, mes)
+                .map(itemCompra => String(itemCompra?.id || "") === String(compraAtualizada.id)
+                  ? { ...compraAtualizada }
+                  : itemCompra);
+
+              if (!listaMes.some(itemCompra => String(itemCompra?.id || "") === String(compraAtualizada.id))) {
+                listaMes.push({ ...compraAtualizada });
+              }
+
+              mapaAtualizado[mes] = listaMes;
+            });
+
+            await salvarComprasPorMes(cardId, item, mapaAtualizado);
           } else {
             comprasBase[index] = {
               id: compra.id || gerarIdCompra(),
@@ -5293,6 +5363,15 @@
               mesOrigem
             };
             mapaAtualizado[mesReferencia] = comprasBase;
+
+            if (compra.repetirMensal && compra.mesOrigem) {
+              getMesesAssinatura(compra.mesOrigem).forEach(mes => {
+                if (mes === mesReferencia) return;
+                mapaAtualizado[mes] = getComprasBasePorMes(item, mes)
+                  .filter(itemCompra => String(itemCompra?.id || "") !== String(compra.id));
+              });
+            }
+
             await salvarComprasPorMes(cardId, item, mapaAtualizado);
           }
 
