@@ -28,6 +28,12 @@ function getMesAtual() {
   return getTodayISO().substring(0, 7);
 }
 
+function limparPlaceholder(valor) {
+  const str = String(valor || "").trim();
+  if (!str || str.includes("[") || str.includes("]")) return undefined;
+  return str;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -46,14 +52,15 @@ module.exports = async (req, res) => {
   }
 
   const params = req.method === 'GET' ? req.query : (req.body || {});
-  const { uid, groupId, categoria, cartao, valor, descricao } = params;
+  const { uid, groupId, categoria, cartao, valor, descricao, data, dispositivo, observacao } = params;
 
   if (!uid || !groupId) {
     return res.status(401).json({ ok: false, erro: "UID e groupId sao obrigatorios." });
   }
 
-  if (!valor || isNaN(parseFloat(String(valor).replace(',', '.')))) {
-    return res.status(400).json({ ok: false, erro: "Valor invalido." });
+if (!valor || isNaN(parseFloat(String(valor).replace(',', '.')))) {
+    const temPlaceholder = /\[[^\]]*\]/.test(String(valor));
+    return res.status(400).json({ ok: false, erro: temPlaceholder ? "Preencha o campo [valor] no atalho antes de usar." : "Valor invalido." });
   }
 
   const valorNumerico = parseFloat(String(valor).replace(',', '.'));
@@ -75,32 +82,42 @@ module.exports = async (req, res) => {
     return res.status(500).json({ ok: false, erro: "Erro ao verificar usuario: " + e.message });
   }
 
-  const hoje = getTodayISO();
-  const mes = getMesAtual();
+// Usa data enviada pelo Atalho (ex: AAAA-MM-DD) ou a data atual (Fuso Brasília)
+  const dataFinal = (data && /^\d{4}-\d{2}-\d{2}$/.test(data)) ? data : getTodayISO();
+  const mesFinal = dataFinal.substring(0, 7);
+
+  // Placeholders como [Escolha]/[Entrada] viram valores vazios (cliente colou a URL sem preencher)
+  const categoriaFinal = limparPlaceholder(categoria) || "Outros";
+  const cartaoFinal = limparPlaceholder(cartao);
+  const descricaoFinal = limparPlaceholder(descricao);
+  const observacaoFinal = limparPlaceholder(observacao) || "";
+  const dispositivoFinal = limparPlaceholder(dispositivo) || "iPhone Atalho";
 
   const novaDespesa = {
-    descricao: descricao || (cartao ? `Cartão ${cartao}` : 'Despesa via Atalho'),
+    descricao: descricaoFinal || (cartaoFinal ? `Cartão ${cartaoFinal}` : 'Despesa via Atalho'),
     categoria: 'Cartões',
-    subcategoria: categoria || 'Outros',
+    subcategoria: categoriaFinal,
     valor: valorNumerico,
-    vencimento: hoje,
+    vencimento: dataFinal,
+    observacao: observacaoFinal,
+    dispositivo: dispositivoFinal,
     pago: false,
     isAssinatura: false,
-    mesReferencia: mes,
+    mesReferencia: mesFinal,
     historico: true,
     compras: [
       {
-        nome: descricao || categoria || 'Compra',
+        nome: descricaoFinal || categoriaFinal || 'Compra',
         valor: valorNumerico,
         parcelas: 1,
-        categoria: categoria || 'Outros',
-        cartaoNome: cartao || '',
-        mes: mes,
+        categoria: categoriaFinal,
+        cartaoNome: cartaoFinal || '',
+        mes: mesFinal,
         criadoEm: new Date().toISOString()
       }
     ],
-    cartaoNome: cartao || '',
-    criadoVia: 'atalho-ios',
+    cartaoNome: cartaoFinal || '',
+    criadoVia: dispositivoFinal === "iPhone Atalho" ? 'atalho-ios' : `atalho-ios (${dispositivoFinal})`,
     criadoPor: uid,
     criadoEm: admin.firestore.FieldValue.serverTimestamp()
   };
@@ -111,17 +128,17 @@ module.exports = async (req, res) => {
       .collection('despesas')
       .add(novaDespesa);
 
-    return res.status(200).json({
+return res.status(200).json({
       ok: true,
       id: ref.id,
-      mensagem: "Despesa salva com sucesso! " + (categoria || '') + " - R$ " + valorNumerico.toFixed(2).replace('.', ','),
+      mensagem: "Despesa salva com sucesso! " + (categoriaFinal || '') + " - R$ " + valorNumerico.toFixed(2).replace('.', ','),
       despesa: {
         id: ref.id,
         descricao: novaDespesa.descricao,
         categoria: novaDespesa.subcategoria,
-        cartao: cartao || '',
+        cartao: cartaoFinal || '',
         valor: valorNumerico,
-        data: hoje
+        data: dataFinal
       }
     });
 

@@ -975,6 +975,14 @@
 
       <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 8px;">
 
+        <div style="background: var(--primary-soft); border: 2px solid var(--primary); border-radius: 12px; padding: 16px; text-align: center; display: flex; flex-direction: column; gap: 10px;">
+          <h3 style="margin: 0; font-size: 16px; color: var(--primary);">⚡ Copiar Link do Atalho Pronto (1-Clique)</h3>
+          <p style="font-size: 13px; margin: 0; color: var(--text);">Clique no botão abaixo para copiar seu Atalho personalizado completo com seu UID e Group ID preenchidos!</p>
+          <button type="button" class="btn-primary" id="copy-full-shortcut-url" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: bold; padding: 12px;">
+            <i data-lucide="zap" style="width: 18px; height: 18px;"></i> Copiar URL do Meu Atalho Personalizado
+          </button>
+        </div>
+
         <div style="background: var(--surface); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
           <p style="font-size: 13px; color: var(--muted); margin: 0;">Copie estas chaves — você vai precisar delas no Atalho:</p>
           <div>
@@ -6376,6 +6384,18 @@
           if (copyUidBtn) copyUidBtn.onclick = () => copiarTexto(uid, copyUidBtn);
           if (copyGroupIdBtn) copyGroupIdBtn.onclick = () => copiarTexto(gid, copyGroupIdBtn);
           if (copyApiUrlBtn) copyApiUrlBtn.onclick = () => copiarTexto(apiUrl, copyApiUrlBtn);
+
+          const copyFullBtn = document.getElementById("copy-full-shortcut-url");
+          if (copyFullBtn) {
+            copyFullBtn.onclick = () => {
+              if (!uid || !gid) {
+                alert("Faça login no aplicativo primeiro para gerar sua URL personalizada.");
+                return;
+              }
+              const fullUrl = `${apiUrl}?uid=${uid}&groupId=${gid}&categoria=[Escolha]&cartao=[Escolha]&valor=[Entrada]`;
+              copiarTexto(fullUrl, copyFullBtn);
+            };
+          }
 
           if (iosShortcutModal) {
             iosShortcutModal.classList.remove("hidden");
