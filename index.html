@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=3" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="logo.jpg" type="image/jpeg" />
   <link rel="apple-touch-icon" href="logo.jpg" />
@@ -4229,10 +4229,14 @@
             "hsla(220,85%,60%,0.9)","hsla(160,70%,45%,0.9)","hsla(35,90%,58%,0.9)",
             "hsla(340,75%,58%,0.9)","hsla(270,70%,60%,0.9)","hsla(185,75%,45%,0.9)",
             "hsla(60,85%,50%,0.9)","hsla(15,80%,58%,0.9)","hsla(120,60%,45%,0.9)",
-            "hsla(300,65%,55%,0.9)","hsla(200,80%,55%,0.9)","hsla(50,90%,55%,0.9)"
+            "hsla(300,65%,55%,0.9)","hsla(200,80%,55%,0.9)","hsla(50,90%,55%,0.9)",
+            "hsla(25,90%,60%,0.9)","hsla(190,65%,50%,0.9)","hsla(320,70%,60%,0.9)",
+            "hsla(80,80%,45%,0.9)","hsla(240,75%,65%,0.9)","hsla(10,85%,65%,0.9)"
           ];
           return Array.from({ length: total }, (_, i) =>
-            paleta[i % paleta.length] || `hsla(${Math.round((360 / Math.max(total, 1)) * i)}, 72%, 55%, 0.88)`
+            i < paleta.length 
+              ? paleta[i] 
+              : `hsla(${Math.round((360 / Math.max(total, 1)) * i)}, 72%, 55%, 0.88)`
           );
         };
 
