@@ -47,9 +47,17 @@ function normalizarTexto(txt) {
 }
 
 function ehDocumentoDeCartao(data) {
-  const cat = String(data.categoria || "");
+  if (!data) return false;
+  const cat = String(data.categoria || "").trim();
+  const sub = String(data.subcategoria || "").trim();
   const desc = normalizarTexto(data.descricao);
-  return cat === "Cartões" || cat === "Assinaturas" || Boolean(data.isAssinatura) || desc.startsWith("cartao") || desc.includes("cartao") || desc.includes("nubank") || desc.includes("itau") || desc.includes("santander") || desc.includes("bradesco") || desc.includes("inter") || desc.includes("caixa");
+  const cartaoNome = normalizarTexto(data.cartaoNome);
+
+  if (cat === "Cartões" || cat === "Cartoes" || cat === "Assinaturas" || Boolean(data.isAssinatura)) return true;
+  if (sub === "Assinatura" || sub === "Cartão" || sub === "Cartao") return true;
+  if (cartaoNome || desc.includes("cartao") || desc.includes("nubank") || desc.includes("itau") || desc.includes("santander") || desc.includes("bradesco") || desc.includes("inter") || desc.includes("caixa") || desc.includes("carrefour") || desc.includes("riachuelo") || desc.includes("renner") || desc.includes("mercado") || desc.includes("c&a") || desc.includes("bb")) return true;
+
+  return false;
 }
 
 module.exports = async (req, res) => {

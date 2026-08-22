@@ -206,10 +206,11 @@ body {
 }
 
 .hero-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 8px;
+  justify-content: end;
+  align-items: center;
 }
 
 .badge {
@@ -1120,11 +1121,16 @@ input[type="checkbox"] {
   }
 
   .hero-actions {
-    justify-content: stretch;
+    grid-template-columns: repeat(4, auto);
+    justify-content: start;
+    gap: 6px;
   }
 
   .hero-actions button {
-    flex: 1 1 180px;
+    flex: unset;
+    min-width: 40px;
+    height: 38px;
+    padding: 6px 10px;
   }
 
   .summary-grid {
@@ -2603,8 +2609,10 @@ html[data-theme="dark"] .table-wrap tbody tr:nth-child(even):not(.group-row):not
 }
 
 .hero-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
   gap: 8px;
+  justify-content: end;
   align-items: center;
 }
 
@@ -2615,6 +2623,7 @@ html[data-theme="dark"] .table-wrap tbody tr:nth-child(even):not(.group-row):not
   padding: 8px 12px;
   min-width: 40px;
   height: 40px;
+  white-space: nowrap;
 }
 
 .btn-icon {
@@ -2693,5 +2702,160 @@ html[data-theme="dark"] .table-wrap tbody tr:nth-child(even):not(.group-row):not
   background: var(--primary);
   width: 20px;
   border-radius: 10px;
+}
+
+/* ===== ABAS DE ASSINATURAS NO CARTÃO ===== */
+.compras-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0;
+}
+
+.compras-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: transparent;
+  border: none;
+  border-radius: 12px 12px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  bottom: -2px;
+  border-bottom: 2px solid transparent;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.compras-tab-btn:hover {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.compras-tab-btn.active {
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
+  background: var(--primary-soft);
+}
+
+.compras-tab-btn .tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--border);
+  color: var(--muted);
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.compras-tab-btn.active .tab-badge {
+  background: var(--primary);
+  color: #fff;
+}
+
+.compras-tab-btn.tab-assinatura .tab-badge {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--orange);
+}
+
+.compras-tab-btn.tab-assinatura.active .tab-badge {
+  background: var(--orange);
+  color: #fff;
+}
+
+.compras-tab-btn.tab-assinatura.active {
+  color: var(--orange);
+  border-bottom-color: var(--orange);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.compras-tab-panel {
+  display: none;
+}
+
+.compras-tab-panel.active {
+  display: block;
+}
+
+/* Badge de assinatura mensal nas compras */
+.compra-assinatura-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--orange);
+  border-radius: 99px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* Tipo de compra no form */
+.compra-tipo-selector {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.compra-tipo-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+}
+
+.compra-tipo-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.compra-tipo-btn.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.compra-tipo-btn.tipo-assinatura.active {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+/* Seção de assinaturas vazia */
+.assinaturas-empty {
+  text-align: center;
+  padding: 28px 16px;
+  color: var(--muted);
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.assinaturas-empty-icon {
+  font-size: 32px;
+  margin-bottom: 4px;
 }
 

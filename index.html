@@ -3841,10 +3841,39 @@
         if (cardBreakdownChartCanvas) {
           const dados = gerarDadosPorCartao(listaCartoes);
           const ctx = cardBreakdownChartCanvas.getContext("2d");
-          const cores = dados.map((_, i) => `hsla(${Math.round((360 / Math.max(dados.length, 1)) * i)}, 72%, 55%, 0.88)`);
+          const totalCards = dados.reduce((a, d) => a + d.total, 0);
+          const paleta = [
+            "hsla(220,85%,60%,0.9)","hsla(160,70%,45%,0.9)","hsla(35,90%,58%,0.9)",
+            "hsla(340,75%,58%,0.9)","hsla(270,70%,60%,0.9)","hsla(185,75%,45%,0.9)",
+            "hsla(60,85%,50%,0.9)","hsla(15,80%,58%,0.9)"
+          ];
+          const cores = dados.map((_, i) => paleta[i % paleta.length] || `hsla(${Math.round((360/Math.max(dados.length,1))*i)},72%,55%,0.88)`);
+
+          const pluginCentroCards = {
+            id: 'centroCards',
+            afterDraw(chart) {
+              const { ctx: c, chartArea } = chart;
+              if (!chartArea || !dados.length) return;
+              const cx = chartArea.left + chartArea.width / 2;
+              const cy = chartArea.top + chartArea.height / 2;
+              const estCss = getComputedStyle(document.documentElement);
+              c.save();
+              c.textAlign = 'center';
+              c.textBaseline = 'middle';
+              const isMob = window.innerWidth <= 640;
+              c.font = `bold ${isMob ? 11 : 13}px Outfit,sans-serif`;
+              c.fillStyle = estCss.getPropertyValue('--muted').trim() || '#64748b';
+              c.fillText('Total', cx, cy - (isMob ? 10 : 13));
+              c.font = `800 ${isMob ? 13 : 16}px Outfit,sans-serif`;
+              c.fillStyle = estCss.getPropertyValue('--text').trim() || '#111827';
+              c.fillText(formatarMoeda(totalCards), cx, cy + (isMob ? 8 : 10));
+              c.restore();
+            }
+          };
 
           cardBreakdownChart = new Chart(ctx, {
             type: "doughnut",
+            plugins: [pluginCentroCards],
             data: {
               labels: dados.length ? dados.map(item => item.nome) : ["Sem cartões no mês"],
               datasets: [{
@@ -3853,28 +3882,53 @@
                 backgroundColor: dados.length ? cores : [orange],
                 borderColor,
                 borderWidth: 2,
-                hoverOffset: 10
+                hoverOffset: 14,
+                borderRadius: 4
               }]
             },
             options: {
               responsive: true,
               maintainAspectRatio: false,
-              cutout: "65%",
+              cutout: "62%",
               animation: { duration: 1200, easing: "easeOutBounce" },
               plugins: {
                 legend: {
                   position: "bottom",
-                  labels: { color: corTexto, padding: 14, font: { weight: "bold" } }
+                  labels: {
+                    color: corTexto,
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    padding: 14,
+                    boxWidth: 10,
+                    boxHeight: 10,
+                    font: { weight: "bold", size: 12, family: 'Outfit' },
+                    generateLabels() {
+                      return dados.map((d, i) => {
+                        const pct = totalCards > 0 ? ((d.total / totalCards) * 100).toFixed(1) : '0.0';
+                        return {
+                          text: `${d.nome}  ${formatarMoeda(d.total)}  (${pct}%)`,
+                          fillStyle: cores[i],
+                          strokeStyle: borderColor,
+                          lineWidth: 1,
+                          hidden: false,
+                          index: i
+                        };
+                      });
+                    }
+                  }
                 },
                 tooltip: {
-                  backgroundColor: "rgba(15, 23, 42, 0.92)",
+                  backgroundColor: "rgba(15, 23, 42, 0.95)",
                   titleColor: "#ffffff",
                   bodyColor: "#ffffff",
-                  cornerRadius: 12,
-                  padding: 14,
+                  cornerRadius: 14,
+                  padding: 16,
                   callbacks: {
                     label(context) {
-                      return dados.length ? ` ${context.label}: ${formatarMoeda(context.raw || 0)}` : " R$ 0,00";
+                      if (!dados.length) return " R$ 0,00";
+                      const val = Number(context.raw || 0);
+                      const pct = totalCards > 0 ? ((val / totalCards) * 100).toFixed(1) : '0.0';
+                      return ` ${context.label}: ${formatarMoeda(val)}  (${pct}%)`;
                     }
                   }
                 }
@@ -4167,15 +4221,172 @@
         const corTexto = estilo.getPropertyValue("--text").trim() || "#1f2937";
         const primary = estilo.getPropertyValue("--primary").trim() || "#1d4ed8";
         const ctx = categoryChartCanvas.getContext("2d");
+        const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+        const borderColor = isDark ? "#111827" : "#ffffff";
 
         const criarCoresPizza = (total) => {
-          const cores = [];
-          for (let i = 0; i < total; i++) {
-            const hue = Math.round((360 / Math.max(total, 1)) * i);
-            cores.push(`hsla(${hue}, 72%, 55%, 0.88)`);
-          }
-          return cores;
+          const paleta = [
+            "hsla(220,85%,60%,0.9)","hsla(160,70%,45%,0.9)","hsla(35,90%,58%,0.9)",
+            "hsla(340,75%,58%,0.9)","hsla(270,70%,60%,0.9)","hsla(185,75%,45%,0.9)",
+            "hsla(60,85%,50%,0.9)","hsla(15,80%,58%,0.9)","hsla(120,60%,45%,0.9)",
+            "hsla(300,65%,55%,0.9)","hsla(200,80%,55%,0.9)","hsla(50,90%,55%,0.9)"
+          ];
+          return Array.from({ length: total }, (_, i) =>
+            paleta[i % paleta.length] || `hsla(${Math.round((360 / Math.max(total, 1)) * i)}, 72%, 55%, 0.88)`
+          );
         };
+
+        // Plugin: total no centro do donut
+        const pluginCentroTotal = {
+          id: 'centroTotal',
+          afterDraw(chart) {
+            const { ctx: c, chartArea } = chart;
+            if (!chartArea) return;
+            const { width, height } = chartArea;
+            const cx = chartArea.left + width / 2;
+            const cy = chartArea.top + height / 2;
+            const dataset = chart.data.datasets[0];
+            const total = (dataset.data || []).reduce((a, v) => a + Number(v || 0), 0);
+            if (!total) return;
+            const txt = formatarMoeda(total);
+            const isMobile = window.innerWidth <= 640;
+            c.save();
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+            c.font = `bold ${isMobile ? 12 : 14}px Outfit, sans-serif`;
+            c.fillStyle = estilo.getPropertyValue('--muted').trim() || '#64748b';
+            c.fillText('Total', cx, cy - (isMobile ? 10 : 13));
+            c.font = `800 ${isMobile ? 14 : 17}px Outfit, sans-serif`;
+            c.fillStyle = estilo.getPropertyValue('--text').trim() || '#111827';
+            c.fillText(txt, cx, cy + (isMobile ? 8 : 10));
+            c.restore();
+          }
+        };
+
+        const buildLegendLabels = (dataLabels, dataValues, colors) => ({
+          color: corTexto,
+          usePointStyle: true,
+          pointStyle: 'circle',
+          padding: window.innerWidth <= 640 ? 8 : 14,
+          boxWidth: 10,
+          boxHeight: 10,
+          font: { weight: '700', size: window.innerWidth <= 640 ? 11 : 12, family: 'Outfit' },
+          generateLabels() {
+            const totalGeral = dataValues.reduce((a, v) => a + Number(v || 0), 0);
+            return dataLabels.map((label, i) => {
+              const val = Number(dataValues[i] || 0);
+              const pct = totalGeral > 0 ? ((val / totalGeral) * 100).toFixed(1) : '0.0';
+              return {
+                text: `${label}  ${formatarMoeda(val)}  (${pct}%)`,
+                fillStyle: colors[i],
+                strokeStyle: borderColor,
+                lineWidth: 1,
+                hidden: false,
+                index: i
+              };
+            });
+          }
+        });
+
+        if (!dados.length) {
+          categoryChart = new Chart(ctx, {
+            type: "doughnut",
+            plugins: [pluginCentroTotal],
+            data: {
+              labels: ["Sem compras cadastradas"],
+              datasets: [{ label: "Total", data: [1], backgroundColor: [primary], borderColor, borderWidth: 2, hoverOffset: 8 }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: "65%",
+              animation: { duration: 1200, easing: "easeOutBounce" },
+              layout: { padding: 8 },
+              plugins: {
+                legend: { position: "bottom", labels: { color: corTexto, font: { weight: "bold", size: 12 } } },
+                tooltip: { enabled: false }
+              }
+            }
+          });
+          return;
+        }
+
+        const labels = dados.map(item => item.categoria);
+        const valores = dados.map(item => item.total);
+        const cores = criarCoresPizza(labels.length);
+        const totalGeral = valores.reduce((a, v) => a + v, 0);
+
+        categoryChart = new Chart(ctx, {
+          type: "doughnut",
+          plugins: [pluginCentroTotal],
+          data: {
+            labels,
+            datasets: [{
+              label: "Total por categoria",
+              data: valores,
+              backgroundColor: cores,
+              borderColor,
+              borderWidth: 2,
+              hoverOffset: 14,
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "62%",
+            animation: { duration: 1200, easing: "easeOutBounce" },
+            interaction: { mode: "nearest", intersect: true },
+            layout: { padding: 8 },
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: buildLegendLabels(labels, valores, cores)
+              },
+              tooltip: {
+                backgroundColor: "rgba(15, 23, 42, 0.95)",
+                titleColor: "#ffffff",
+                bodyColor: "#ffffff",
+                cornerRadius: 14,
+                padding: 16,
+                usePointStyle: true,
+                callbacks: {
+                  label(context) {
+                    const val = Number(context.raw || 0);
+                    const pct = totalGeral > 0 ? ((val / totalGeral) * 100).toFixed(1) : '0.0';
+                    return ` ${context.label}: ${formatarMoeda(val)}  (${pct}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        // Lista de valores abaixo do gráfico
+        const wrapper = categoryChartCanvas.closest('.chart-card');
+        if (wrapper) {
+          let listEl = wrapper.querySelector('.chart-value-list');
+          if (!listEl) {
+            listEl = document.createElement('div');
+            listEl.className = 'chart-value-list';
+            categoryChartCanvas.closest('.chart-box')?.after(listEl);
+          }
+          const sorted = [...dados].sort((a, b) => b.total - a.total);
+          listEl.innerHTML = sorted.map((item, i) => {
+            const pct = totalGeral > 0 ? ((item.total / totalGeral) * 100).toFixed(1) : '0.0';
+            const cor = cores[dados.indexOf(item)] || cores[i % cores.length];
+            return `
+              <div class="chart-value-row">
+                <span class="chart-value-dot" style="background:${cor}"></span>
+                <span class="chart-value-name">${escapeHtml(item.categoria)}</span>
+                <div class="chart-value-bar-wrap"><div class="chart-value-bar" style="width:${pct}%;background:${cor}"></div></div>
+                <span class="chart-value-pct">${pct}%</span>
+                <span class="chart-value-amount">${formatarMoeda(item.total)}</span>
+              </div>`;
+          }).join('');
+        }
+      }
+
 
         if (!dados.length) {
           categoryChart = new Chart(ctx, {
@@ -4302,118 +4513,187 @@
       }
 
 
+      window.switchCompraTab = function(btn, tabId) {
+        const tabs = btn.parentElement;
+        const panelBox = tabs.parentElement;
+        
+        tabs.querySelectorAll('.compras-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        panelBox.querySelectorAll('.compras-tab-panel').forEach(p => p.classList.remove('active'));
+        panelBox.querySelector(`.compras-tab-panel[data-tab-content="${tabId}"]`)?.classList.add('active');
+      };
+
+      window.selectCompraTipo = function(btn, tipo) {
+        const selector = btn.parentElement;
+        const form = selector.closest('form');
+        
+        selector.querySelectorAll('.compra-tipo-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const inputTipo = form.querySelector('input[name="tipo_compra"]');
+        if (inputTipo) inputTipo.value = tipo;
+        
+        const fieldParcelas = form.querySelector('.field-parcelas');
+        const fieldCategoria = form.querySelector('.field-categoria');
+        
+        if (tipo === 'parcelado') {
+          if (fieldParcelas) fieldParcelas.style.display = 'block';
+          if (fieldCategoria) fieldCategoria.style.display = 'block';
+        } else if (tipo === 'assinatura') {
+          if (fieldParcelas) fieldParcelas.style.display = 'none';
+          if (fieldCategoria) fieldCategoria.style.display = 'none';
+        } else {
+          if (fieldParcelas) fieldParcelas.style.display = 'none';
+          if (fieldCategoria) fieldCategoria.style.display = 'block';
+        }
+      };
+
       function renderComprasDoCartao(item) {
         const compras = normalizarCompras(item);
-        const totalCompras = compras.reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
+        const comprasNormais = compras.filter(c => !c.repetirMensal && c.categoria !== "Assinatura");
+        const comprasAssinaturas = compras.filter(c => c.repetirMensal || c.categoria === "Assinatura");
+
+        const totalCompras = comprasNormais.reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
+        const totalAssinaturas = comprasAssinaturas.reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
         const valorPrincipal = getValorPrincipalItem(item);
         const cardId = item.origemId || item.id;
         const mesReferencia = item.mesReferencia || "";
+
+        const gerarTabela = (lista, isAssinatura) => {
+          if (!lista.length) {
+            return `
+              <div class="compras-empty">
+                Nenhuma ${isAssinatura ? 'assinatura' : 'compra'} cadastrada para este cartão.
+              </div>
+            `;
+          }
+          return `
+            <div class="compras-table-wrap">
+              <table class="compras-table compras-subtable">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    ${!isAssinatura ? '<th>Categoria</th>' : ''}
+                    <th>${isAssinatura ? 'Tipo' : 'Parcela'}</th>
+                    <th>Valor</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${lista.map((compra) => {
+                    const index = compras.indexOf(compra);
+                    const textoParcela = compra.repetirMensal
+                      ? "Mensal"
+                      : Number(compra.parcelaTotal || 1) > 1
+                        ? `${compra.parcelaAtual}/${compra.parcelaTotal}`
+                        : "À vista";
+                    
+                    const detalheValor = Number(compra.parcelaTotal || 1) > 1
+                      ? \`<small class="compra-total-info">Total: \${formatarMoeda(compra.valorTotal)}</small>\`
+                      : "";
+
+                    return \`
+                      <tr>
+                        <td><strong>\${escapeHtml(compra.nome)}</strong></td>
+                        \${!isAssinatura ? \`
+                        <td>
+                          <span class="compra-categoria-badge">
+                            \${escapeHtml(compra.categoria || "Sem categoria")}
+                          </span>
+                        </td>\` : ''}
+                        <td>
+                          <div class="compra-parcela-info">
+                            <strong>\${escapeHtml(textoParcela)}</strong>
+                            \${Number(compra.parcelaTotal || 1) > 1
+                              ? \`<small>Origem: \${escapeHtml(formatarMesCurto(compra.mesOrigem || mesReferencia))}</small>\`
+                              : ""}
+                          </div>
+                        </td>
+                        <td class="valor-cell">
+                          \${formatarMoeda(compra.valor)}
+                          \${detalheValor}
+                        </td>
+                        <td>
+                          <div class="compra-actions">
+                            <button
+                              type="button"
+                              class="compra-action-btn"
+                              data-action="edit-compra"
+                              data-id="\${cardId}"
+                              data-mes="\${mesReferencia}"
+                              data-index="\${index}"
+                            >
+                              ✏
+                            </button>
+                            <button
+                              type="button"
+                              class="compra-action-btn delete"
+                              data-action="delete-compra"
+                              data-id="\${cardId}"
+                              data-mes="\${mesReferencia}"
+                              data-index="\${index}"
+                            >
+                              🗑
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    \`;
+                  }).join("")}
+                </tbody>
+              </table>
+            </div>
+          `;
+        };
 
         return `
       <div class="compras-box">
         <div class="compras-header">
           <div>
             <h4>Compras do cartão</h4>
-            <p>Adicione, edite ou exclua compras deste cartão, inclusive parceladas.</p>
+            <p>Adicione e gerencie compras ou assinaturas.</p>
           </div>
           <div>
-            <strong>Total das compras do mês: ${formatarMoeda(totalCompras)}</strong>
-            <p>Valor mostrado na tabela principal: ${formatarMoeda(valorPrincipal)}</p>
+            <strong>Total do mês: ${formatarMoeda(totalCompras + totalAssinaturas)}</strong>
+            <p>Valor na tabela principal: ${formatarMoeda(valorPrincipal)}</p>
           </div>
         </div>
 
-        ${compras.length
-            ? `
-              <div class="compras-table-wrap">
-                <table class="compras-table compras-subtable">
-                  <thead>
-                    <tr>
-                      <th>Nome</th>
-                      <th>Categoria</th>
-                      <th>Parcela</th>
-                      <th>Valor</th>
-                      <th>Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${compras.map((compra, index) => {
-              const textoParcela = compra.repetirMensal
-                ? "Mensal"
-                : Number(compra.parcelaTotal || 1) > 1
-                  ? `${compra.parcelaAtual}/${compra.parcelaTotal}`
-                  : "À vista";
+        <div class="compras-tabs" style="margin-bottom:12px;">
+          <button type="button" class="compras-tab-btn active" onclick="window.switchCompraTab(this, 'compras')">
+            Compras 💳 <span class="badge" style="padding:2px 8px;margin-left:6px;font-size:11px;">${comprasNormais.length}</span>
+          </button>
+          <button type="button" class="compras-tab-btn" onclick="window.switchCompraTab(this, 'assinaturas')">
+            Assinaturas 🔄 <span class="badge" style="padding:2px 8px;margin-left:6px;font-size:11px;">${comprasAssinaturas.length}</span>
+          </button>
+        </div>
 
-              const detalheValor = Number(compra.parcelaTotal || 1) > 1
-                ? `<small class="compra-total-info">Total: ${formatarMoeda(compra.valorTotal)}</small>`
-                : "";
-
-              return `
-                        <tr>
-                          <td>
-                            <strong>${escapeHtml(compra.nome)}</strong>
-                          </td>
-                          <td>
-                            <span class="compra-categoria-badge">
-                              ${escapeHtml(compra.categoria || "Sem categoria")}
-                            </span>
-                          </td>
-                          <td>
-                            <div class="compra-parcela-info">
-                              <strong>${escapeHtml(textoParcela)}</strong>
-                              ${Number(compra.parcelaTotal || 1) > 1
-                  ? `<small>Origem: ${escapeHtml(formatarMesCurto(compra.mesOrigem || mesReferencia))}</small>`
-                  : ""}
-                            </div>
-                          </td>
-                          <td class="valor-cell">
-                            ${formatarMoeda(compra.valor)}
-                            ${detalheValor}
-                          </td>
-                          <td>
-                            <div class="compra-actions">
-                              <button
-                                type="button"
-                                class="compra-action-btn"
-                                data-action="edit-compra"
-                                data-id="${cardId}"
-                                data-mes="${mesReferencia}"
-                                data-index="${index}"
-                              >
-                                ✏
-                              </button>
-                              <button
-                                type="button"
-                                class="compra-action-btn delete"
-                                data-action="delete-compra"
-                                data-id="${cardId}"
-                                data-mes="${mesReferencia}"
-                                data-index="${index}"
-                              >
-                                🗑
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      `;
-            }).join("")}
-                  </tbody>
-                </table>
-              </div>
-            `
-            : `
-              <div class="compras-empty">
-                Nenhuma compra cadastrada para este cartão ainda.
-              </div>
-            `
-          }
+        <div class="compras-tab-panel active" data-tab-content="compras">
+          ${gerarTabela(comprasNormais, false)}
+        </div>
+        
+        <div class="compras-tab-panel" data-tab-content="assinaturas" style="display:none;">
+          ${gerarTabela(comprasAssinaturas, true)}
+        </div>
 
         <form class="compra-form form-add-compra" data-card-id="${cardId}" data-mes="${mesReferencia}">
-          <div class="field">
-            <label>Nome da compra</label>
-            <input type="text" name="nome" placeholder="Ex: Supermercado, Farmácia, Alimentação" required />
+          <div class="field" style="grid-column: 1 / -1;">
+            <label>Tipo de lançamento</label>
+            <div class="compra-tipo-selector" style="display:flex;gap:8px;margin-bottom:4px;">
+              <button type="button" class="compra-action-btn active compra-tipo-btn" onclick="window.selectCompraTipo(this, 'avista')" style="flex:1;">À vista</button>
+              <button type="button" class="compra-action-btn compra-tipo-btn" onclick="window.selectCompraTipo(this, 'parcelado')" style="flex:1;">Parcelado</button>
+              <button type="button" class="compra-action-btn compra-tipo-btn" onclick="window.selectCompraTipo(this, 'assinatura')" style="flex:1;">Assinatura</button>
+            </div>
+            <input type="hidden" name="tipo_compra" value="avista" />
           </div>
 
           <div class="field">
+            <label>Nome da compra</label>
+            <input type="text" name="nome" placeholder="Ex: Academia, Supermercado" required />
+          </div>
+
+          <div class="field field-categoria">
             <label>Categoria</label>
             <div style="display:flex; gap: 8px;">
               <select name="categoria" required style="flex:1;">
@@ -4424,13 +4704,13 @@
           </div>
 
           <div class="field">
-            <label>Valor total</label>
+            <label>Valor</label>
             <input type="text" name="valor" placeholder="0,00" inputmode="numeric" required />
           </div>
 
-          <div class="field">
+          <div class="field field-parcelas" style="display:none;">
             <label>Parcelas</label>
-            <input type="number" name="parcelas" min="1" step="1" value="1" required />
+            <input type="number" name="parcelas" min="1" step="1" value="1" />
           </div>
 
           <button type="submit">Adicionar</button>
@@ -5549,9 +5829,15 @@
         const cardId = compraForm.dataset.cardId;
         const mesRef = compraForm.dataset.mes || "";
         const nome = compraForm.nome.value.trim();
-        const categoria = compraForm.categoria.value.trim();
+        let categoria = compraForm.categoria?.value.trim() || "";
         const valor = converterValorInput(compraForm.valor.value);
-        const parcelas = Math.max(1, Number(compraForm.parcelas.value || 1));
+        let parcelas = Math.max(1, Number(compraForm.parcelas?.value || 1));
+
+        const tipoInput = compraForm.querySelector('input[name="tipo_compra"]');
+        if (tipoInput && tipoInput.value === "assinatura") {
+          categoria = "Assinatura";
+          parcelas = 1;
+        }
 
         if (!nome) {
           alert("Digite o nome da compra.");
@@ -5577,6 +5863,10 @@
           await adicionarCompraAoCartao(cardId, mesRef, nome, categoria, valor, parcelas);
           compraForm.reset();
           if (compraForm.parcelas) compraForm.parcelas.value = "1";
+          if (tipoInput) tipoInput.value = "avista";
+          const firstTipoBtn = compraForm.querySelector('.compra-tipo-btn');
+          if (firstTipoBtn) window.selectCompraTipo(firstTipoBtn, 'avista');
+          
           renderGraficoCategorias();
           renderPainelCartoes();
         } catch (error) {
