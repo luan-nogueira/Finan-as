@@ -1617,68 +1617,94 @@ input[type="checkbox"] {
     margin-right: auto !important;
   }
 
+.compra-mobile-only-meta {
+  display: none;
+}
+
+@media (max-width: 640px) {
   .compras-subtable thead {
-    display: none;
+    display: none !important;
   }
 
+  .compras-subtable,
   .compras-subtable tbody {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
   }
 
   .compras-subtable tr {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto auto;
-    grid-template-areas:
-      "nome valor"
-      "categoria total"
-      "parcela acoes";
-    gap: 4px 12px;
-    align-items: center;
-    border: none;
-    border-bottom: 1px dashed var(--border);
-    border-radius: 0;
-    padding: 12px 0;
-    background: transparent;
-    margin-bottom: 0;
-  }
-
-  .compras-subtable tr:last-child {
-    border-bottom: none;
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-rows: auto auto !important;
+    gap: 6px 12px !important;
+    align-items: center !important;
+    padding: 12px 14px !important;
+    background: var(--card-2, rgba(255, 255, 255, 0.03)) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 14px !important;
+    margin-bottom: 0 !important;
   }
 
   .compras-subtable td {
-    display: block;
-    border: none;
-    padding: 0;
+    display: block !important;
+    border: none !important;
+    padding: 0 !important;
     width: auto !important;
   }
 
-  /* We map the td elements to grid areas using classes for reliability */
-  .compras-subtable td.td-nome { grid-area: nome; }
-  .compras-subtable td.td-categoria { grid-area: categoria; }
-  .compras-subtable td.td-parcela { grid-area: parcela; }
-  .compras-subtable td.td-valor { grid-area: valor; text-align: right; }
-  .compras-subtable td.td-acoes { grid-area: acoes; justify-self: end; }
-
-  .compras-subtable .td-nome strong {
-    font-size: 14px;
+  .compras-subtable td.td-nome {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
   }
 
-  .compras-subtable .td-valor {
-    font-size: 14px;
-    font-weight: 800;
+  .compras-subtable td.td-valor {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    text-align: right !important;
   }
 
-  .compras-subtable .td-categoria .compra-categoria-badge {
-    margin-top: 2px;
+  .compras-subtable td.td-acoes {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    justify-self: end !important;
   }
 
-  .compras-subtable .td-parcela .compra-parcela-info {
-    font-size: 12px;
+  .desktop-only-cell {
+    display: none !important;
   }
+
+  .compra-mobile-only-meta {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    margin-top: 4px !important;
+  }
+
+  .compra-item-title {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: var(--text) !important;
+    line-height: 1.3 !important;
+  }
+
+  .compra-item-valor {
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: var(--text) !important;
+  }
+
+  .compra-meta-tag {
+    font-size: 11px !important;
+    color: var(--muted) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    padding: 2px 7px !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+  }
+}
 
   .compras-subtable .compra-actions {
     display: flex;

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="style.css?v=4" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="logo.jpg" type="image/jpeg" />
   <link rel="apple-touch-icon" href="logo.jpg" />
@@ -4467,20 +4467,27 @@
                         ? `${compra.parcelaAtual}/${compra.parcelaTotal}`
                         : "À vista";
                     
-                    const detalheValor = Number(compra.parcelaTotal || 1) > 1
-                      ? `<small class="compra-total-info">Total: ${formatarMoeda(compra.valorTotal)}</small>`
+                    const subtotalTexto = Number(compra.parcelaTotal || 1) > 1
+                      ? `Total: ${formatarMoeda(compra.valorTotal)}`
                       : "";
 
                     return `
                       <tr>
-                        <td class="td-nome"><strong>${escapeHtml(compra.nome)}</strong></td>
+                        <td class="td-nome">
+                          <div class="compra-item-title">${escapeHtml(compra.nome)}</div>
+                          <div class="compra-mobile-only-meta">
+                            ${!isAssinatura ? `<span class="compra-categoria-badge">${escapeHtml(compra.categoria || "Sem categoria")}</span>` : ''}
+                            <span class="compra-meta-tag">${escapeHtml(textoParcela)}</span>
+                            ${subtotalTexto ? `<span class="compra-meta-tag">${subtotalTexto}</span>` : ''}
+                          </div>
+                        </td>
                         ${!isAssinatura ? `
-                        <td class="td-categoria">
+                        <td class="td-categoria desktop-only-cell">
                           <span class="compra-categoria-badge">
                             ${escapeHtml(compra.categoria || "Sem categoria")}
                           </span>
                         </td>` : ''}
-                        <td class="td-parcela">
+                        <td class="td-parcela desktop-only-cell">
                           <div class="compra-parcela-info">
                             <strong>${escapeHtml(textoParcela)}</strong>
                             ${Number(compra.parcelaTotal || 1) > 1
@@ -4489,8 +4496,8 @@
                           </div>
                         </td>
                         <td class="valor-cell td-valor">
-                          ${formatarMoeda(compra.valor)}
-                          ${detalheValor}
+                          <div class="compra-item-valor">${formatarMoeda(compra.valor)}</div>
+                          ${subtotalTexto ? `<small class="compra-total-info desktop-only-cell">${subtotalTexto}</small>` : ''}
                         </td>
                         <td class="td-acoes">
                           <div class="compra-actions">
