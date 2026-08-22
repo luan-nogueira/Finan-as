@@ -4469,14 +4469,14 @@
 
                     return `
                       <tr>
-                        <td><strong>${escapeHtml(compra.nome)}</strong></td>
+                        <td class="td-nome"><strong>${escapeHtml(compra.nome)}</strong></td>
                         ${!isAssinatura ? `
-                        <td>
+                        <td class="td-categoria">
                           <span class="compra-categoria-badge">
                             ${escapeHtml(compra.categoria || "Sem categoria")}
                           </span>
                         </td>` : ''}
-                        <td>
+                        <td class="td-parcela">
                           <div class="compra-parcela-info">
                             <strong>${escapeHtml(textoParcela)}</strong>
                             ${Number(compra.parcelaTotal || 1) > 1
@@ -4484,11 +4484,11 @@
                               : ""}
                           </div>
                         </td>
-                        <td class="valor-cell">
+                        <td class="valor-cell td-valor">
                           ${formatarMoeda(compra.valor)}
                           ${detalheValor}
                         </td>
-                        <td>
+                        <td class="td-acoes">
                           <div class="compra-actions">
                             <button
                               type="button"
