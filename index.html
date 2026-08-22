@@ -4464,29 +4464,29 @@
                         : "À vista";
                     
                     const detalheValor = Number(compra.parcelaTotal || 1) > 1
-                      ? \`<small class="compra-total-info">Total: \${formatarMoeda(compra.valorTotal)}</small>\`
+                      ? `<small class="compra-total-info">Total: ${formatarMoeda(compra.valorTotal)}</small>`
                       : "";
 
-                    return \`
+                    return `
                       <tr>
-                        <td><strong>\${escapeHtml(compra.nome)}</strong></td>
-                        \${!isAssinatura ? \`
+                        <td><strong>${escapeHtml(compra.nome)}</strong></td>
+                        ${!isAssinatura ? `
                         <td>
                           <span class="compra-categoria-badge">
-                            \${escapeHtml(compra.categoria || "Sem categoria")}
+                            ${escapeHtml(compra.categoria || "Sem categoria")}
                           </span>
-                        </td>\` : ''}
+                        </td>` : ''}
                         <td>
                           <div class="compra-parcela-info">
-                            <strong>\${escapeHtml(textoParcela)}</strong>
-                            \${Number(compra.parcelaTotal || 1) > 1
-                              ? \`<small>Origem: \${escapeHtml(formatarMesCurto(compra.mesOrigem || mesReferencia))}</small>\`
+                            <strong>${escapeHtml(textoParcela)}</strong>
+                            ${Number(compra.parcelaTotal || 1) > 1
+                              ? `<small>Origem: ${escapeHtml(formatarMesCurto(compra.mesOrigem || mesReferencia))}</small>`
                               : ""}
                           </div>
                         </td>
                         <td class="valor-cell">
-                          \${formatarMoeda(compra.valor)}
-                          \${detalheValor}
+                          ${formatarMoeda(compra.valor)}
+                          ${detalheValor}
                         </td>
                         <td>
                           <div class="compra-actions">
@@ -4494,9 +4494,9 @@
                               type="button"
                               class="compra-action-btn"
                               data-action="edit-compra"
-                              data-id="\${cardId}"
-                              data-mes="\${mesReferencia}"
-                              data-index="\${index}"
+                              data-id="${cardId}"
+                              data-mes="${mesReferencia}"
+                              data-index="${index}"
                             >
                               ✏
                             </button>
@@ -4504,16 +4504,16 @@
                               type="button"
                               class="compra-action-btn delete"
                               data-action="delete-compra"
-                              data-id="\${cardId}"
-                              data-mes="\${mesReferencia}"
-                              data-index="\${index}"
+                              data-id="${cardId}"
+                              data-mes="${mesReferencia}"
+                              data-index="${index}"
                             >
                               🗑
                             </button>
                           </div>
                         </td>
                       </tr>
-                    \`;
+                    `;
                   }).join("")}
                 </tbody>
               </table>
