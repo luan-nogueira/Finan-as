@@ -4437,8 +4437,6 @@
         const totalCompras = comprasNormais.reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
         const totalAssinaturas = comprasAssinaturas.reduce((acc, compra) => acc + numeroSeguro(compra.valor), 0);
         const valorPrincipal = getValorPrincipalItem(item);
-        const cardId = item.origemId || item.id;
-        const mesReferencia = item.mesReferencia || "";
 
         const gerarTabela = (lista, isAssinatura) => {
           if (!lista.length) {
