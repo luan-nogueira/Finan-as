@@ -2363,6 +2363,13 @@
           .filter(compra => compra.nome);
       }
 
+      function diferencaMesesYyyyMm(m1, m2) {
+        if (!m1 || !m2) return 0;
+        const [a1, mes1] = m1.split("-").map(Number);
+        const [a2, mes2] = m2.split("-").map(Number);
+        return (a2 - a1) * 12 + (mes2 - mes1);
+      }
+
       function getComprasBasePorMes(item, mesReferencia) {
         const ajustes = getAjustesMensais(item);
         const ajusteDoMes = ajustes[mesReferencia];
@@ -2377,7 +2384,57 @@
           return normalizarCompras(item);
         }
 
-        return [];
+        const candidatoMap = new Map();
+        const registrarCandidato = (c) => {
+          if (!c || !c.nome) return;
+          const key = String(c.id || (c.categoria === "Assinatura" || c.repetirMensal ? `sub_${c.nome.toLowerCase().trim()}` : `${c.nome.trim()}_${c.mesOrigem}`)).trim();
+          if (!candidatoMap.has(key)) candidatoMap.set(key, c);
+        };
+
+        (item.compras || []).forEach(registrarCandidato);
+        Object.entries(ajustes).forEach(([m, obj]) => {
+          if (Array.isArray(obj?.compras)) {
+            obj.compras.forEach(registrarCandidato);
+          }
+        });
+
+        const resultado = [];
+        candidatoMap.forEach((compra) => {
+          const compNorm = normalizarCompras({ compras: [compra] })[0];
+          if (!compNorm) return;
+
+          const ehAssinatura = compNorm.repetirMensal || compNorm.categoria === "Assinatura";
+          const mesOrigem = compNorm.mesOrigem || mesOriginal;
+
+          if (ehAssinatura) {
+            if (!mesOrigem || mesOrigem <= mesReferencia) {
+              resultado.push({
+                ...compNorm,
+                mesOrigem: mesOrigem || mesReferencia
+              });
+            }
+          } else if (compNorm.parcelaTotal > 1) {
+            if (mesOrigem) {
+              const diff = diferencaMesesYyyyMm(mesOrigem, mesReferencia);
+              if (diff >= 0 && diff < compNorm.parcelaTotal) {
+                const numParcela = diff + 1;
+                const valorParc = calcularValorParcelaCompra(compNorm.valorTotal, numParcela, compNorm.parcelaTotal);
+                resultado.push({
+                  ...compNorm,
+                  parcelaAtual: numParcela,
+                  valor: valorParc,
+                  mesOrigem
+                });
+              }
+            }
+          } else {
+            if (mesOrigem === mesReferencia) {
+              resultado.push(compNorm);
+            }
+          }
+        });
+
+        return normalizarCompras({ compras: resultado });
       }
 
       function aplicarAjusteMensalNaInstancia(instancia) {
@@ -2707,7 +2764,13 @@
           };
         });
 
-        await getColDespesas().doc(cardId).update({ ajustesMensais });
+        const mesOriginal = getMesOriginalItem(item) || monthTerm;
+        const updatePayload = { ajustesMensais };
+        if (mapaCompras[mesOriginal]) {
+          updatePayload.compras = normalizarCompras({ compras: mapaCompras[mesOriginal] });
+        }
+
+        await getColDespesas().doc(cardId).update(updatePayload);
       }
 
       let adminUsersCache = [];
@@ -4400,6 +4463,15 @@
         
         panelBox.querySelectorAll('.compras-tab-panel').forEach(p => p.classList.remove('active'));
         panelBox.querySelector(`.compras-tab-panel[data-tab-content="${tabId}"]`)?.classList.add('active');
+
+        const form = panelBox.querySelector('.form-add-compra');
+        if (form) {
+          const targetTipo = tabId === 'assinaturas' ? 'assinatura' : 'avista';
+          const tipoBtn = form.querySelector(`.compra-tipo-btn[onclick*="'${targetTipo}'"]`);
+          if (tipoBtn) {
+            window.selectCompraTipo(tipoBtn, targetTipo);
+          }
+        }
       };
 
       window.selectCompraTipo = function(btn, tipo) {
@@ -4414,16 +4486,20 @@
         
         const fieldParcelas = form.querySelector('.field-parcelas');
         const fieldCategoria = form.querySelector('.field-categoria');
+        const selectCategoria = form.querySelector('select[name="categoria"]');
         
         if (tipo === 'parcelado') {
           if (fieldParcelas) fieldParcelas.style.display = 'block';
           if (fieldCategoria) fieldCategoria.style.display = 'block';
+          if (selectCategoria) selectCategoria.required = true;
         } else if (tipo === 'assinatura') {
           if (fieldParcelas) fieldParcelas.style.display = 'none';
           if (fieldCategoria) fieldCategoria.style.display = 'none';
+          if (selectCategoria) selectCategoria.required = false;
         } else {
           if (fieldParcelas) fieldParcelas.style.display = 'none';
           if (fieldCategoria) fieldCategoria.style.display = 'block';
+          if (selectCategoria) selectCategoria.required = true;
         }
       };
 
@@ -5130,9 +5206,27 @@
         if (categoria === "Assinatura") {
           const compraAssinatura = montarCompraAssinatura({ nome, valor, mesOrigem: mesBase });
 
-          getMesesAssinatura(mesBase).forEach(mesDestino => {
+          const mesesParaAtualizar = new Set([
+            ...getMesesAssinatura(mesBase),
+            ...Object.keys(getAjustesMensais(item))
+          ]);
+
+          mesesParaAtualizar.forEach(mesDestino => {
+            if (mesDestino < mesBase) return;
             const comprasDoMes = getComprasBasePorMes(item, mesDestino);
-            comprasDoMes.push({ ...compraAssinatura });
+            const targetId = String(compraAssinatura.id);
+            const targetNome = String(compraAssinatura.nome).toLowerCase().trim();
+
+            const idxExistente = comprasDoMes.findIndex(c =>
+              String(c.id || "").trim() === targetId ||
+              ((c.categoria === "Assinatura" || c.repetirMensal) && String(c.nome || "").toLowerCase().trim() === targetNome)
+            );
+
+            if (idxExistente >= 0) {
+              comprasDoMes[idxExistente] = { ...compraAssinatura };
+            } else {
+              comprasDoMes.push({ ...compraAssinatura });
+            }
             mapaAtualizado[mesDestino] = comprasDoMes;
           });
 
@@ -5172,10 +5266,27 @@
         const compraNormalizada = normalizarCompras({ compras: [compraAtual] })[0];
         const mapaAtualizado = {};
 
-        if (compraNormalizada.repetirMensal && compraNormalizada.mesOrigem) {
-          getMesesAssinatura(compraNormalizada.mesOrigem).forEach(mes => {
+        const ehAssinatura = compraNormalizada.repetirMensal || compraNormalizada.categoria === "Assinatura";
+
+        if (ehAssinatura) {
+          const targetId = String(compraNormalizada.id || "").trim();
+          const targetNome = String(compraNormalizada.nome || "").toLowerCase().trim();
+          const mesInicio = compraNormalizada.mesOrigem || mesReferencia;
+
+          const mesesParaLimpar = new Set([
+            ...getMesesAssinatura(mesInicio),
+            ...Object.keys(getAjustesMensais(item))
+          ]);
+
+          mesesParaLimpar.forEach(mes => {
+            if (mes < mesInicio) return;
             mapaAtualizado[mes] = getComprasBasePorMes(item, mes)
-              .filter(compra => String(compra?.id || "") !== String(compraNormalizada.id));
+              .filter(compra => {
+                const sameId = targetId && String(compra?.id || "").trim() === targetId;
+                const sameName = (compra?.categoria === "Assinatura" || compra?.repetirMensal) &&
+                                 String(compra?.nome || "").toLowerCase().trim() === targetNome;
+                return !sameId && !sameName;
+              });
           });
 
           await salvarComprasPorMes(cardId, item, mapaAtualizado);
@@ -5508,7 +5619,7 @@
             });
 
             await salvarComprasPorMes(cardId, item, mapaAtualizado);
-          } else if (novaCategoria === "Assinatura") {
+          } else if (novaCategoria === "Assinatura" || compra.repetirMensal) {
             const compraAtualizada = montarCompraAssinatura({
               id: compra.id || compra.parcelamentoId || gerarIdCompra(),
               nome: novoNome,
@@ -5516,17 +5627,35 @@
               mesOrigem
             });
 
-            getMesesAssinatura(mesOrigem).forEach(mes => {
-              const listaMes = getComprasBasePorMes(item, mes)
-                .map(itemCompra => String(itemCompra?.id || "") === String(compraAtualizada.id)
-                  ? { ...compraAtualizada }
-                  : itemCompra);
+            const originalId = String(compra.id || "").trim();
+            const originalNome = String(compra.nome || "").toLowerCase().trim();
 
-              if (!listaMes.some(itemCompra => String(itemCompra?.id || "") === String(compraAtualizada.id))) {
-                listaMes.push({ ...compraAtualizada });
+            const mesesParaAtualizar = new Set([
+              ...getMesesAssinatura(mesOrigem),
+              ...Object.keys(getAjustesMensais(item))
+            ]);
+
+            mesesParaAtualizar.forEach(mes => {
+              if (mes < mesOrigem) return;
+              const listaMes = getComprasBasePorMes(item, mes);
+              let foiSubstituido = false;
+
+              const novaLista = listaMes.map(itemCompra => {
+                const sameId = originalId && String(itemCompra?.id || "").trim() === originalId;
+                const sameName = (itemCompra?.categoria === "Assinatura" || itemCompra?.repetirMensal) &&
+                                 String(itemCompra?.nome || "").toLowerCase().trim() === originalNome;
+                if (sameId || sameName) {
+                  foiSubstituido = true;
+                  return { ...compraAtualizada };
+                }
+                return itemCompra;
+              });
+
+              if (!foiSubstituido) {
+                novaLista.push({ ...compraAtualizada });
               }
 
-              mapaAtualizado[mes] = listaMes;
+              mapaAtualizado[mes] = novaLista;
             });
 
             await salvarComprasPorMes(cardId, item, mapaAtualizado);
@@ -5557,6 +5686,7 @@
 
           editCompraModal.classList.add("hidden");
           editCompraForm.reset();
+          renderTabelaPrincipal();
           renderGraficoCategorias();
           renderPainelCartoes();
         });
@@ -5752,6 +5882,7 @@
           const firstTipoBtn = compraForm.querySelector('.compra-tipo-btn');
           if (firstTipoBtn) window.selectCompraTipo(firstTipoBtn, 'avista');
           
+          renderTabelaPrincipal();
           renderGraficoCategorias();
           renderPainelCartoes();
         } catch (error) {

@@ -167,7 +167,7 @@ function calcularValorParcelaCompra(valorTotal, parcelaAtual, parcelaTotal) {
     for (let i = 0; i < 12; i++) {
       const mesDest = adicionarMesAoYyyyMm(mesFinal, i);
       listaNovasCompras.push({
-        id: grupoParcelaId + "_" + i,
+        id: grupoParcelaId,
         parcelamentoId: "",
         nome: nomeFinalCompra,
         categoria: "Assinatura",
