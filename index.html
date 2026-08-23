@@ -4491,15 +4491,25 @@
         if (tipo === 'parcelado') {
           if (fieldParcelas) fieldParcelas.style.display = 'block';
           if (fieldCategoria) fieldCategoria.style.display = 'block';
-          if (selectCategoria) selectCategoria.required = true;
+          if (selectCategoria) {
+            selectCategoria.required = true;
+            selectCategoria.disabled = false;
+          }
         } else if (tipo === 'assinatura') {
           if (fieldParcelas) fieldParcelas.style.display = 'none';
           if (fieldCategoria) fieldCategoria.style.display = 'none';
-          if (selectCategoria) selectCategoria.required = false;
+          if (selectCategoria) {
+            selectCategoria.required = false;
+            selectCategoria.removeAttribute('required');
+            selectCategoria.disabled = true;
+          }
         } else {
           if (fieldParcelas) fieldParcelas.style.display = 'none';
           if (fieldCategoria) fieldCategoria.style.display = 'block';
-          if (selectCategoria) selectCategoria.required = true;
+          if (selectCategoria) {
+            selectCategoria.required = true;
+            selectCategoria.disabled = false;
+          }
         }
       };
 
@@ -4657,7 +4667,7 @@
           <div class="field field-categoria">
             <label>Categoria</label>
             <div style="display:flex; gap: 8px;">
-              <select name="categoria" required style="flex:1;">
+              <select name="categoria" style="flex:1;">
                 ${getOptionsCategoriasCompra()}
               </select>
               <button type="button" class="btn-light" onclick="window.adicionarNovaCategoria(this.previousElementSibling)" style="padding: 0 12px; font-weight: bold; width: auto; font-size: 18px;" title="Adicionar nova categoria">+</button>
