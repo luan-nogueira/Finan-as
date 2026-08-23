@@ -4428,7 +4428,9 @@
       };
 
       function renderComprasDoCartao(item) {
-        const compras = normalizarCompras(item);
+        const cardId = item.origemId || item.id;
+        const mesReferencia = item.mesReferencia || "";
+        const compras = getComprasBasePorMes(item, mesReferencia);
         const comprasNormais = compras.filter(c => !c.repetirMensal && c.categoria !== "Assinatura");
         const comprasAssinaturas = compras.filter(c => c.repetirMensal || c.categoria === "Assinatura");
 
@@ -4558,7 +4560,7 @@
           ${gerarTabela(comprasNormais, false)}
         </div>
         
-        <div class="compras-tab-panel" data-tab-content="assinaturas" style="display:none;">
+        <div class="compras-tab-panel" data-tab-content="assinaturas">
           ${gerarTabela(comprasAssinaturas, true)}
         </div>
 
